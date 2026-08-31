@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Comprobante de Pago - HIS</title>
+
+
+    <style>
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fb;
+        }
+
+
+        header {
+            background-color: #0b5ed7;
+            color: white;
+
+            padding: 20px 40px;
+        }
+
+
+        header h1 {
+            margin: 0;
+        }
+
+
+        .contenedor {
+            max-width: 750px;
+
+            margin: 35px auto;
+
+            background-color: white;
+
+            padding: 35px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                    0 3px 12px rgba(0,0,0,0.12);
+        }
+
+
+        .titulo {
+            text-align: center;
+
+            color: #198754;
+
+            margin-bottom: 10px;
+        }
+
+
+        .subtitulo {
+            text-align: center;
+
+            color: #666;
+
+            margin-bottom: 30px;
+        }
+
+
+        .exito {
+            text-align: center;
+
+            font-size: 55px;
+
+            margin-bottom: 10px;
+        }
+
+
+        .seccion {
+            background-color: #f8f9fa;
+
+            padding: 20px;
+
+            border-radius: 8px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .seccion h3 {
+            margin-top: 0;
+
+            color: #0b5ed7;
+
+            border-bottom: 1px solid #ddd;
+
+            padding-bottom: 10px;
+        }
+
+
+        .fila {
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 20px;
+
+            padding: 8px 0;
+
+            border-bottom: 1px solid #eee;
+        }
+
+
+        .fila:last-child {
+            border-bottom: none;
+        }
+
+
+        .etiqueta {
+            font-weight: bold;
+        }
+
+
+        .referencia {
+            color: #0b5ed7;
+
+            font-weight: bold;
+
+            font-size: 17px;
+        }
+
+
+        .estado {
+            color: #198754;
+
+            font-weight: bold;
+        }
+
+
+        .monto {
+            color: #198754;
+
+            font-size: 21px;
+
+            font-weight: bold;
+        }
+
+
+        .aviso {
+            background-color: #e8f5e9;
+
+            color: #186b39;
+
+            padding: 15px;
+
+            border-radius: 7px;
+
+            text-align: center;
+
+            margin-bottom: 25px;
+        }
+
+
+        .acciones {
+            display: flex;
+
+            justify-content: center;
+
+            gap: 15px;
+
+            margin-top: 25px;
+        }
+
+
+        .boton {
+            padding: 11px 20px;
+
+            border: none;
+
+            border-radius: 6px;
+
+            cursor: pointer;
+
+            font-size: 15px;
+        }
+
+
+        .btn-dashboard {
+            background-color: #0b5ed7;
+
+            color: white;
+        }
+
+
+        .btn-imprimir {
+            background-color: #6c757d;
+
+            color: white;
+        }
+
+
+        @media print {
+
+            header,
+            .acciones {
+                display: none;
+            }
+
+            body {
+                background-color: white;
+            }
+
+            .contenedor {
+                box-shadow: none;
+
+                margin: 0;
+
+                max-width: none;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <h1>
+        Sistema Informático Hospitalario
+    </h1>
+
+</header>
+
+
+<div class="contenedor">
+
+
+    <div class="exito">
+        ✓
+    </div>
+
+
+    <h2 class="titulo">
+        Pago realizado correctamente
+    </h2>
+
+
+    <p class="subtitulo">
+        Su cita médica ha sido confirmada.
+    </p>
+
+
+    <div class="aviso">
+
+        También hemos enviado este comprobante
+        al correo electrónico registrado en su cuenta.
+
+    </div>
+
+
+    <!-- DATOS DEL PAGO -->
+
+    <div class="seccion">
+
+        <h3>
+            Datos de la Transacción
+        </h3>
+
+
+        <div class="fila">
+
+            <span class="etiqueta">
+                Número de transacción:
+            </span>
+
+            <span
+                    class="referencia"
+                    th:text="${pago.referencia}">
+
+                HIS-XXXXXXXX
+
+            </span>
+
+        </div>
+
+
+        <div class="fila">
+
+            <span class="etiqueta">
+                Monto pagado:
+            </span>
+
+            <span class="monto">
+
+                Q<span th:text="${pago.monto}">
+                    250.00
+                </span>
+
+            </span>
+
+        </div>
+
+
+        <div class="fila">
+
+            <span class="etiqueta">
+                Método de pago:
+            </span>
+
+            <span th:text="${pago.metodoPago}">
+                TARJETA
+            </span>
+
+        </div>
+
+
+        <div class="fila">
+
+            <span class="etiqueta">
+                Estado:
+            </span>
+
+            <span
+                    class="estado"
+                    th:text="${pago.estado}">
+
+                APROBADO
+
+            </span>
+
+        </div>
+
+
+        <div class="fila">
+
+            <span class="etiqueta">
+                Fecha del pago:
+            </span>
+
+            <span th:text="${pago.fechaPago}">
+                Fecha
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- DATOS DE LA CITA -->
+
+    <div class="seccion">
+
+        <h3>
+            Datos de la Cita
+        </h3>
+
+
+        <div class="fila">
+
+            <span class="etiqueta">
+                Paciente:
+            </span>
+
+            <span th:text="${cita.paciente.nombreCompleto}">
+                Paciente
+            </span>
+
+        </div>
+
+
+        <div class="fila">
+
+            <span class="etiqueta">
+                Médico:
+            </span>
+
+            <span th:text="${cita.medico.usuario.nombreCompleto}">
+                Médico
+            </span>
+
+        </div>
+
+
+        <div class="fila">
+
+            <span class="etiqueta">
+                Especialidad:
+            </span>
+
+            <span th:text="${cita.especialidad.nombre}">
+                Especialidad
+            </span>
+
+        </div>
+
+
+        <div class="fila">
+
+            <span class="etiqueta">
+                Sucursal:
+            </span>
+
+            <span th:text="${cita.sucursal.nombre}">
+                Sucursal
+            </span>
+
+        </div>
+
+
+        <div class="fila">
+
+            <span class="etiqueta">
+                Fecha:
+            </span>
+
+            <span th:text="${cita.horario.fecha}">
+                Fecha
+            </span>
+
+        </div>
+
+
+        <div class="fila">
+
+            <span class="etiqueta">
+                Hora:
+            </span>
+
+            <span th:text="${cita.horario.hora}">
+                Hora
+            </span>
+
+        </div>
+
+
+        <div class="fila">
+
+            <span class="etiqueta">
+                Estado de la cita:
+            </span>
+
+            <span
+                    class="estado"
+                    th:text="${cita.estado}">
+
+                CONFIRMADA
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="acciones">
+
+        <button
+                type="button"
+                class="boton btn-imprimir"
+                onclick="window.print()">
+
+            Imprimir comprobante
+
+        </button>
+
+
+        <button
+                type="button"
+                class="boton btn-dashboard"
+                onclick="volverDashboard()">
+
+            Volver al Dashboard
+
+        </button>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+    function volverDashboard() {
+
+        window.location.href =
+            "/paciente/dashboard";
+    }
+
+</script>
+
+
+</body>
+</html>

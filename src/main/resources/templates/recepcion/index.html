@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Recepción - HIS</title>
+
+  <style>
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fb;
+    }
+
+    header {
+      background-color: #0b5ed7;
+      color: white;
+
+      padding: 20px 35px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+    }
+
+    header a {
+      color: white;
+      text-decoration: none;
+    }
+
+    .contenedor {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .buscador {
+      background-color: white;
+      padding: 25px;
+      border-radius: 12px;
+
+      box-shadow:
+              0 3px 12px rgba(0,0,0,0.10);
+
+      margin-bottom: 25px;
+    }
+
+    .buscador h2 {
+      color: #0b5ed7;
+      margin-top: 0;
+    }
+
+    .alternancia {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn-tipo {
+      padding: 10px 18px;
+
+      border: 1px solid #0b5ed7;
+      border-radius: 6px;
+
+      background-color: white;
+      color: #0b5ed7;
+
+      cursor: pointer;
+    }
+
+    .btn-tipo.activo {
+      background-color: #0b5ed7;
+      color: white;
+    }
+
+    .fila-busqueda {
+      display: flex;
+      gap: 10px;
+    }
+
+    .fila-busqueda input {
+      flex: 1;
+
+      padding: 12px;
+
+      border: 1px solid #aaa;
+      border-radius: 6px;
+
+      font-size: 16px;
+    }
+
+    .btn-buscar {
+      padding: 12px 22px;
+
+      border: none;
+      border-radius: 6px;
+
+      background-color: #198754;
+      color: white;
+
+      cursor: pointer;
+    }
+
+    .mensaje {
+      margin-top: 15px;
+      min-height: 22px;
+      font-weight: bold;
+    }
+
+    /* =========================================
+       BOTONES ALTERNOS
+       ========================================= */
+
+    .acciones-buscador {
+      margin-top: 12px;
+
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .acciones-buscador button {
+      padding: 11px 18px;
+
+      border: none;
+      border-radius: 6px;
+
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-registro {
+      background-color: #6f42c1;
+    }
+
+    .btn-nueva {
+      background-color: #0b5ed7;
+    }
+
+    /* =========================================
+       TARJETA CITA
+       ========================================= */
+
+    .tarjeta {
+      display: none;
+
+      background-color: white;
+
+      padding: 25px;
+      border-radius: 12px;
+
+      box-shadow:
+              0 3px 12px rgba(0,0,0,0.10);
+    }
+
+    .tarjeta h2 {
+      color: #0b5ed7;
+      margin-top: 0;
+    }
+
+    .emergencia {
+      display: none;
+
+      background-color: #dc3545;
+      color: white;
+
+      padding: 7px 12px;
+      border-radius: 5px;
+
+      font-weight: bold;
+
+      margin-bottom: 15px;
+
+      width: fit-content;
+    }
+
+    .datos {
+      display: grid;
+
+      grid-template-columns:
+                    repeat(2, 1fr);
+
+      gap: 15px;
+    }
+
+    .dato {
+      background-color: #f8f9fa;
+
+      padding: 15px;
+
+      border-radius: 7px;
+    }
+
+    .dato strong {
+      display: block;
+
+      color: #555;
+
+      margin-bottom: 5px;
+    }
+
+    .estado {
+      font-weight: bold;
+      color: #0b5ed7;
+    }
+
+    /* =========================================
+       ACCIONES CITA
+       ========================================= */
+
+    .acciones {
+      margin-top: 25px;
+
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .acciones button {
+      padding: 11px 18px;
+
+      border: none;
+      border-radius: 6px;
+
+      cursor: pointer;
+      color: white;
+    }
+
+    .btn-llegada {
+      background-color: #198754;
+    }
+
+    .btn-reasignar {
+      background-color: #0b5ed7;
+    }
+
+    .btn-urgente {
+      background-color: #dc3545;
+    }
+
+    .indicador-llegada {
+      display: none;
+
+      margin-top: 20px;
+      padding: 15px;
+
+      background-color: #fff3cd;
+      color: #664d03;
+
+      border-radius: 7px;
+
+      font-weight: bold;
+    }
+
+    /* =========================================
+       MODAL REASIGNACIÓN
+       ========================================= */
+
+    .modal {
+      display: none;
+
+      position: fixed;
+
+      z-index: 1000;
+
+      left: 0;
+      top: 0;
+
+      width: 100%;
+      height: 100%;
+
+      background-color: rgba(0,0,0,0.5);
+
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-contenido {
+      background-color: white;
+
+      width: 450px;
+      max-width: 90%;
+
+      padding: 25px;
+
+      border-radius: 10px;
+
+      box-shadow:
+              0 5px 20px rgba(0,0,0,0.25);
+    }
+
+    .modal-contenido h2 {
+      color: #0b5ed7;
+      margin-top: 0;
+    }
+
+    .modal-contenido select,
+    .modal-contenido textarea {
+      width: 100%;
+
+      box-sizing: border-box;
+
+      padding: 10px;
+
+      margin-top: 8px;
+      margin-bottom: 15px;
+
+      border: 1px solid #aaa;
+      border-radius: 6px;
+    }
+
+    .modal-contenido textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .modal-acciones {
+      display: flex;
+
+      justify-content: flex-end;
+
+      gap: 10px;
+
+      margin-top: 20px;
+    }
+
+    .modal-acciones button {
+      padding: 10px 16px;
+
+      border: none;
+      border-radius: 6px;
+
+      color: white;
+
+      cursor: pointer;
+    }
+
+    .btn-cancelar-modal {
+      background-color: #6c757d;
+    }
+
+    .btn-confirmar-modal {
+      background-color: #198754;
+    }
+
+    .mensaje-modal {
+      min-height: 20px;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 700px) {
+
+      .datos {
+        grid-template-columns: 1fr;
+      }
+
+      .fila-busqueda {
+        flex-direction: column;
+      }
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+  <h1>
+    Recepción Hospitalaria
+  </h1>
+
+  <div>
+
+    Usuario:
+
+    <strong th:text="${usuarioActual}">
+      recepcion1
+    </strong>
+
+    &nbsp; | &nbsp;
+
+    <a href="/recepcion/logout">
+      Cerrar sesión
+    </a>
+
+  </div>
+
+</header>
+
+
+<div class="contenedor">
+
+
+  <!-- =========================================
+       BUSCADOR
+       ========================================= -->
+
+  <div class="buscador">
+
+    <h2>
+      Verificar Cita
+    </h2>
+
+
+    <div class="alternancia">
+
+      <button
+              type="button"
+              id="btnCita"
+              class="btn-tipo activo"
+              onclick="seleccionarTipo('CITA')">
+
+        Por No. Cita
+
+      </button>
+
+
+      <button
+              type="button"
+              id="btnDpi"
+              class="btn-tipo"
+              onclick="seleccionarTipo('DPI')">
+
+        Por DPI
+
+      </button>
+
+    </div>
+
+
+    <div class="fila-busqueda">
+
+      <input
+              type="text"
+              id="valorBusqueda"
+              placeholder="Ingrese número de cita">
+
+
+      <button
+              type="button"
+              class="btn-buscar"
+              onclick="buscar()">
+
+        Buscar
+
+      </button>
+
+    </div>
+
+
+    <div
+            id="mensaje"
+            class="mensaje">
+    </div>
+
+
+    <div class="acciones-buscador">
+
+
+      <button
+              type="button"
+              id="btnRegistrarPaciente"
+              class="btn-registro"
+              style="display:none;"
+              onclick="registrarPaciente()">
+
+        Registrar Paciente
+
+      </button>
+
+
+      <button
+              type="button"
+              id="btnNuevaCita"
+              class="btn-nueva"
+              style="display:none;"
+              onclick="nuevaCita()">
+
+        Nueva Cita (Walk-in)
+
+      </button>
+
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       DATOS DE CITA
+       ========================================= -->
+
+  <div
+          id="tarjetaCita"
+          class="tarjeta">
+
+
+    <div
+            id="etiquetaEmergencia"
+            class="emergencia">
+
+      EMERGENCIA
+
+    </div>
+
+
+    <h2>
+      Datos de la Cita
+    </h2>
+
+
+    <div class="datos">
+
+
+      <div class="dato">
+
+        <strong>
+          No. de Cita
+        </strong>
+
+        <span id="citaId"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Paciente
+        </strong>
+
+        <span id="paciente"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          DPI
+        </strong>
+
+        <span id="dpi"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Estado
+        </strong>
+
+        <span
+                id="estadoCita"
+                class="estado">
+                </span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Especialidad
+        </strong>
+
+        <span id="especialidad"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Sucursal
+        </strong>
+
+        <span id="sucursal"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Médico
+        </strong>
+
+        <span id="medico"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Fecha
+        </strong>
+
+        <span id="fecha"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Hora
+        </strong>
+
+        <span id="hora"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Hora de llegada
+        </strong>
+
+        <span id="horaLlegada">
+                    No registrada
+                </span>
+
+      </div>
+
+
+      <div
+              class="dato"
+              style="grid-column: 1 / -1;">
+
+        <strong>
+          Motivo de consulta
+        </strong>
+
+        <span id="motivo"></span>
+
+      </div>
+
+    </div>
+
+
+    <div
+            id="indicadorLlegada"
+            class="indicador-llegada">
+
+      Llegada registrada — esperando llamado de enfermería.
+
+    </div>
+
+
+    <!-- =========================================
+         BOTONES DE LA CITA
+         ========================================= -->
+
+    <div class="acciones">
+
+
+      <button
+              type="button"
+              id="btnRegistrarLlegada"
+              class="btn-llegada"
+              style="display:none;"
+              onclick="registrarLlegada()">
+
+        Registrar llegada
+
+      </button>
+
+
+      <button
+              type="button"
+              id="btnReasignar"
+              class="btn-reasignar"
+              style="display:none;"
+              onclick="abrirReasignacion()">
+
+        Reasignar Médico
+
+      </button>
+
+
+      <button
+              type="button"
+              id="btnUrgente"
+              class="btn-urgente"
+              style="display:none;"
+              onclick="signosVitalesUrgente()">
+
+        Signos Vitales (Urgente)
+
+      </button>
+
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================
+     MODAL REASIGNACIÓN
+     ========================================= -->
+
+<div
+        id="modalReasignar"
+        class="modal">
+
+
+  <div class="modal-contenido">
+
+
+    <h2>
+      Reasignar Médico
+    </h2>
+
+
+    <p>
+
+      <strong>
+        Médico actual:
+      </strong>
+
+      <span id="medicoActualModal">
+            </span>
+
+    </p>
+
+
+    <label for="nuevoMedico">
+
+      <strong>
+        Nuevo médico
+      </strong>
+
+    </label>
+
+
+    <select id="nuevoMedico">
+
+      <option value="">
+        Seleccione un médico
+      </option>
+
+    </select>
+
+
+    <label for="notaReasignacion">
+
+      <strong>
+        Motivo de la reasignación
+      </strong>
+
+    </label>
+
+
+    <textarea
+            id="notaReasignacion"
+            placeholder="Opcional">
+        </textarea>
+
+
+    <div
+            id="mensajeReasignacion"
+            class="mensaje-modal">
+    </div>
+
+
+    <div class="modal-acciones">
+
+
+      <button
+              type="button"
+              class="btn-cancelar-modal"
+              onclick="cerrarReasignacion()">
+
+        Cancelar
+
+      </button>
+
+
+      <button
+              type="button"
+              class="btn-confirmar-modal"
+              id="btnConfirmarReasignacion"
+              onclick="confirmarReasignacion()">
+
+        Confirmar Reasignación
+
+      </button>
+
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  let tipoBusqueda = "CITA";
+
+  let citaActualId = null;
+
+
+  // =====================================================
+  // SELECCIONAR TIPO
+  // =====================================================
+
+  function seleccionarTipo(tipo) {
+
+    tipoBusqueda = tipo;
+
+
+    document
+            .getElementById("btnCita")
+            .classList
+            .remove("activo");
+
+
+    document
+            .getElementById("btnDpi")
+            .classList
+            .remove("activo");
+
+
+    if (tipo === "CITA") {
+
+      document
+              .getElementById("btnCita")
+              .classList
+              .add("activo");
+
+
+      document
+              .getElementById(
+                      "valorBusqueda"
+              )
+              .placeholder =
+              "Ingrese número de cita";
+
+    }
+
+    else {
+
+      document
+              .getElementById("btnDpi")
+              .classList
+              .add("activo");
+
+
+      document
+              .getElementById(
+                      "valorBusqueda"
+              )
+              .placeholder =
+              "Ingrese DPI de 13 dígitos";
+    }
+
+
+    document
+            .getElementById(
+                    "valorBusqueda"
+            )
+            .value = "";
+
+
+    limpiarResultado();
+  }
+
+
+  // =====================================================
+  // BUSCAR
+  // =====================================================
+
+  async function buscar() {
+
+    const valor =
+            document
+                    .getElementById(
+                            "valorBusqueda"
+                    )
+                    .value.trim();
+
+
+    const mensaje =
+            document.getElementById(
+                    "mensaje"
+            );
+
+
+    limpiarResultado();
+
+
+    if (valor === "") {
+
+      mensaje.style.color =
+              "#b02a37";
+
+      mensaje.textContent =
+              "Debe ingresar un dato para buscar.";
+
+      return;
+    }
+
+
+    if (
+            tipoBusqueda === "CITA" &&
+            !/^\d+$/.test(valor)
+    ) {
+
+      mensaje.style.color =
+              "#b02a37";
+
+      mensaje.textContent =
+              "El número de cita debe ser numérico.";
+
+      return;
+    }
+
+
+    if (
+            tipoBusqueda === "DPI" &&
+            !/^\d{13}$/.test(valor)
+    ) {
+
+      mensaje.style.color =
+              "#b02a37";
+
+      mensaje.textContent =
+              "El DPI debe contener exactamente 13 dígitos.";
+
+      return;
+    }
+
+
+    mensaje.style.color =
+            "#666";
+
+    mensaje.textContent =
+            "Buscando...";
+
+
+    try {
+
+      let url;
+
+
+      if (tipoBusqueda === "CITA") {
+
+        url =
+                "/api/recepcion/cita/" +
+                valor;
+
+      }
+
+      else {
+
+        url =
+                "/api/recepcion/dpi/" +
+                valor;
+      }
+
+
+      const respuesta =
+              await fetch(url);
+
+
+      const datos =
+              await respuesta.json();
+
+
+      procesarResultado(datos);
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+
+      mensaje.style.color =
+              "#b02a37";
+
+      mensaje.textContent =
+              "No se pudo conectar con el servidor.";
+    }
+  }
+
+
+  // =====================================================
+  // PROCESAR RESULTADO
+  // =====================================================
+
+  function procesarResultado(datos) {
+
+    const mensaje =
+            document.getElementById(
+                    "mensaje"
+            );
+
+
+    // PACIENTE NO REGISTRADO
+
+    if (
+            datos.estado ===
+            "PACIENTE_NO_REGISTRADO"
+    ) {
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.innerHTML =
+              datos.mensaje +
+              "<br><small>" +
+              datos.subtexto +
+              "</small>";
+
+
+      document
+              .getElementById(
+                      "btnRegistrarPaciente"
+              )
+              .style.display =
+              "inline-block";
+
+
+      return;
+    }
+
+
+    // PACIENTE SIN CITAS
+
+    if (
+            datos.estado ===
+            "SIN_CITAS"
+    ) {
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.innerHTML =
+              datos.mensaje +
+              "<br><small>" +
+              datos.subtexto +
+              "</small>";
+
+
+      document
+              .getElementById(
+                      "btnNuevaCita"
+              )
+              .style.display =
+              "inline-block";
+
+
+      return;
+    }
+
+
+    // OTRO ERROR
+
+    if (datos.estado !== "OK") {
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              datos.mensaje;
+
+
+      return;
+    }
+
+
+    mensaje.textContent = "";
+
+
+    mostrarCita(datos);
+  }
+
+
+  // =====================================================
+  // MOSTRAR CITA
+  // =====================================================
+
+  function mostrarCita(datos) {
+
+    citaActualId =
+            datos.citaId;
+
+
+    document
+            .getElementById(
+                    "tarjetaCita"
+            )
+            .style.display =
+            "block";
+
+
+    document
+            .getElementById("citaId")
+            .textContent =
+            datos.citaId;
+
+
+    document
+            .getElementById("paciente")
+            .textContent =
+            datos.paciente;
+
+
+    document
+            .getElementById("dpi")
+            .textContent =
+            datos.dpi;
+
+
+    document
+            .getElementById("estadoCita")
+            .textContent =
+            datos.estadoCita;
+
+
+    document
+            .getElementById("especialidad")
+            .textContent =
+            datos.especialidad;
+
+
+    document
+            .getElementById("sucursal")
+            .textContent =
+            datos.sucursal;
+
+
+    document
+            .getElementById("medico")
+            .textContent =
+            datos.medico;
+
+
+    document
+            .getElementById("fecha")
+            .textContent =
+            datos.fecha;
+
+
+    document
+            .getElementById("hora")
+            .textContent =
+            datos.hora;
+
+
+    document
+            .getElementById("motivo")
+            .textContent =
+            datos.motivo;
+
+
+    document
+            .getElementById(
+                    "horaLlegada"
+            )
+            .textContent =
+
+            datos.horaLlegada === ""
+                    ? "No registrada"
+                    : datos.horaLlegada;
+
+
+    // EMERGENCIA
+
+    const emergencia =
+            datos.prioridad ===
+            "EMERGENCIA";
+
+
+    document
+            .getElementById(
+                    "etiquetaEmergencia"
+            )
+            .style.display =
+
+            emergencia
+                    ? "block"
+                    : "none";
+
+
+    document
+            .getElementById(
+                    "btnUrgente"
+            )
+            .style.display =
+
+            emergencia
+                    ? "inline-block"
+                    : "none";
+
+
+    configurarAcciones(
+            datos.estadoCita
+    );
+  }
+
+
+  // =====================================================
+  // CONFIGURAR ACCIONES
+  // =====================================================
+
+  function configurarAcciones(estado) {
+
+    const btnLlegada =
+            document.getElementById(
+                    "btnRegistrarLlegada"
+            );
+
+
+    const btnReasignar =
+            document.getElementById(
+                    "btnReasignar"
+            );
+
+
+    const btnNueva =
+            document.getElementById(
+                    "btnNuevaCita"
+            );
+
+
+    const indicador =
+            document.getElementById(
+                    "indicadorLlegada"
+            );
+
+
+    // REINICIAR
+
+    btnLlegada.style.display =
+            "none";
+
+    btnReasignar.style.display =
+            "none";
+
+    btnNueva.style.display =
+            "none";
+
+    indicador.style.display =
+            "none";
+
+
+    // =============================================
+    // CONFIRMADA
+    // =============================================
+
+    if (estado === "CONFIRMADA") {
+
+      btnLlegada.style.display =
+              "inline-block";
+
+      btnReasignar.style.display =
+              "inline-block";
+
+      return;
+    }
+
+
+    // =============================================
+    // PACIENTE PRESENTE
+    // =============================================
+
+    if (
+            estado ===
+            "PACIENTE_PRESENTE"
+    ) {
+
+      indicador.style.display =
+              "block";
+
+      btnReasignar.style.display =
+              "inline-block";
+
+      return;
+    }
+
+
+    // =============================================
+    // PENDIENTE DE PAGO
+    // =============================================
+
+    if (
+            estado ===
+            "PENDIENTE_DE_PAGO"
+    ) {
+
+      const mensaje =
+              document.getElementById(
+                      "mensaje"
+              );
+
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              "La cita del paciente tiene estado 'Pendiente de pago'. " +
+              "Debe realizar el pago en caja antes de ser atendido.";
+
+      return;
+    }
+
+
+    // =============================================
+    // CANCELADA
+    // =============================================
+
+    if (estado === "CANCELADA") {
+
+      const mensaje =
+              document.getElementById(
+                      "mensaje"
+              );
+
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              "La cita fue cancelada. " +
+              "El paciente debe agendar una nueva cita.";
+
+
+      btnNueva.style.display =
+              "inline-block";
+    }
+  }
+
+
+  // =====================================================
+  // REGISTRAR LLEGADA
+  // =====================================================
+
+  async function registrarLlegada() {
+
+    if (citaActualId === null) {
+      return;
+    }
+
+
+    const mensaje =
+            document.getElementById(
+                    "mensaje"
+            );
+
+
+    const boton =
+            document.getElementById(
+                    "btnRegistrarLlegada"
+            );
+
+
+    mensaje.style.color =
+            "#666";
+
+
+    mensaje.textContent =
+            "Registrando llegada...";
+
+
+    boton.disabled =
+            true;
+
+
+    try {
+
+      const respuesta =
+              await fetch(
+
+                      "/api/recepcion/citas/" +
+                      citaActualId +
+                      "/llegada",
+
+                      {
+                        method: "POST"
+                      }
+
+              );
+
+
+      const datos =
+              await respuesta.json();
+
+
+      if (datos.estado !== "OK") {
+
+        mensaje.style.color =
+                "#b02a37";
+
+
+        mensaje.textContent =
+                datos.mensaje;
+
+
+        boton.disabled =
+                false;
+
+
+        return;
+      }
+
+
+      mensaje.style.color =
+              "green";
+
+
+      mensaje.textContent =
+              datos.mensaje;
+
+
+      document
+              .getElementById(
+                      "estadoCita"
+              )
+              .textContent =
+              "PACIENTE_PRESENTE";
+
+
+      if (datos.horaLlegada) {
+
+        document
+                .getElementById(
+                        "horaLlegada"
+                )
+                .textContent =
+                datos.horaLlegada;
+      }
+
+
+      boton.style.display =
+              "none";
+
+
+      document
+              .getElementById(
+                      "indicadorLlegada"
+              )
+              .style.display =
+              "block";
+
+
+      // La cita ahora está PACIENTE_PRESENTE,
+      // por lo tanto permite reasignación.
+
+      document
+              .getElementById(
+                      "btnReasignar"
+              )
+              .style.display =
+              "inline-block";
+
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              "Error al registrar la llegada.";
+
+
+      boton.disabled =
+              false;
+    }
+  }
+
+
+  // =====================================================
+  // ABRIR REASIGNACIÓN
+  // =====================================================
+
+  async function abrirReasignacion() {
+
+    if (citaActualId === null) {
+      return;
+    }
+
+
+    const modal =
+            document.getElementById(
+                    "modalReasignar"
+            );
+
+
+    const select =
+            document.getElementById(
+                    "nuevoMedico"
+            );
+
+
+    const mensaje =
+            document.getElementById(
+                    "mensajeReasignacion"
+            );
+
+
+    const nota =
+            document.getElementById(
+                    "notaReasignacion"
+            );
+
+
+    mensaje.textContent = "";
+
+    nota.value = "";
+
+
+    select.innerHTML =
+            "<option value=''>Cargando médicos...</option>";
+
+
+    modal.style.display =
+            "flex";
+
+
+    try {
+
+      const respuesta =
+              await fetch(
+                      "/api/recepcion/citas/" +
+                      citaActualId +
+                      "/medicos-disponibles"
+              );
+
+
+      const datos =
+              await respuesta.json();
+
+
+      if (datos.estado !== "OK") {
+
+        mensaje.style.color =
+                "#b02a37";
+
+
+        mensaje.textContent =
+                datos.mensaje;
+
+
+        select.innerHTML =
+                "<option value=''>Sin médicos disponibles</option>";
+
+
+        return;
+      }
+
+
+      document
+              .getElementById(
+                      "medicoActualModal"
+              )
+              .textContent =
+              datos.medicoActual;
+
+
+      select.innerHTML =
+              "<option value=''>Seleccione un médico</option>";
+
+
+      datos.medicos.forEach(
+              medico => {
+
+                const opcion =
+                        document.createElement(
+                                "option"
+                        );
+
+
+                opcion.value =
+                        medico.id;
+
+
+                opcion.textContent =
+                        medico.nombre;
+
+
+                select.appendChild(
+                        opcion
+                );
+              }
+      );
+
+
+      if (datos.medicos.length === 0) {
+
+        mensaje.style.color =
+                "#b02a37";
+
+
+        mensaje.textContent =
+                "No hay otros médicos disponibles para esta sede y especialidad.";
+      }
+
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              "No se pudo cargar la lista de médicos.";
+    }
+  }
+
+
+  // =====================================================
+  // CERRAR MODAL
+  // =====================================================
+
+  function cerrarReasignacion() {
+
+    document
+            .getElementById(
+                    "modalReasignar"
+            )
+            .style.display =
+            "none";
+
+
+    document
+            .getElementById(
+                    "notaReasignacion"
+            )
+            .value =
+            "";
+
+
+    document
+            .getElementById(
+                    "mensajeReasignacion"
+            )
+            .textContent =
+            "";
+  }
+
+
+  // =====================================================
+  // CONFIRMAR REASIGNACIÓN
+  // =====================================================
+
+  async function confirmarReasignacion() {
+
+    const medicoId =
+            document
+                    .getElementById(
+                            "nuevoMedico"
+                    )
+                    .value;
+
+
+    const nota =
+            document
+                    .getElementById(
+                            "notaReasignacion"
+                    )
+                    .value.trim();
+
+
+    const mensaje =
+            document.getElementById(
+                    "mensajeReasignacion"
+            );
+
+
+    const boton =
+            document.getElementById(
+                    "btnConfirmarReasignacion"
+            );
+
+
+    if (medicoId === "") {
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              "Debe seleccionar un médico.";
+
+
+      return;
+    }
+
+
+    mensaje.style.color =
+            "#666";
+
+
+    mensaje.textContent =
+            "Procesando reasignación...";
+
+
+    boton.disabled =
+            true;
+
+
+    try {
+
+      const respuesta =
+              await fetch(
+
+                      "/api/recepcion/citas/" +
+                      citaActualId +
+                      "/reasignar-medico",
+
+                      {
+                        method: "POST",
+
+                        headers: {
+
+                          "Content-Type":
+                                  "application/json"
+
+                        },
+
+                        body:
+                                JSON.stringify({
+
+                                  medicoId:
+                                  medicoId,
+
+                                  nota:
+                                  nota
+
+                                })
+                      }
+
+              );
+
+
+      const datos =
+              await respuesta.json();
+
+
+      if (datos.estado !== "OK") {
+
+        mensaje.style.color =
+                "#b02a37";
+
+
+        mensaje.textContent =
+                datos.mensaje;
+
+
+        boton.disabled =
+                false;
+
+
+        return;
+      }
+
+
+      mensaje.style.color =
+              "green";
+
+
+      mensaje.textContent =
+              datos.mensaje;
+
+
+      document
+              .getElementById(
+                      "medico"
+              )
+              .textContent =
+              datos.medico;
+
+
+      document
+              .getElementById(
+                      "medicoActualModal"
+              )
+              .textContent =
+              datos.medico;
+
+
+      setTimeout(
+              function () {
+
+                cerrarReasignacion();
+
+                boton.disabled =
+                        false;
+
+              },
+              900
+      );
+
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              "Error al reasignar el médico.";
+
+
+      boton.disabled =
+              false;
+    }
+  }
+
+
+  // =====================================================
+  // REGISTRAR PACIENTE
+  // =====================================================
+
+  function registrarPaciente() {
+
+    window.location.href =
+            "/registro";
+  }
+
+
+  // =====================================================
+  // NUEVA CITA
+  // =====================================================
+
+  function nuevaCita() {
+
+    window.location.href =
+            "/paciente/citas/agendar";
+  }
+
+
+  // =====================================================
+  // SIGNOS VITALES
+  // =====================================================
+
+  function signosVitalesUrgente() {
+
+    alert(
+            "La integración con Signos Vitales " +
+            "se realizará en el CU-07."
+    );
+  }
+
+
+  // =====================================================
+  // LIMPIAR
+  // =====================================================
+
+  function limpiarResultado() {
+
+    citaActualId =
+            null;
+
+
+    document
+            .getElementById(
+                    "mensaje"
+            )
+            .textContent =
+            "";
+
+
+    document
+            .getElementById(
+                    "tarjetaCita"
+            )
+            .style.display =
+            "none";
+
+
+    document
+            .getElementById(
+                    "btnRegistrarPaciente"
+            )
+            .style.display =
+            "none";
+
+
+    document
+            .getElementById(
+                    "btnNuevaCita"
+            )
+            .style.display =
+            "none";
+
+
+    document
+            .getElementById(
+                    "btnRegistrarLlegada"
+            )
+            .style.display =
+            "none";
+
+
+    document
+            .getElementById(
+                    "btnReasignar"
+            )
+            .style.display =
+            "none";
+
+
+    document
+            .getElementById(
+                    "btnUrgente"
+            )
+            .style.display =
+            "none";
+
+
+    document
+            .getElementById(
+                    "indicadorLlegada"
+            )
+            .style.display =
+            "none";
+
+
+    document
+            .getElementById(
+                    "etiquetaEmergencia"
+            )
+            .style.display =
+            "none";
+  }
+
+
+  // =====================================================
+  // ENTER PARA BUSCAR
+  // =====================================================
+
+  document
+          .getElementById(
+                  "valorBusqueda"
+          )
+          .addEventListener(
+                  "keydown",
+                  function(event) {
+
+                    if (event.key === "Enter") {
+
+                      buscar();
+                    }
+                  }
+          );
+
+
+  // CERRAR MODAL AL HACER CLIC FUERA
+
+  document
+          .getElementById(
+                  "modalReasignar"
+          )
+          .addEventListener(
+                  "click",
+                  function(event) {
+
+                    if (
+                            event.target ===
+                            this
+                    ) {
+
+                      cerrarReasignacion();
+                    }
+                  }
+          );
+
+</script>
+
+
+</body>
+
+</html>

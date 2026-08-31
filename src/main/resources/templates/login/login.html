@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Iniciar Sesión - HIS</title>
+
+  <style>
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fb;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      min-height: 100vh;
+    }
+
+    .login-contenedor {
+      background-color: white;
+
+      width: 380px;
+      padding: 35px;
+
+      border-radius: 12px;
+
+      box-shadow:
+              0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    h1 {
+      color: #0b5ed7;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .subtitulo {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .campo {
+      margin-bottom: 20px;
+    }
+
+    .campo label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .campo input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+
+      border: 1px solid #aaa;
+      border-radius: 6px;
+
+      font-size: 16px;
+    }
+
+    .campo input:focus {
+      outline: none;
+      border-color: #0b5ed7;
+    }
+
+    .campo input:disabled {
+      background-color: #e9ecef;
+      cursor: not-allowed;
+    }
+
+    .boton-login {
+      width: 100%;
+
+      background-color: #0b5ed7;
+      color: white;
+
+      border: none;
+
+      padding: 13px;
+
+      border-radius: 6px;
+
+      font-size: 16px;
+
+      cursor: pointer;
+    }
+
+    .boton-login:hover {
+      background-color: #084298;
+    }
+
+    .boton-login:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+
+    .mensaje {
+      margin-top: 15px;
+      color: #b02a37;
+      text-align: center;
+      min-height: 20px;
+      line-height: 1.5;
+    }
+
+    .enlaces {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .enlaces a {
+      color: #0b5ed7;
+      text-decoration: none;
+    }
+
+    .enlaces a:hover {
+      text-decoration: underline;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<div class="login-contenedor">
+
+  <h1>Iniciar Sesión</h1>
+
+  <p class="subtitulo">
+    Portal de Pacientes
+  </p>
+
+
+  <!-- USUARIO -->
+
+  <div class="campo">
+
+    <label for="usuario">
+      Nombre de usuario
+    </label>
+
+    <input
+            type="text"
+            id="usuario"
+            placeholder="Ingrese su usuario"
+            autocomplete="username">
+
+  </div>
+
+
+  <!-- CONTRASEÑA -->
+
+  <div class="campo">
+
+    <label for="password">
+      Contraseña
+    </label>
+
+    <input
+            type="password"
+            id="password"
+            placeholder="Ingrese su contraseña"
+            autocomplete="current-password">
+
+  </div>
+
+
+  <!-- BOTÓN LOGIN -->
+
+  <button
+          type="button"
+          class="boton-login"
+          onclick="iniciarSesion()">
+
+    Iniciar Sesión
+
+  </button>
+
+
+  <!-- MENSAJES -->
+
+  <div
+          id="mensaje"
+          class="mensaje">
+  </div>
+
+
+  <!-- ENLACES -->
+
+  <div class="enlaces">
+
+    <a href="/">
+      Volver al portal
+    </a>
+
+    <br><br>
+
+    <a href="#">
+      Acceso Panel Administrativo
+    </a>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  let intervaloBloqueo = null;
+
+
+  // =====================================================
+  // INICIAR SESIÓN
+  // =====================================================
+
+  async function iniciarSesion() {
+
+    const usuario =
+            document.getElementById("usuario")
+                    .value
+                    .trim();
+
+    const password =
+            document.getElementById("password")
+                    .value;
+
+    const mensaje =
+            document.getElementById("mensaje");
+
+
+    // Validar campos vacíos
+
+    if (usuario === "" || password === "") {
+
+      mensaje.style.color = "#b02a37";
+
+      mensaje.textContent =
+              "Debe ingresar su nombre de usuario y contraseña.";
+
+      return;
+    }
+
+
+    // Mensaje de carga
+
+    mensaje.style.color = "#666";
+
+    mensaje.textContent =
+            "Validando credenciales...";
+
+
+    try {
+
+      const respuesta =
+              await fetch("/api/login", {
+
+                method: "POST",
+
+                headers: {
+                  "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+
+                  nombreUsuario: usuario,
+                  password: password
+
+                })
+
+              });
+
+
+      if (!respuesta.ok) {
+
+        throw new Error(
+                "Error del servidor"
+        );
+      }
+
+
+      const datos =
+              await respuesta.json();
+
+
+      // =================================================
+      // LOGIN CORRECTO
+      // =================================================
+
+      if (datos.estado === "OK") {
+
+        mensaje.style.color = "green";
+
+        mensaje.textContent =
+                "Inicio de sesión exitoso. Redirigiendo...";
+
+
+        setTimeout(function () {
+
+          window.location.href =
+                  "/paciente/dashboard";
+
+        }, 1000);
+
+
+        return;
+      }
+
+
+      // =================================================
+      // CUENTA BLOQUEADA
+      // =================================================
+
+      if (datos.estado === "BLOQUEADO") {
+
+        const segundos =
+                datos.segundosBloqueo || 900;
+
+
+        bloquearFormulario(
+                segundos
+        );
+
+
+        return;
+      }
+
+
+      // =================================================
+      // ROL NO AUTORIZADO
+      // =================================================
+
+      if (
+              datos.estado ===
+              "ROL_NO_AUTORIZADO"
+      ) {
+
+        mensaje.style.color =
+                "#b02a37";
+
+        mensaje.textContent =
+                datos.mensaje;
+
+
+        return;
+      }
+
+
+      // =================================================
+      // CREDENCIALES INCORRECTAS
+      // =================================================
+
+      mensaje.style.color =
+              "#b02a37";
+
+      mensaje.textContent =
+              datos.mensaje;
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+      mensaje.style.color =
+              "#b02a37";
+
+      mensaje.textContent =
+              "No se pudo conectar con el servidor. " +
+              "Intente de nuevo más tarde.";
+
+    }
+
+  }
+
+
+
+  // =====================================================
+  // BLOQUEAR FORMULARIO
+  // =====================================================
+
+  function bloquearFormulario(segundos) {
+
+    const campoUsuario =
+            document.getElementById(
+                    "usuario"
+            );
+
+
+    const campoPassword =
+            document.getElementById(
+                    "password"
+            );
+
+
+    const boton =
+            document.querySelector(
+                    ".boton-login"
+            );
+
+
+    const mensaje =
+            document.getElementById(
+                    "mensaje"
+            );
+
+
+    // Deshabilitar campos
+
+    campoUsuario.disabled =
+            true;
+
+    campoPassword.disabled =
+            true;
+
+    boton.disabled =
+            true;
+
+
+    // Mostrar tiempo
+
+    actualizarMensajeBloqueo(
+            segundos,
+            mensaje
+    );
+
+
+    // Detener contador anterior
+
+    if (
+            intervaloBloqueo !== null
+    ) {
+
+      clearInterval(
+              intervaloBloqueo
+      );
+
+    }
+
+
+    // Iniciar contador
+
+    intervaloBloqueo =
+            setInterval(
+                    function () {
+
+                      segundos--;
+
+
+                      if (segundos <= 0) {
+
+                        clearInterval(
+                                intervaloBloqueo
+                        );
+
+
+                        intervaloBloqueo =
+                                null;
+
+
+                        // Habilitar formulario
+
+                        campoUsuario.disabled =
+                                false;
+
+                        campoPassword.disabled =
+                                false;
+
+                        boton.disabled =
+                                false;
+
+
+                        // Limpiar contraseña
+
+                        campoPassword.value =
+                                "";
+
+
+                        mensaje.style.color =
+                                "green";
+
+                        mensaje.textContent =
+                                "El bloqueo ha finalizado. " +
+                                "Puede intentar iniciar sesión nuevamente.";
+
+
+                        return;
+
+                      }
+
+
+                      actualizarMensajeBloqueo(
+                              segundos,
+                              mensaje
+                      );
+
+                    },
+
+                    1000
+            );
+
+  }
+
+
+
+  // =====================================================
+  // MOSTRAR CONTADOR DEL BLOQUEO
+  // =====================================================
+
+  function actualizarMensajeBloqueo(
+          segundos,
+          mensaje
+  ) {
+
+    const minutos =
+            Math.floor(
+                    segundos / 60
+            );
+
+
+    const segundosRestantes =
+            segundos % 60;
+
+
+    mensaje.style.color =
+            "#b02a37";
+
+
+    mensaje.textContent =
+            "Cuenta bloqueada temporalmente. " +
+            "Podrá intentar nuevamente en " +
+            minutos +
+            " min " +
+            segundosRestantes +
+            " s.";
+
+  }
+
+
+
+  // =====================================================
+  // INICIAR SESIÓN PRESIONANDO ENTER
+  // =====================================================
+
+  document
+          .getElementById("password")
+          .addEventListener(
+                  "keydown",
+                  function (event) {
+
+                    if (event.key === "Enter") {
+
+                      iniciarSesion();
+
+                    }
+
+                  }
+          );
+
+</script>
+
+</body>
+</html>

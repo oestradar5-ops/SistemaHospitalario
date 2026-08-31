@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Agendar Cita - HIS</title>
+
+    <style>
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fb;
+        }
+
+        header {
+            background-color: #0b5ed7;
+            color: white;
+            padding: 20px 40px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        .contenedor {
+            max-width: 900px;
+            margin: 30px auto;
+
+            background-color: white;
+
+            padding: 30px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                    0 3px 12px rgba(0,0,0,0.12);
+        }
+
+        h2 {
+            color: #0b5ed7;
+            margin-top: 0;
+        }
+
+        /* ==========================================
+           INDICADOR DE PROGRESO
+           ========================================== */
+
+        .progreso {
+            display: flex;
+            justify-content: space-between;
+
+            margin-bottom: 35px;
+        }
+
+        .paso-indicador {
+            flex: 1;
+            text-align: center;
+
+            position: relative;
+        }
+
+        .circulo {
+            width: 38px;
+            height: 38px;
+
+            margin: 0 auto 8px;
+
+            border-radius: 50%;
+
+            background-color: #ccc;
+            color: white;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-weight: bold;
+        }
+
+        .paso-indicador.activo .circulo {
+            background-color: #0b5ed7;
+        }
+
+        .paso-indicador.completado .circulo {
+            background-color: #198754;
+        }
+
+        .texto-paso {
+            font-size: 13px;
+            color: #555;
+        }
+
+
+        /* ==========================================
+           PASOS
+           ========================================== */
+
+        .paso {
+            display: none;
+        }
+
+        .paso.activo {
+            display: block;
+        }
+
+
+        .opciones {
+            display: grid;
+
+            grid-template-columns:
+                    repeat(auto-fit, minmax(220px, 1fr));
+
+            gap: 18px;
+
+            margin-top: 20px;
+        }
+
+
+        .opcion {
+            border: 2px solid #ddd;
+
+            border-radius: 10px;
+
+            padding: 20px;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+
+            background-color: white;
+        }
+
+        .opcion:hover {
+            border-color: #0b5ed7;
+
+            box-shadow:
+                    0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .opcion.seleccionada {
+            border-color: #0b5ed7;
+            background-color: #eef5ff;
+        }
+
+        .opcion h3 {
+            margin-top: 0;
+
+            color: #0b5ed7;
+        }
+
+
+        /* ==========================================
+           HORARIOS
+           ========================================== */
+
+        .horarios {
+            display: flex;
+            flex-wrap: wrap;
+
+            gap: 12px;
+
+            margin-top: 20px;
+        }
+
+        .horario {
+            border: 1px solid #aaa;
+
+            background-color: white;
+
+            padding: 12px 18px;
+
+            border-radius: 6px;
+
+            cursor: pointer;
+        }
+
+        .horario:hover {
+            border-color: #0b5ed7;
+        }
+
+        .horario.seleccionado {
+            background-color: #0b5ed7;
+            color: white;
+
+            border-color: #0b5ed7;
+        }
+
+
+        /* ==========================================
+           RESUMEN
+           ========================================== */
+
+        .resumen {
+            background-color: #f8f9fa;
+
+            padding: 20px;
+
+            border-radius: 8px;
+
+            margin-bottom: 25px;
+        }
+
+        .resumen p {
+            margin: 8px 0;
+        }
+
+
+        textarea {
+            width: 100%;
+
+            min-height: 130px;
+
+            box-sizing: border-box;
+
+            padding: 12px;
+
+            border: 1px solid #aaa;
+
+            border-radius: 6px;
+
+            resize: vertical;
+
+            font-family: Arial, sans-serif;
+
+            font-size: 15px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #0b5ed7;
+        }
+
+
+        .contador {
+            text-align: right;
+
+            color: #666;
+
+            font-size: 13px;
+
+            margin-top: 5px;
+        }
+
+
+        /* ==========================================
+           MENSAJES
+           ========================================== */
+
+        .mensaje {
+            margin-top: 18px;
+
+            min-height: 22px;
+
+            text-align: center;
+
+            font-weight: bold;
+        }
+
+
+        /* ==========================================
+           BOTONES
+           ========================================== */
+
+        .acciones {
+            display: flex;
+
+            justify-content: space-between;
+
+            margin-top: 30px;
+        }
+
+
+        button {
+            padding: 11px 20px;
+
+            border: none;
+
+            border-radius: 6px;
+
+            font-size: 15px;
+
+            cursor: pointer;
+        }
+
+
+        .btn-volver {
+            background-color: #6c757d;
+
+            color: white;
+        }
+
+
+        .btn-siguiente {
+            background-color: #0b5ed7;
+
+            color: white;
+        }
+
+
+        .btn-confirmar {
+            background-color: #198754;
+
+            color: white;
+        }
+
+
+        button:disabled {
+            background-color: #aaa;
+
+            cursor: not-allowed;
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+
+<header>
+
+    <h1>
+        Sistema Informático Hospitalario
+    </h1>
+
+</header>
+
+
+<div class="contenedor">
+
+    <h2>
+        Agendar Cita Médica
+    </h2>
+
+
+    <!-- ==========================================
+         PROGRESO
+         ========================================== -->
+
+    <div class="progreso">
+
+        <div class="paso-indicador activo"
+             id="indicador1">
+
+            <div class="circulo">
+                1
+            </div>
+
+            <div class="texto-paso">
+                Sucursal
+            </div>
+
+        </div>
+
+
+        <div class="paso-indicador"
+             id="indicador2">
+
+            <div class="circulo">
+                2
+            </div>
+
+            <div class="texto-paso">
+                Especialidad
+            </div>
+
+        </div>
+
+
+        <div class="paso-indicador"
+             id="indicador3">
+
+            <div class="circulo">
+                3
+            </div>
+
+            <div class="texto-paso">
+                Médico
+            </div>
+
+        </div>
+
+
+        <div class="paso-indicador"
+             id="indicador4">
+
+            <div class="circulo">
+                4
+            </div>
+
+            <div class="texto-paso">
+                Fecha / Hora
+            </div>
+
+        </div>
+
+
+        <div class="paso-indicador"
+             id="indicador5">
+
+            <div class="circulo">
+                5
+            </div>
+
+            <div class="texto-paso">
+                Confirmar
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         PASO 1
+         ========================================== -->
+
+    <div class="paso activo"
+         id="paso1">
+
+        <h3>
+            Paso 1 - Seleccione una sucursal
+        </h3>
+
+        <div
+                id="listaSucursales"
+                class="opciones">
+        </div>
+
+        <div
+                id="mensajeSucursal"
+                class="mensaje">
+        </div>
+
+        <div class="acciones">
+
+            <button
+                    type="button"
+                    class="btn-volver"
+                    onclick="volverDashboard()">
+
+                Cancelar
+
+            </button>
+
+
+            <button
+                    type="button"
+                    class="btn-siguiente"
+                    onclick="irPaso2()">
+
+                Siguiente
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         PASO 2
+         ========================================== -->
+
+    <div class="paso"
+         id="paso2">
+
+        <h3>
+            Paso 2 - Seleccione una especialidad
+        </h3>
+
+        <div
+                id="listaEspecialidades"
+                class="opciones">
+        </div>
+
+        <div
+                id="mensajeEspecialidad"
+                class="mensaje">
+        </div>
+
+
+        <div class="acciones">
+
+            <button
+                    type="button"
+                    class="btn-volver"
+                    onclick="volverPaso1()">
+
+                Volver
+
+            </button>
+
+
+            <button
+                    type="button"
+                    class="btn-siguiente"
+                    onclick="irPaso3()">
+
+                Siguiente
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         PASO 3
+         ========================================== -->
+
+    <div class="paso"
+         id="paso3">
+
+        <h3>
+            Paso 3 - Seleccione un médico
+        </h3>
+
+        <div
+                id="listaMedicos"
+                class="opciones">
+        </div>
+
+        <div
+                id="mensajeMedico"
+                class="mensaje">
+        </div>
+
+
+        <div class="acciones">
+
+            <button
+                    type="button"
+                    class="btn-volver"
+                    onclick="volverPaso2()">
+
+                Volver
+
+            </button>
+
+
+            <button
+                    type="button"
+                    class="btn-siguiente"
+                    onclick="irPaso4()">
+
+                Siguiente
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         PASO 4
+         ========================================== -->
+
+    <div class="paso"
+         id="paso4">
+
+        <h3>
+            Paso 4 - Seleccione fecha y hora
+        </h3>
+
+
+        <div
+                id="listaHorarios"
+                class="horarios">
+        </div>
+
+
+        <div
+                id="mensajeHorario"
+                class="mensaje">
+        </div>
+
+
+        <div class="acciones">
+
+            <button
+                    type="button"
+                    class="btn-volver"
+                    onclick="volverPaso3()">
+
+                Volver
+
+            </button>
+
+
+            <button
+                    type="button"
+                    class="btn-siguiente"
+                    onclick="irPaso5()">
+
+                Siguiente
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         PASO 5
+         ========================================== -->
+
+    <div class="paso"
+         id="paso5">
+
+        <h3>
+            Paso 5 - Confirmar Cita
+        </h3>
+
+
+        <div class="resumen">
+
+            <p>
+                <strong>Sucursal:</strong>
+
+                <span id="resumenSucursal">
+                </span>
+            </p>
+
+
+            <p>
+                <strong>Especialidad:</strong>
+
+                <span id="resumenEspecialidad">
+                </span>
+            </p>
+
+
+            <p>
+                <strong>Médico:</strong>
+
+                <span id="resumenMedico">
+                </span>
+            </p>
+
+
+            <p>
+                <strong>Fecha:</strong>
+
+                <span id="resumenFecha">
+                </span>
+            </p>
+
+
+            <p>
+                <strong>Hora:</strong>
+
+                <span id="resumenHora">
+                </span>
+            </p>
+
+        </div>
+
+
+        <label for="motivo">
+
+            <strong>
+                Motivo de la consulta
+            </strong>
+
+        </label>
+
+
+        <textarea
+                id="motivo"
+                maxlength="2000"
+                placeholder="Ingrese el motivo de la consulta..."
+                oninput="actualizarContadorMotivo()">
+        </textarea>
+
+
+        <div class="contador">
+
+            <span id="contadorMotivo">
+                0
+            </span>
+
+            / 2000 caracteres
+
+        </div>
+
+
+        <div
+                id="mensajeConfirmacion"
+                class="mensaje">
+        </div>
+
+
+        <div class="acciones">
+
+            <button
+                    type="button"
+                    class="btn-volver"
+                    onclick="volverPaso4()">
+
+                Volver
+
+            </button>
+
+
+            <button
+                    type="button"
+                    class="btn-confirmar"
+                    onclick="confirmarCita()">
+
+                Confirmar Cita
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // =====================================================
+    // VARIABLES
+    // =====================================================
+
+    let pasoActual = 1;
+
+    let sucursalSeleccionada = null;
+    let especialidadSeleccionada = null;
+    let medicoSeleccionado = null;
+    let horarioSeleccionado = null;
+
+
+    // =====================================================
+    // INICIAR
+    // =====================================================
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            cargarSucursales();
+
+        }
+    );
+
+
+    // =====================================================
+    // CAMBIAR PASO
+    // =====================================================
+
+    function mostrarPaso(numero) {
+
+        for (let i = 1; i <= 5; i++) {
+
+            document
+                .getElementById("paso" + i)
+                .classList
+                .remove("activo");
+
+
+            const indicador =
+                document.getElementById(
+                    "indicador" + i
+                );
+
+
+            indicador.classList
+                .remove(
+                    "activo",
+                    "completado"
+                );
+
+
+            if (i < numero) {
+
+                indicador.classList
+                    .add("completado");
+
+            } else if (i === numero) {
+
+                indicador.classList
+                    .add("activo");
+            }
+        }
+
+
+        document
+            .getElementById(
+                "paso" + numero
+            )
+            .classList
+            .add("activo");
+
+
+        pasoActual = numero;
+    }
+
+
+    // =====================================================
+    // PASO 1
+    // =====================================================
+
+    async function cargarSucursales() {
+
+        const contenedor =
+            document.getElementById(
+                "listaSucursales"
+            );
+
+
+        contenedor.innerHTML =
+            "Cargando sucursales...";
+
+
+        try {
+
+            const respuesta =
+                await fetch(
+                    "/api/citas/sucursales"
+                );
+
+
+            const sucursales =
+                await respuesta.json();
+
+
+            contenedor.innerHTML = "";
+
+
+            sucursales.forEach(
+                sucursal => {
+
+                    const div =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    div.className =
+                        "opcion";
+
+
+                    div.innerHTML =
+
+                        "<h3>" +
+                        sucursal.nombre +
+                        "</h3>" +
+
+                        "<p>" +
+                        sucursal.direccion +
+                        "</p>";
+
+
+                    div.onclick =
+                        function () {
+
+                            document
+                                .querySelectorAll(
+                                    "#listaSucursales .opcion"
+                                )
+                                .forEach(
+                                    elemento =>
+                                        elemento.classList
+                                            .remove(
+                                                "seleccionada"
+                                            )
+                                );
+
+
+                            div.classList
+                                .add(
+                                    "seleccionada"
+                                );
+
+
+                            sucursalSeleccionada =
+                                sucursal;
+
+                        };
+
+
+                    contenedor.appendChild(
+                        div
+                    );
+
+                }
+            );
+
+
+        } catch (error) {
+
+            contenedor.innerHTML = "";
+
+            document
+                .getElementById(
+                    "mensajeSucursal"
+                )
+                .textContent =
+                "No fue posible cargar las sucursales.";
+        }
+    }
+
+
+    async function irPaso2() {
+
+        if (
+            sucursalSeleccionada === null
+        ) {
+
+            document
+                .getElementById(
+                    "mensajeSucursal"
+                )
+                .textContent =
+                "Debe seleccionar una sucursal.";
+
+            return;
+        }
+
+
+        document
+            .getElementById(
+                "mensajeSucursal"
+            )
+            .textContent = "";
+
+
+        especialidadSeleccionada = null;
+        medicoSeleccionado = null;
+        horarioSeleccionado = null;
+
+
+        await cargarEspecialidades();
+
+
+        mostrarPaso(2);
+    }
+
+
+    // =====================================================
+    // PASO 2
+    // =====================================================
+
+    async function cargarEspecialidades() {
+
+        const contenedor =
+            document.getElementById(
+                "listaEspecialidades"
+            );
+
+
+        contenedor.innerHTML =
+            "Cargando especialidades...";
+
+
+        try {
+
+            const respuesta =
+                await fetch(
+                    "/api/citas/especialidades?sucursalId=" +
+                    sucursalSeleccionada.id
+                );
+
+
+            const especialidades =
+                await respuesta.json();
+
+
+            contenedor.innerHTML = "";
+
+
+            if (
+                especialidades.length === 0
+            ) {
+
+                document
+                    .getElementById(
+                        "mensajeEspecialidad"
+                    )
+                    .textContent =
+
+                    "No hay especialidades disponibles para la sucursal " +
+                    sucursalSeleccionada.nombre +
+                    ". Seleccione otra sucursal.";
+
+
+                return;
+            }
+
+
+            document
+                .getElementById(
+                    "mensajeEspecialidad"
+                )
+                .textContent = "";
+
+
+            especialidades.forEach(
+                especialidad => {
+
+                    const div =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    div.className =
+                        "opcion";
+
+
+                    div.innerHTML =
+                        "<h3>" +
+                        especialidad.nombre +
+                        "</h3>";
+
+
+                    div.onclick =
+                        function () {
+
+                            document
+                                .querySelectorAll(
+                                    "#listaEspecialidades .opcion"
+                                )
+                                .forEach(
+                                    elemento =>
+                                        elemento.classList
+                                            .remove(
+                                                "seleccionada"
+                                            )
+                                );
+
+
+                            div.classList
+                                .add(
+                                    "seleccionada"
+                                );
+
+
+                            especialidadSeleccionada =
+                                especialidad;
+
+                        };
+
+
+                    contenedor.appendChild(
+                        div
+                    );
+
+                }
+            );
+
+
+        } catch (error) {
+
+            contenedor.innerHTML = "";
+
+            document
+                .getElementById(
+                    "mensajeEspecialidad"
+                )
+                .textContent =
+                "No fue posible cargar las especialidades.";
+        }
+    }
+
+
+    async function irPaso3() {
+
+        if (
+            especialidadSeleccionada === null
+        ) {
+
+            document
+                .getElementById(
+                    "mensajeEspecialidad"
+                )
+                .textContent =
+                "Debe seleccionar una especialidad.";
+
+            return;
+        }
+
+
+        medicoSeleccionado = null;
+        horarioSeleccionado = null;
+
+
+        await cargarMedicos();
+
+
+        mostrarPaso(3);
+    }
+
+
+    // =====================================================
+    // PASO 3
+    // =====================================================
+
+    async function cargarMedicos() {
+
+        const contenedor =
+            document.getElementById(
+                "listaMedicos"
+            );
+
+
+        contenedor.innerHTML =
+            "Cargando médicos...";
+
+
+        try {
+
+            const respuesta =
+                await fetch(
+                    "/api/citas/medicos?sucursalId=" +
+                    sucursalSeleccionada.id +
+                    "&especialidadId=" +
+                    especialidadSeleccionada.id
+                );
+
+
+            const medicos =
+                await respuesta.json();
+
+
+            contenedor.innerHTML = "";
+
+
+            if (medicos.length === 0) {
+
+                document
+                    .getElementById(
+                        "mensajeMedico"
+                    )
+                    .textContent =
+
+                    "No se encontraron horarios disponibles para la especialidad " +
+                    especialidadSeleccionada.nombre +
+                    " en la Sede " +
+                    sucursalSeleccionada.nombre +
+                    ". Por favor, seleccione otra especialidad o sede.";
+
+
+                return;
+            }
+
+
+            document
+                .getElementById(
+                    "mensajeMedico"
+                )
+                .textContent = "";
+
+
+            medicos.forEach(
+                medico => {
+
+                    const div =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    div.className =
+                        "opcion";
+
+
+                    div.innerHTML =
+                        "<h3>" +
+                        medico.nombre +
+                        "</h3>";
+
+
+                    div.onclick =
+                        function () {
+
+                            document
+                                .querySelectorAll(
+                                    "#listaMedicos .opcion"
+                                )
+                                .forEach(
+                                    elemento =>
+                                        elemento.classList
+                                            .remove(
+                                                "seleccionada"
+                                            )
+                                );
+
+
+                            div.classList
+                                .add(
+                                    "seleccionada"
+                                );
+
+
+                            medicoSeleccionado =
+                                medico;
+
+                        };
+
+
+                    contenedor.appendChild(
+                        div
+                    );
+
+                }
+            );
+
+
+        } catch (error) {
+
+            contenedor.innerHTML = "";
+
+            document
+                .getElementById(
+                    "mensajeMedico"
+                )
+                .textContent =
+                "No fue posible cargar los médicos.";
+        }
+    }
+
+
+    async function irPaso4() {
+
+        if (
+            medicoSeleccionado === null
+        ) {
+
+            document
+                .getElementById(
+                    "mensajeMedico"
+                )
+                .textContent =
+                "Debe seleccionar un médico.";
+
+            return;
+        }
+
+
+        horarioSeleccionado = null;
+
+
+        await cargarHorarios();
+
+
+        mostrarPaso(4);
+    }
+
+
+    // =====================================================
+    // PASO 4
+    // =====================================================
+
+    async function cargarHorarios() {
+
+        const contenedor =
+            document.getElementById(
+                "listaHorarios"
+            );
+
+
+        contenedor.innerHTML =
+            "Cargando horarios...";
+
+
+        try {
+
+            const respuesta =
+                await fetch(
+                    "/api/citas/horarios?medicoId=" +
+                    medicoSeleccionado.id
+                );
+
+
+            const horarios =
+                await respuesta.json();
+
+
+            contenedor.innerHTML = "";
+
+
+            if (
+                horarios.length === 0
+            ) {
+
+                document
+                    .getElementById(
+                        "mensajeHorario"
+                    )
+                    .textContent =
+
+                    "No se encontraron horarios disponibles para la especialidad " +
+                    especialidadSeleccionada.nombre +
+                    " en la Sede " +
+                    sucursalSeleccionada.nombre +
+                    ". Por favor, seleccione otra especialidad o sede.";
+
+
+                return;
+            }
+
+
+            document
+                .getElementById(
+                    "mensajeHorario"
+                )
+                .textContent = "";
+
+
+            horarios.forEach(
+                horario => {
+
+                    const boton =
+                        document.createElement(
+                            "button"
+                        );
+
+
+                    boton.type =
+                        "button";
+
+
+                    boton.className =
+                        "horario";
+
+
+                    boton.textContent =
+                        horario.fecha +
+                        " - " +
+                        horario.hora;
+
+
+                    boton.onclick =
+                        function () {
+
+                            document
+                                .querySelectorAll(
+                                    ".horario"
+                                )
+                                .forEach(
+                                    elemento =>
+                                        elemento.classList
+                                            .remove(
+                                                "seleccionado"
+                                            )
+                                );
+
+
+                            boton.classList
+                                .add(
+                                    "seleccionado"
+                                );
+
+
+                            horarioSeleccionado =
+                                horario;
+
+                        };
+
+
+                    contenedor.appendChild(
+                        boton
+                    );
+
+                }
+            );
+
+
+        } catch (error) {
+
+            contenedor.innerHTML = "";
+
+            document
+                .getElementById(
+                    "mensajeHorario"
+                )
+                .textContent =
+                "No fue posible cargar los horarios.";
+        }
+    }
+
+
+    function irPaso5() {
+
+        if (
+            horarioSeleccionado === null
+        ) {
+
+            document
+                .getElementById(
+                    "mensajeHorario"
+                )
+                .textContent =
+                "Debe seleccionar una fecha y hora.";
+
+            return;
+        }
+
+
+        document.getElementById(
+            "resumenSucursal"
+        ).textContent =
+            sucursalSeleccionada.nombre;
+
+
+        document.getElementById(
+            "resumenEspecialidad"
+        ).textContent =
+            especialidadSeleccionada.nombre;
+
+
+        document.getElementById(
+            "resumenMedico"
+        ).textContent =
+            medicoSeleccionado.nombre;
+
+
+        document.getElementById(
+            "resumenFecha"
+        ).textContent =
+            horarioSeleccionado.fecha;
+
+
+        document.getElementById(
+            "resumenHora"
+        ).textContent =
+            horarioSeleccionado.hora;
+
+
+        mostrarPaso(5);
+    }
+
+
+    // =====================================================
+    // CONFIRMAR CITA
+    // =====================================================
+
+    function actualizarContadorMotivo() {
+
+        const motivo =
+            document.getElementById(
+                "motivo"
+            ).value;
+
+
+        document.getElementById(
+            "contadorMotivo"
+        ).textContent =
+            motivo.length;
+    }
+
+
+    async function confirmarCita() {
+
+        const motivo =
+            document.getElementById(
+                "motivo"
+            ).value.trim();
+
+
+        const mensaje =
+            document.getElementById(
+                "mensajeConfirmacion"
+            );
+
+
+        if (
+            motivo.length < 10 ||
+            motivo.length > 2000
+        ) {
+
+            mensaje.style.color =
+                "#dc3545";
+
+            mensaje.textContent =
+                "El motivo de la consulta debe contener entre 10 y 2000 caracteres.";
+
+            return;
+        }
+
+
+        mensaje.style.color =
+            "#666";
+
+        mensaje.textContent =
+            "Registrando cita...";
+
+
+        try {
+
+            const respuesta =
+                await fetch(
+                    "/api/citas/confirmar",
+                    {
+
+                        method: "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+
+                        },
+
+                        body:
+                            JSON.stringify({
+
+                                sucursalId:
+                                sucursalSeleccionada.id,
+
+                                especialidadId:
+                                especialidadSeleccionada.id,
+
+                                medicoId:
+                                medicoSeleccionado.id,
+
+                                horarioId:
+                                horarioSeleccionado.id,
+
+                                motivo:
+                                motivo
+
+                            })
+
+                    }
+                );
+
+
+            const resultado =
+                await respuesta.json();
+
+
+            if (
+                resultado.estado !== "OK"
+            ) {
+
+                mensaje.style.color =
+                    "#dc3545";
+
+                mensaje.textContent =
+                    resultado.mensaje;
+
+                return;
+            }
+
+
+            mensaje.style.color =
+                "green";
+
+            mensaje.textContent =
+                resultado.mensaje;
+
+
+            // CU-04 todavía no está implementado.
+            // Cuando lo construyamos activaremos:
+            //
+            window.location.href =
+                 "/paciente/pago?citaId=" +
+                 resultado.citaId;
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            mensaje.style.color =
+                "#dc3545";
+
+            mensaje.textContent =
+                "No se pudo conectar con el servidor.";
+        }
+    }
+
+
+    // =====================================================
+    // VOLVER
+    // =====================================================
+
+    function volverPaso1() {
+
+        especialidadSeleccionada = null;
+        medicoSeleccionado = null;
+        horarioSeleccionado = null;
+
+        mostrarPaso(1);
+    }
+
+
+    function volverPaso2() {
+
+        medicoSeleccionado = null;
+        horarioSeleccionado = null;
+
+        mostrarPaso(2);
+    }
+
+
+    function volverPaso3() {
+
+        horarioSeleccionado = null;
+
+        mostrarPaso(3);
+    }
+
+
+    function volverPaso4() {
+
+        mostrarPaso(4);
+    }
+
+
+    function volverDashboard() {
+
+        window.location.href =
+            "/paciente/dashboard";
+    }
+
+</script>
+
+</body>
+</html>

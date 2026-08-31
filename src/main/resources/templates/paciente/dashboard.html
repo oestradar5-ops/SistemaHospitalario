@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Dashboard del Paciente</title>
+
+  <style>
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fb;
+    }
+
+    header {
+      background-color: #0b5ed7;
+      color: white;
+      padding: 20px 40px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+    }
+
+    .contenedor {
+      padding: 40px;
+    }
+
+    .bienvenida {
+      background-color: white;
+      padding: 25px;
+      border-radius: 10px;
+
+      box-shadow:
+              0 2px 8px rgba(0,0,0,0.1);
+
+      margin-bottom: 30px;
+    }
+
+    .opciones {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tarjeta {
+      background-color: white;
+
+      width: 240px;
+      padding: 25px;
+
+      border-radius: 10px;
+
+      box-shadow:
+              0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .tarjeta h3 {
+      color: #0b5ed7;
+    }
+
+    .boton {
+      display: inline-block;
+
+      margin-top: 15px;
+
+      background-color: #0b5ed7;
+      color: white;
+
+      padding: 10px 18px;
+
+      border-radius: 6px;
+
+      text-decoration: none;
+    }
+
+    .cerrar {
+      color: white;
+      text-decoration: none;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<header>
+
+  <h1>
+    Portal del Paciente
+  </h1>
+
+  <a class="cerrar"
+     href="/logout">
+    Cerrar Sesión
+  </a>
+
+</header>
+
+
+<div class="contenedor">
+
+  <div class="bienvenida">
+
+    <h2>
+      Bienvenido,
+      <span th:text="${usuario}">
+                paciente
+            </span>
+    </h2>
+
+    <p>
+      Ha iniciado sesión correctamente
+      en el Sistema Informático Hospitalario.
+    </p>
+
+  </div>
+
+
+  <div class="opciones">
+
+    <div class="tarjeta">
+
+      <h3>
+        Agendar Cita
+      </h3>
+
+      <p>
+        Consulte las especialidades
+        disponibles y programe una cita.
+      </p>
+
+      <a href="/paciente/citas/agendar"
+         class="boton">
+        Agendar
+      </a>
+
+    </div>
+
+
+    <div class="tarjeta">
+
+      <h3>
+        Mis Citas
+      </h3>
+
+      <p>
+        Consulte sus citas médicas
+        registradas.
+      </p>
+
+      <a href="#"
+         class="boton">
+        Ver citas
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

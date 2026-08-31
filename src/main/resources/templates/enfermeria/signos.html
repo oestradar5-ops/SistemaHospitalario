@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Signos Vitales - HIS</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #eef2f7;
+      color: #1f2937;
+    }
+
+    header {
+      background-color: #0b5ed7;
+      color: white;
+
+      padding: 22px 35px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+    }
+
+    header a {
+      color: white;
+      text-decoration: none;
+    }
+
+    main {
+      max-width: 950px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .contenedor {
+      background-color: white;
+
+      border-radius: 12px;
+
+      padding: 28px;
+
+      box-shadow:
+              0 3px 12px rgba(0,0,0,0.10);
+    }
+
+    .contexto {
+      background-color: #f8fafc;
+
+      padding: 20px;
+
+      border-radius: 10px;
+
+      margin-bottom: 25px;
+    }
+
+    .contexto h2 {
+      margin-top: 0;
+      color: #0b5ed7;
+    }
+
+    .datos-contexto {
+      display: grid;
+
+      grid-template-columns:
+                    repeat(2, 1fr);
+
+      gap: 15px;
+    }
+
+    .dato {
+      background-color: white;
+
+      padding: 12px;
+
+      border-radius: 7px;
+
+      border: 1px solid #e5e7eb;
+    }
+
+    .dato strong {
+      display: block;
+
+      color: #475569;
+
+      margin-bottom: 5px;
+    }
+
+    .formulario {
+      display: grid;
+
+      grid-template-columns:
+                    repeat(2, 1fr);
+
+      gap: 20px;
+    }
+
+    .campo {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .campo label {
+      font-weight: bold;
+
+      margin-bottom: 7px;
+    }
+
+    .campo input {
+      padding: 12px;
+
+      border: 1px solid #aaa;
+
+      border-radius: 6px;
+
+      font-size: 16px;
+    }
+
+    .campo input:focus {
+      outline: none;
+      border-color: #0b5ed7;
+    }
+
+    .campo-error {
+      border-color: #dc3545 !important;
+    }
+
+    .error {
+      color: #b02a37;
+
+      font-size: 13px;
+
+      margin-top: 5px;
+
+      min-height: 16px;
+    }
+
+    .alertas {
+      margin-top: 25px;
+    }
+
+    .alerta {
+      background-color: #fff3cd;
+
+      color: #664d03;
+
+      border-left: 5px solid #ffc107;
+
+      padding: 12px 15px;
+
+      border-radius: 6px;
+
+      margin-bottom: 10px;
+    }
+
+    .emergencia-box {
+      margin-top: 25px;
+
+      padding: 18px;
+
+      border-radius: 8px;
+
+      background-color: #fff5f5;
+
+      border: 1px solid #f1aeb5;
+    }
+
+    .emergencia-box label {
+      font-weight: bold;
+    }
+
+    .mensaje {
+      margin-top: 20px;
+
+      padding: 14px;
+
+      border-radius: 7px;
+
+      display: none;
+    }
+
+    .mensaje.exito {
+      display: block;
+
+      background-color: #d1e7dd;
+
+      color: #0f5132;
+    }
+
+    .mensaje.error-general {
+      display: block;
+
+      background-color: #f8d7da;
+
+      color: #842029;
+    }
+
+    .acciones {
+      margin-top: 30px;
+
+      display: flex;
+
+      justify-content: space-between;
+
+      gap: 15px;
+    }
+
+    button,
+    .boton {
+      border: none;
+
+      border-radius: 6px;
+
+      padding: 12px 18px;
+
+      font-size: 15px;
+
+      cursor: pointer;
+
+      text-decoration: none;
+
+      display: inline-block;
+    }
+
+    .btn-volver {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-guardar {
+      background-color: #198754;
+      color: white;
+    }
+
+    .btn-guardar:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 700px) {
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .datos-contexto,
+      .formulario {
+        grid-template-columns: 1fr;
+      }
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+  <div>
+
+    <h1>
+      Toma de Signos Vitales
+    </h1>
+
+  </div>
+
+
+  <div>
+
+    Usuario:
+    <strong th:text="${usuarioActual}">
+      enferme01
+    </strong>
+
+    &nbsp; | &nbsp;
+
+    <a href="/enfermeria/logout">
+      Cerrar sesión
+    </a>
+
+  </div>
+
+</header>
+
+
+<main>
+
+
+  <div class="contenedor">
+
+
+    <!-- =========================================
+         CONTEXTO DE LA CITA
+         ========================================= -->
+
+    <section class="contexto">
+
+      <h2>
+        Datos del Paciente
+      </h2>
+
+
+      <div class="datos-contexto">
+
+        <div class="dato">
+
+          <strong>
+            No. de Cita
+          </strong>
+
+          <span
+                  id="citaId"
+                  th:text="${cita.id}">
+                        1
+                    </span>
+
+        </div>
+
+
+        <div class="dato">
+
+          <strong>
+            Paciente
+          </strong>
+
+          <span
+                  th:text="${cita.paciente.nombreCompleto}">
+                        Paciente
+                    </span>
+
+        </div>
+
+
+        <div class="dato">
+
+          <strong>
+            Especialidad
+          </strong>
+
+          <span
+                  th:text="${cita.especialidad.nombre}">
+                        Cardiología
+                    </span>
+
+        </div>
+
+
+        <div class="dato">
+
+          <strong>
+            Médico
+          </strong>
+
+          <span
+                  th:text="${cita.medico.usuario.nombreCompleto}">
+                        Médico
+                    </span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         FORMULARIO
+         ========================================= -->
+
+    <section>
+
+      <h2>
+        Registrar Signos Vitales
+      </h2>
+
+
+      <div class="formulario">
+
+
+        <!-- PRESIÓN SISTÓLICA -->
+
+        <div class="campo">
+
+          <label for="sistolica">
+            Presión Sistólica (mmHg)
+          </label>
+
+          <input
+                  id="sistolica"
+                  type="number"
+                  min="60"
+                  max="250"
+                  placeholder="Ej. 120"
+                  oninput="actualizarAlertas()">
+
+          <div
+                  id="errorSistolica"
+                  class="error">
+          </div>
+
+        </div>
+
+
+        <!-- PRESIÓN DIASTÓLICA -->
+
+        <div class="campo">
+
+          <label for="diastolica">
+            Presión Diastólica (mmHg)
+          </label>
+
+          <input
+                  id="diastolica"
+                  type="number"
+                  min="40"
+                  max="150"
+                  placeholder="Ej. 80"
+                  oninput="actualizarAlertas()">
+
+          <div
+                  id="errorDiastolica"
+                  class="error">
+          </div>
+
+        </div>
+
+
+        <!-- TEMPERATURA -->
+
+        <div class="campo">
+
+          <label for="temperatura">
+            Temperatura (°C)
+          </label>
+
+          <input
+                  id="temperatura"
+                  type="number"
+                  min="34"
+                  max="42"
+                  step="0.1"
+                  placeholder="Ej. 36.5"
+                  oninput="actualizarAlertas()">
+
+          <div
+                  id="errorTemperatura"
+                  class="error">
+          </div>
+
+        </div>
+
+
+        <!-- PESO -->
+
+        <div class="campo">
+
+          <label for="peso">
+            Peso (kg)
+          </label>
+
+          <input
+                  id="peso"
+                  type="number"
+                  min="0.5"
+                  max="300"
+                  step="0.01"
+                  placeholder="Ej. 70.50">
+
+          <div
+                  id="errorPeso"
+                  class="error">
+          </div>
+
+        </div>
+
+
+        <!-- TALLA -->
+
+        <div class="campo">
+
+          <label for="talla">
+            Talla (cm)
+          </label>
+
+          <input
+                  id="talla"
+                  type="number"
+                  min="30"
+                  max="250"
+                  step="0.01"
+                  placeholder="Ej. 170.00">
+
+          <div
+                  id="errorTalla"
+                  class="error">
+          </div>
+
+        </div>
+
+
+        <!-- FRECUENCIA CARDÍACA -->
+
+        <div class="campo">
+
+          <label for="frecuencia">
+            Frecuencia Cardíaca (lpm)
+          </label>
+
+          <input
+                  id="frecuencia"
+                  type="number"
+                  min="30"
+                  max="220"
+                  placeholder="Ej. 75"
+                  oninput="actualizarAlertas()">
+
+          <div
+                  id="errorFrecuencia"
+                  class="error">
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         ALERTAS CLÍNICAS
+         ========================================= -->
+
+    <section class="alertas">
+
+      <div id="listaAlertas">
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         EMERGENCIA
+         ========================================= -->
+
+    <section class="emergencia-box">
+
+      <label>
+
+        <input
+                type="checkbox"
+                id="emergencia">
+
+        ¿Es Emergencia?
+
+      </label>
+
+      <p>
+        Marque esta opción únicamente si
+        el paciente requiere atención médica inmediata.
+      </p>
+
+    </section>
+
+
+    <div
+            id="mensaje"
+            class="mensaje">
+    </div>
+
+
+    <!-- =========================================
+         BOTONES
+         ========================================= -->
+
+    <div class="acciones">
+
+      <a
+              href="/enfermeria"
+              class="boton btn-volver">
+
+        Volver
+
+      </a>
+
+
+      <button
+              id="btnGuardar"
+              type="button"
+              class="btn-guardar"
+              onclick="registrarSignos()">
+
+        Registrar Signos Vitales
+
+      </button>
+
+    </div>
+
+
+  </div>
+
+
+</main>
+
+
+<script>
+
+  // ==========================================
+  // ALERTAS CLÍNICAS EN TIEMPO REAL
+  // ==========================================
+
+  function actualizarAlertas() {
+
+    const alertas = [];
+
+
+    const sistolica =
+            Number(
+                    document
+                            .getElementById("sistolica")
+                            .value
+            );
+
+
+    const diastolica =
+            Number(
+                    document
+                            .getElementById("diastolica")
+                            .value
+            );
+
+
+    const temperatura =
+            Number(
+                    document
+                            .getElementById("temperatura")
+                            .value
+            );
+
+
+    const frecuencia =
+            Number(
+                    document
+                            .getElementById("frecuencia")
+                            .value
+            );
+
+
+    // Presión normal:
+    // 90/60 a 140/90
+
+    if (
+            document.getElementById("sistolica").value !== "" &&
+            (
+                    sistolica < 90 ||
+                    sistolica > 140
+            )
+    ) {
+
+      alertas.push(
+              "Presión arterial fuera de rango normal. " +
+              "Sistólica esperada: 90 a 140 mmHg."
+      );
+    }
+
+
+    if (
+            document.getElementById("diastolica").value !== "" &&
+            (
+                    diastolica < 60 ||
+                    diastolica > 90
+            )
+    ) {
+
+      alertas.push(
+              "Presión arterial fuera de rango normal. " +
+              "Diastólica esperada: 60 a 90 mmHg."
+      );
+    }
+
+
+    // Temperatura normal:
+    // 36.0 a 37.5
+
+    if (
+            document.getElementById("temperatura").value !== "" &&
+            (
+                    temperatura < 36 ||
+                    temperatura > 37.5
+            )
+    ) {
+
+      alertas.push(
+              "Temperatura fuera de rango normal. " +
+              "Rango esperado: 36.0 a 37.5 °C."
+      );
+    }
+
+
+    // Frecuencia normal:
+    // 60 a 100
+
+    if (
+            document.getElementById("frecuencia").value !== "" &&
+            (
+                    frecuencia < 60 ||
+                    frecuencia > 100
+            )
+    ) {
+
+      alertas.push(
+              "Frecuencia cardíaca fuera de rango normal. " +
+              "Rango esperado: 60 a 100 lpm."
+      );
+    }
+
+
+    const contenedor =
+            document.getElementById(
+                    "listaAlertas"
+            );
+
+
+    if (alertas.length === 0) {
+
+      contenedor.innerHTML = "";
+
+      return;
+    }
+
+
+    contenedor.innerHTML =
+            alertas
+                    .map(
+                            alerta =>
+                                    `
+                        <div class="alerta">
+                            ⚠️ ${alerta}
+                        </div>
+                        `
+                    )
+                    .join("");
+  }
+
+
+  // ==========================================
+  // LIMPIAR ERRORES
+  // ==========================================
+
+  function limpiarErrores() {
+
+    const campos = [
+      "sistolica",
+      "diastolica",
+      "temperatura",
+      "peso",
+      "talla",
+      "frecuencia"
+    ];
+
+
+    campos.forEach(
+            id => {
+
+              document
+                      .getElementById(id)
+                      .classList
+                      .remove(
+                              "campo-error"
+                      );
+            }
+    );
+
+
+    document
+            .getElementById(
+                    "errorSistolica"
+            )
+            .textContent = "";
+
+
+    document
+            .getElementById(
+                    "errorDiastolica"
+            )
+            .textContent = "";
+
+
+    document
+            .getElementById(
+                    "errorTemperatura"
+            )
+            .textContent = "";
+
+
+    document
+            .getElementById(
+                    "errorPeso"
+            )
+            .textContent = "";
+
+
+    document
+            .getElementById(
+                    "errorTalla"
+            )
+            .textContent = "";
+
+
+    document
+            .getElementById(
+                    "errorFrecuencia"
+            )
+            .textContent = "";
+  }
+
+
+  // ==========================================
+  // MOSTRAR ERROR DE CAMPO
+  // ==========================================
+
+  function mostrarErrorCampo(
+          campo,
+          mensaje
+  ) {
+
+    const mapa = {
+
+      presionSistolica: {
+        input: "sistolica",
+        error: "errorSistolica"
+      },
+
+      presionDiastolica: {
+        input: "diastolica",
+        error: "errorDiastolica"
+      },
+
+      temperatura: {
+        input: "temperatura",
+        error: "errorTemperatura"
+      },
+
+      peso: {
+        input: "peso",
+        error: "errorPeso"
+      },
+
+      talla: {
+        input: "talla",
+        error: "errorTalla"
+      },
+
+      frecuenciaCardiaca: {
+        input: "frecuencia",
+        error: "errorFrecuencia"
+      }
+    };
+
+
+    const datos =
+            mapa[campo];
+
+
+    if (!datos) {
+      return;
+    }
+
+
+    document
+            .getElementById(
+                    datos.input
+            )
+            .classList
+            .add(
+                    "campo-error"
+            );
+
+
+    document
+            .getElementById(
+                    datos.error
+            )
+            .textContent =
+            mensaje;
+  }
+
+
+  // ==========================================
+  // REGISTRAR SIGNOS
+  // ==========================================
+
+  async function registrarSignos() {
+
+    limpiarErrores();
+
+
+    const mensaje =
+            document.getElementById(
+                    "mensaje"
+            );
+
+
+    const boton =
+            document.getElementById(
+                    "btnGuardar"
+            );
+
+
+    const citaId =
+            Number(
+                    document
+                            .getElementById("citaId")
+                            .textContent
+                            .trim()
+            );
+
+
+    const datos = {
+
+      presionSistolica:
+      document
+              .getElementById(
+                      "sistolica"
+              )
+              .value,
+
+      presionDiastolica:
+      document
+              .getElementById(
+                      "diastolica"
+              )
+              .value,
+
+      temperatura:
+      document
+              .getElementById(
+                      "temperatura"
+              )
+              .value,
+
+      peso:
+      document
+              .getElementById(
+                      "peso"
+              )
+              .value,
+
+      talla:
+      document
+              .getElementById(
+                      "talla"
+              )
+              .value,
+
+      frecuenciaCardiaca:
+      document
+              .getElementById(
+                      "frecuencia"
+              )
+              .value,
+
+      esEmergencia:
+      document
+              .getElementById(
+                      "emergencia"
+              )
+              .checked
+    };
+
+
+    boton.disabled = true;
+
+    boton.textContent =
+            "Registrando...";
+
+
+    try {
+
+      const respuesta =
+              await fetch(
+                      "/api/enfermeria/signos/" +
+                      citaId,
+                      {
+                        method: "POST",
+
+                        headers: {
+                          "Content-Type":
+                                  "application/json"
+                        },
+
+                        body:
+                                JSON.stringify(
+                                        datos
+                                )
+                      }
+              );
+
+
+      const resultado =
+              await respuesta.json();
+
+
+      if (
+              resultado.estado !== "OK"
+      ) {
+
+        if (resultado.campo) {
+
+          mostrarErrorCampo(
+                  resultado.campo,
+                  resultado.mensaje
+          );
+        }
+
+
+        mensaje.className =
+                "mensaje error-general";
+
+
+        mensaje.textContent =
+                resultado.mensaje;
+
+
+        boton.disabled = false;
+
+        boton.textContent =
+                "Registrar Signos Vitales";
+
+
+        return;
+      }
+
+
+      mensaje.className =
+              "mensaje exito";
+
+
+      mensaje.textContent =
+              resultado.mensaje;
+
+
+      boton.textContent =
+              "Registrado correctamente";
+
+
+      setTimeout(
+              function () {
+
+                window.location.href =
+                        "/enfermeria";
+
+              },
+              2500
+      );
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+
+      mensaje.className =
+              "mensaje error-general";
+
+
+      mensaje.textContent =
+              "No fue posible registrar los signos vitales.";
+
+
+      boton.disabled = false;
+
+
+      boton.textContent =
+              "Registrar Signos Vitales";
+    }
+  }
+
+</script>
+
+
+</body>
+</html>

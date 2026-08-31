@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Informático Hospitalario</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fb;
+            color: #222;
+        }
+
+        header {
+            background-color: #0b5ed7;
+            color: white;
+            padding: 20px 40px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        nav {
+            margin-top: 10px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+        }
+
+        .hero {
+            padding: 60px 40px;
+            background-color: white;
+        }
+
+        .hero h2 {
+            color: #0b5ed7;
+            font-size: 34px;
+        }
+
+        .btn-principal {
+            background-color: #0b5ed7;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn-principal:hover {
+            background-color: #084298;
+        }
+
+        .seccion {
+            padding: 40px;
+        }
+
+        .tarjetas {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tarjeta {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            width: 220px;
+        }
+
+        footer {
+            background-color: #0b5ed7;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        /* MODAL */
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-contenido {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+        }
+
+        .modal-contenido h2 {
+            margin-top: 0;
+            color: #0b5ed7;
+        }
+
+        .campo {
+            margin-top: 20px;
+        }
+
+        .campo label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .campo input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #aaa;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .contador {
+            font-size: 13px;
+            color: #666;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .mensaje-error {
+            color: #b02a37;
+            margin-top: 10px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .acciones {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-cancelar {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-cancelar:hover {
+            background-color: #5c636a;
+        }
+
+        .btn-verificar {
+            background-color: #198754;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-verificar:hover {
+            background-color: #157347;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Sistema Informático Hospitalario</h1>
+
+    <nav>
+        <a href="#servicios">Servicios</a>
+        <a href="#especialidades">Especialidades</a>
+        <a href="#horarios">Horarios</a>
+        <a href="#ubicacion">Ubicación</a>
+    </nav>
+</header>
+
+<section class="hero">
+    <h2>Bienvenido a nuestro Hospital</h2>
+
+    <p>
+        Consulte nuestros servicios, especialidades, ubicación
+        y horarios de atención desde nuestro portal web.
+    </p>
+
+    <button type="button"
+            class="btn-principal"
+            onclick="abrirModal()">
+        Agendar Cita
+    </button>
+</section>
+
+<section class="seccion" id="servicios">
+    <h2>Servicios</h2>
+
+    <div class="tarjetas">
+
+        <div class="tarjeta">
+            <h3>Consulta médica</h3>
+            <p>Atención médica para pacientes externos.</p>
+        </div>
+
+        <div class="tarjeta">
+            <h3>Emergencias</h3>
+            <p>Servicio de atención de emergencias las 24 horas.</p>
+        </div>
+
+        <div class="tarjeta">
+            <h3>Laboratorio</h3>
+            <p>Servicios de análisis y diagnóstico clínico.</p>
+        </div>
+
+        <div class="tarjeta">
+            <h3>Farmacia</h3>
+            <p>Despacho de medicamentos para pacientes.</p>
+        </div>
+
+    </div>
+</section>
+
+<section class="seccion" id="especialidades">
+    <h2>Especialidades</h2>
+
+    <div class="tarjetas">
+        <div class="tarjeta">Medicina General</div>
+        <div class="tarjeta">Pediatría</div>
+        <div class="tarjeta">Cardiología</div>
+        <div class="tarjeta">Ginecología</div>
+    </div>
+</section>
+
+<section class="seccion" id="horarios">
+    <h2>Horarios</h2>
+
+    <p>Lunes a viernes: 7:00 AM - 5:00 PM</p>
+    <p>Emergencias: 24 horas</p>
+</section>
+
+<section class="seccion" id="ubicacion">
+    <h2>Ubicación</h2>
+
+    <p>Hospital - Guatemala</p>
+</section>
+
+<footer>
+    Sistema Informático Hospitalario - HIS
+</footer>
+
+
+<!-- MODAL DE VERIFICACIÓN DE DPI -->
+
+<div id="modalDpi" class="modal">
+
+    <div class="modal-contenido">
+
+        <h2>Verificar Registro</h2>
+
+        <p>
+            Ingrese su número de DPI para verificar si está registrado en el sistema.
+        </p>
+
+        <div class="campo">
+
+            <label for="dpi">DPI</label>
+
+            <input
+                    type="text"
+                    id="dpi"
+                    maxlength="13"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    placeholder="Ingrese 13 dígitos"
+                    oninput="validarEntradaDpi()">
+
+            <div class="contador">
+                <span id="contador">0</span>/13 dígitos
+            </div>
+
+            <div id="mensajeError" class="mensaje-error"></div>
+
+        </div>
+
+        <div class="acciones">
+
+            <button type="button"
+                    class="btn-cancelar"
+                    onclick="cerrarModal()">
+                Cancelar
+            </button>
+
+            <button type="button"
+                    class="btn-verificar"
+                    onclick="verificarDpi()">
+                Verificar DPI
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    function abrirModal() {
+
+        const modal = document.getElementById("modalDpi");
+
+        modal.style.display = "flex";
+
+        document.getElementById("dpi").focus();
+    }
+
+
+    function cerrarModal() {
+
+        document.getElementById("modalDpi").style.display = "none";
+
+        document.getElementById("dpi").value = "";
+
+        document.getElementById("contador").textContent = "0";
+
+        const mensaje = document.getElementById("mensajeError");
+
+        mensaje.style.color = "#b02a37";
+        mensaje.textContent = "";
+    }
+
+
+    function validarEntradaDpi() {
+
+        const dpi = document.getElementById("dpi");
+
+        // Elimina cualquier carácter que no sea número
+        dpi.value = dpi.value.replace(/\D/g, "");
+
+        // Actualiza el contador
+        document.getElementById("contador").textContent =
+            dpi.value.length;
+
+        // Limpia mensajes anteriores
+        const mensaje =
+            document.getElementById("mensajeError");
+
+        mensaje.style.color = "#b02a37";
+        mensaje.textContent = "";
+    }
+
+
+    async function verificarDpi() {
+
+        const dpi =
+            document.getElementById("dpi").value;
+
+        const mensaje =
+            document.getElementById("mensajeError");
+
+
+        // Campo vacío
+        if (dpi.length === 0) {
+
+            mensaje.style.color = "#b02a37";
+
+            mensaje.textContent =
+                "Debe ingresar su número de DPI.";
+
+            return;
+        }
+
+
+        // DPI incompleto
+        if (dpi.length !== 13) {
+
+            mensaje.style.color = "#b02a37";
+
+            mensaje.textContent =
+                "El DPI debe contener exactamente 13 dígitos.";
+
+            return;
+        }
+
+
+        // Mensaje de carga
+        mensaje.style.color = "#666";
+
+        mensaje.textContent =
+            "Verificando...";
+
+
+        try {
+
+            const respuesta = await fetch(
+                "/api/verificar-dpi/" + encodeURIComponent(dpi)
+            );
+
+
+            if (!respuesta.ok) {
+
+                throw new Error(
+                    "Error al consultar el servidor"
+                );
+            }
+
+
+            const datos =
+                await respuesta.json();
+
+
+            if (datos.tipo === "PACIENTE") {
+
+                mensaje.style.color = "green";
+
+                mensaje.textContent =
+                    "Paciente registrado. Será redirigido al inicio de sesión.";
+
+                setTimeout(function() {
+
+                    window.location.href = "/login";
+
+                }, 1500);
+            }
+
+            else if (datos.tipo === "NO_REGISTRADO") {
+
+                mensaje.style.color = "#b02a37";
+
+                mensaje.textContent =
+                    datos.mensaje;
+
+                setTimeout(function () {
+
+                    window.location.href =
+                        "/registro";
+
+                }, 1800);
+            }
+
+
+            // USUARIO INTERNO
+            else if (datos.tipo === "INTERNO") {
+
+                mensaje.style.color = "#b02a37";
+
+                mensaje.textContent =
+                    datos.mensaje;
+            }
+
+
+            // RESPUESTA INESPERADA
+            else {
+
+                mensaje.style.color = "#b02a37";
+
+                mensaje.textContent =
+                    "No fue posible determinar el estado del usuario.";
+            }
+
+        }
+        catch (error) {
+
+            console.error(error);
+
+            mensaje.style.color = "#b02a37";
+
+            mensaje.textContent =
+                "No se pudo conectar con el servidor. Intente de nuevo más tarde.";
+        }
+    }
+
+
+    // Cerrar modal al hacer clic fuera de la ventana
+    window.addEventListener("click", function(event) {
+
+        const modal =
+            document.getElementById("modalDpi");
+
+        if (event.target === modal) {
+
+            cerrarModal();
+        }
+    });
+
+</script>
+
+</body>
+</html>

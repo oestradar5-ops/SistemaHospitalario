@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Caja - HIS</title>
+
+  <style>
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fb;
+    }
+
+    header {
+      background-color: #198754;
+      color: white;
+      padding: 20px 35px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+    }
+
+    header a {
+      color: white;
+      text-decoration: none;
+    }
+
+    .contenedor {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .panel {
+      background-color: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow:
+              0 3px 12px rgba(0,0,0,0.10);
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      color: #198754;
+      margin-top: 0;
+    }
+
+    .alternancia {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn-tipo {
+      padding: 10px 18px;
+      border: 1px solid #198754;
+      border-radius: 6px;
+      background-color: white;
+      color: #198754;
+      cursor: pointer;
+    }
+
+    .btn-tipo.activo {
+      background-color: #198754;
+      color: white;
+    }
+
+    .fila-busqueda {
+      display: flex;
+      gap: 10px;
+    }
+
+    .fila-busqueda input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    .btn-buscar {
+      padding: 12px 22px;
+      border: none;
+      border-radius: 6px;
+      background-color: #0b5ed7;
+      color: white;
+      cursor: pointer;
+    }
+
+    .mensaje {
+      margin-top: 15px;
+      min-height: 22px;
+      font-weight: bold;
+    }
+
+    .tarjeta {
+      display: none;
+    }
+
+    .datos {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .dato {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 7px;
+    }
+
+    .dato strong {
+      display: block;
+      color: #555;
+      margin-bottom: 5px;
+    }
+
+    .monto {
+      font-size: 25px;
+      font-weight: bold;
+      color: #198754;
+    }
+
+    .metodos {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    .metodo {
+      padding: 12px 18px;
+      border: 1px solid #198754;
+      border-radius: 6px;
+      background-color: white;
+      color: #198754;
+      cursor: pointer;
+    }
+
+    .metodo.activo {
+      background-color: #198754;
+      color: white;
+    }
+
+    .campo {
+      margin-top: 20px;
+      display: none;
+    }
+
+    .campo label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 7px;
+    }
+
+    .campo input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    .acciones {
+      margin-top: 25px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .acciones button {
+      padding: 11px 20px;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-pagar {
+      background-color: #198754;
+    }
+
+    .btn-nuevo {
+      background-color: #0b5ed7;
+    }
+
+    .comprobante {
+      display: none;
+      background-color: #e8f5e9;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 25px;
+    }
+
+    .comprobante h3 {
+      color: #198754;
+      margin-top: 0;
+    }
+
+    .comprobante p {
+      margin: 7px 0;
+    }
+
+    @media print {
+
+      header,
+      #panelBusqueda,
+      #panelPago,
+      .acciones {
+        display: none !important;
+      }
+
+      body {
+        background-color: white;
+      }
+
+      .comprobante {
+        display: block !important;
+        background-color: white;
+      }
+    }
+
+    @media (max-width: 700px) {
+
+      .datos {
+        grid-template-columns: 1fr;
+      }
+
+      .fila-busqueda {
+        flex-direction: column;
+      }
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+
+<header>
+
+  <h1>
+    Caja Hospitalaria
+  </h1>
+
+  <div>
+
+    Cajero:
+
+    <strong th:text="${usuarioActual}">
+      cajero01
+    </strong>
+
+    &nbsp; | &nbsp;
+
+    <a href="/caja/logout">
+      Cerrar sesión
+    </a>
+
+  </div>
+
+</header>
+
+
+<div class="contenedor">
+
+
+  <!-- =====================================================
+       BÚSQUEDA
+       ===================================================== -->
+
+  <div
+          id="panelBusqueda"
+          class="panel">
+
+    <h2>
+      Buscar Cita Pendiente de Pago
+    </h2>
+
+
+    <div class="alternancia">
+
+      <button
+              type="button"
+              id="btnCita"
+              class="btn-tipo activo"
+              onclick="seleccionarTipo('CITA')">
+
+        Por No. Cita
+
+      </button>
+
+
+      <button
+              type="button"
+              id="btnDpi"
+              class="btn-tipo"
+              onclick="seleccionarTipo('DPI')">
+
+        Por DPI
+
+      </button>
+
+    </div>
+
+
+    <div class="fila-busqueda">
+
+      <input
+              type="text"
+              id="valorBusqueda"
+              placeholder="Ingrese número de cita">
+
+
+      <button
+              type="button"
+              class="btn-buscar"
+              onclick="buscarCita()">
+
+        Buscar
+
+      </button>
+
+    </div>
+
+
+    <div
+            id="mensajeBusqueda"
+            class="mensaje">
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       DATOS DE CITA
+       ===================================================== -->
+
+  <div
+          id="panelPago"
+          class="panel tarjeta">
+
+    <h2>
+      Detalle de la Consulta
+    </h2>
+
+
+    <div class="datos">
+
+      <div class="dato">
+
+        <strong>
+          No. de Cita
+        </strong>
+
+        <span id="citaId"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Paciente
+        </strong>
+
+        <span id="paciente"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          DPI
+        </strong>
+
+        <span id="dpi"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Estado
+        </strong>
+
+        <span id="estadoCita"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Especialidad
+        </strong>
+
+        <span id="especialidad"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Médico
+        </strong>
+
+        <span id="medico"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Fecha
+        </strong>
+
+        <span id="fecha"></span>
+
+      </div>
+
+
+      <div class="dato">
+
+        <strong>
+          Hora
+        </strong>
+
+        <span id="hora"></span>
+
+      </div>
+
+
+      <div
+              class="dato"
+              style="grid-column:1 / -1;">
+
+        <strong>
+          Monto total
+        </strong>
+
+        <span class="monto">
+                    Q<span id="montoTotal">250.00</span>
+                </span>
+
+      </div>
+
+    </div>
+
+
+    <!-- =================================================
+         MÉTODO DE PAGO
+         ================================================= -->
+
+    <h3>
+      Método de Pago
+    </h3>
+
+
+    <div class="metodos">
+
+      <button
+              type="button"
+              class="metodo"
+              onclick="seleccionarMetodo('EFECTIVO', this)">
+
+        Efectivo
+
+      </button>
+
+
+      <button
+              type="button"
+              class="metodo"
+              onclick="seleccionarMetodo('VISA', this)">
+
+        Visa
+
+      </button>
+
+
+      <button
+              type="button"
+              class="metodo"
+              onclick="seleccionarMetodo('MASTERCARD', this)">
+
+        Mastercard
+
+      </button>
+
+
+      <button
+              type="button"
+              class="metodo"
+              onclick="seleccionarMetodo('DEBITO', this)">
+
+        Débito
+
+      </button>
+
+    </div>
+
+
+    <!-- EFECTIVO -->
+
+    <div
+            id="campoEfectivo"
+            class="campo">
+
+      <label for="montoRecibido">
+        Monto Recibido
+      </label>
+
+      <input
+              type="number"
+              id="montoRecibido"
+              min="0"
+              step="0.01"
+              placeholder="Ejemplo: 300.00">
+
+    </div>
+
+
+    <!-- TARJETA -->
+
+    <div
+            id="campoTarjeta"
+            class="campo">
+
+      <label for="ultimos4">
+        Últimos 4 dígitos de la tarjeta
+      </label>
+
+      <input
+              type="text"
+              id="ultimos4"
+              maxlength="4"
+              inputmode="numeric"
+              placeholder="1234"
+              oninput="soloCuatroDigitos()">
+
+    </div>
+
+
+    <div
+            id="mensajePago"
+            class="mensaje">
+    </div>
+
+
+    <div class="acciones">
+
+      <button
+              type="button"
+              id="btnNoPuedePagar"
+              class="btn-nuevo"
+              onclick="noPuedePagar()">
+
+        No puede realizar el pago
+
+      </button>
+
+      <button
+              type="button"
+              id="btnRegistrarPago"
+              class="btn-pagar"
+              onclick="registrarPago()">
+
+        Registrar Pago
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       COMPROBANTE
+       ===================================================== -->
+
+  <div
+          id="comprobante"
+          class="panel comprobante">
+
+    <h3>
+      Comprobante de Pago
+    </h3>
+
+
+    <p>
+      <strong>
+        Paciente:
+      </strong>
+
+      <span id="compPaciente"></span>
+    </p>
+
+
+    <p>
+      <strong>
+        No. Cita:
+      </strong>
+
+      <span id="compCita"></span>
+    </p>
+
+
+    <p>
+      <strong>
+        Método de pago:
+      </strong>
+
+      <span id="compMetodo"></span>
+    </p>
+
+
+    <p>
+      <strong>
+        Monto:
+      </strong>
+
+      Q<span id="compMonto"></span>
+    </p>
+
+
+    <p
+            id="filaMontoRecibido"
+            style="display:none;">
+
+      <strong>
+        Monto recibido:
+      </strong>
+
+      Q<span id="compMontoRecibido"></span>
+
+    </p>
+
+
+    <p
+            id="filaCambio"
+            style="display:none;">
+
+      <strong>
+        Cambio:
+      </strong>
+
+      Q<span id="compCambio"></span>
+
+    </p>
+
+
+    <p>
+      <strong>
+        No. de transacción:
+      </strong>
+
+      <span id="compReferencia"></span>
+    </p>
+
+
+    <p>
+      <strong>
+        Estado de la cita:
+      </strong>
+
+      CONFIRMADA
+    </p>
+
+
+    <div class="acciones">
+
+      <button
+              type="button"
+              class="btn-nuevo"
+              onclick="window.print()">
+
+        Imprimir
+
+      </button>
+
+
+      <button
+              type="button"
+              class="btn-nuevo"
+              onclick="nuevoCobro()">
+
+        Nuevo Cobro
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+</div>
+
+
+<script>
+
+  let tipoBusqueda =
+          "CITA";
+
+
+  let citaActualId =
+          null;
+
+
+  let metodoSeleccionado =
+          null;
+
+
+  let datosCitaActual =
+          null;
+
+
+  // =====================================================
+  // TIPO DE BÚSQUEDA
+  // =====================================================
+
+  function seleccionarTipo(tipo) {
+
+    tipoBusqueda =
+            tipo;
+
+
+    document
+            .getElementById("btnCita")
+            .classList
+            .remove("activo");
+
+
+    document
+            .getElementById("btnDpi")
+            .classList
+            .remove("activo");
+
+
+    if (tipo === "CITA") {
+
+      document
+              .getElementById("btnCita")
+              .classList
+              .add("activo");
+
+
+      document
+              .getElementById("valorBusqueda")
+              .placeholder =
+              "Ingrese número de cita";
+
+    }
+
+    else {
+
+      document
+              .getElementById("btnDpi")
+              .classList
+              .add("activo");
+
+
+      document
+              .getElementById("valorBusqueda")
+              .placeholder =
+              "Ingrese DPI de 13 dígitos";
+    }
+
+
+    nuevoCobro();
+  }
+
+
+  // =====================================================
+  // BUSCAR CITA
+  // =====================================================
+
+  async function buscarCita() {
+
+    const valor =
+            document
+                    .getElementById(
+                            "valorBusqueda"
+                    )
+                    .value.trim();
+
+
+    const mensaje =
+            document
+                    .getElementById(
+                            "mensajeBusqueda"
+                    );
+
+
+    document
+            .getElementById(
+                    "panelPago"
+            )
+            .style.display =
+            "none";
+
+
+    document
+            .getElementById(
+                    "comprobante"
+            )
+            .style.display =
+            "none";
+
+
+    if (valor === "") {
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              "Debe ingresar un criterio de búsqueda.";
+
+
+      return;
+    }
+
+
+    if (
+            tipoBusqueda === "CITA" &&
+            !/^\d+$/.test(valor)
+    ) {
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              "El número de cita debe ser numérico.";
+
+
+      return;
+    }
+
+
+    if (
+            tipoBusqueda === "DPI" &&
+            !/^\d{13}$/.test(valor)
+    ) {
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              "El DPI debe contener exactamente 13 dígitos.";
+
+
+      return;
+    }
+
+
+    mensaje.style.color =
+            "#666";
+
+
+    mensaje.textContent =
+            "Buscando cita pendiente...";
+
+
+    try {
+
+      let url;
+
+
+      if (tipoBusqueda === "CITA") {
+
+        url =
+                "/api/caja/cita/" +
+                valor;
+
+      }
+
+      else {
+
+        url =
+                "/api/caja/dpi/" +
+                valor;
+      }
+
+
+      const respuesta =
+              await fetch(url);
+
+
+      const datos =
+              await respuesta.json();
+
+
+      if (datos.estado !== "OK") {
+
+        mensaje.style.color =
+                "#b02a37";
+
+
+        mensaje.textContent =
+                datos.mensaje;
+
+
+        return;
+      }
+
+
+      mensaje.textContent =
+              "";
+
+
+      mostrarCita(
+              datos
+      );
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              "No fue posible realizar la búsqueda.";
+    }
+  }
+
+
+  // =====================================================
+  // MOSTRAR CITA
+  // =====================================================
+
+  function mostrarCita(datos) {
+
+    datosCitaActual =
+            datos;
+
+
+    citaActualId =
+            datos.citaId;
+
+
+    document
+            .getElementById("citaId")
+            .textContent =
+            datos.citaId;
+
+
+    document
+            .getElementById("paciente")
+            .textContent =
+            datos.paciente;
+
+
+    document
+            .getElementById("dpi")
+            .textContent =
+            datos.dpi;
+
+
+    document
+            .getElementById("estadoCita")
+            .textContent =
+            datos.estadoCita;
+
+
+    document
+            .getElementById("especialidad")
+            .textContent =
+            datos.especialidad;
+
+
+    document
+            .getElementById("medico")
+            .textContent =
+            datos.medico;
+
+
+    document
+            .getElementById("fecha")
+            .textContent =
+            datos.fecha;
+
+
+    document
+            .getElementById("hora")
+            .textContent =
+            datos.hora;
+
+
+    document
+            .getElementById("montoTotal")
+            .textContent =
+            Number(datos.monto)
+                    .toFixed(2);
+
+
+    document
+            .getElementById(
+                    "panelPago"
+            )
+            .style.display =
+            "block";
+
+
+    limpiarMetodo();
+  }
+
+
+  // =====================================================
+  // SELECCIONAR MÉTODO
+  // =====================================================
+
+  function seleccionarMetodo(
+          metodo,
+          boton
+  ) {
+
+    metodoSeleccionado =
+            metodo;
+
+
+    document
+            .querySelectorAll(
+                    ".metodo"
+            )
+            .forEach(
+                    elemento =>
+                            elemento
+                                    .classList
+                                    .remove(
+                                            "activo"
+                                    )
+            );
+
+
+    boton.classList
+            .add("activo");
+
+
+    document
+            .getElementById(
+                    "campoEfectivo"
+            )
+            .style.display =
+            metodo === "EFECTIVO"
+                    ? "block"
+                    : "none";
+
+
+    document
+            .getElementById(
+                    "campoTarjeta"
+            )
+            .style.display =
+            metodo === "EFECTIVO"
+                    ? "none"
+                    : "block";
+
+
+    document
+            .getElementById(
+                    "mensajePago"
+            )
+            .textContent =
+            "";
+  }
+
+
+  // =====================================================
+  // SOLO CUATRO DÍGITOS
+  // =====================================================
+
+  function soloCuatroDigitos() {
+
+    const input =
+            document
+                    .getElementById(
+                            "ultimos4"
+                    );
+
+
+    input.value =
+            input.value
+                    .replace(/\D/g, "")
+                    .substring(0, 4);
+  }
+
+
+  // =====================================================
+  // REGISTRAR PAGO
+  // =====================================================
+
+  async function registrarPago() {
+
+    const mensaje =
+            document
+                    .getElementById(
+                            "mensajePago"
+                    );
+
+
+    const boton =
+            document
+                    .getElementById(
+                            "btnRegistrarPago"
+                    );
+
+
+    if (citaActualId === null) {
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              "No existe una cita seleccionada.";
+
+
+      return;
+    }
+
+
+    if (metodoSeleccionado === null) {
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              "Debe seleccionar un método de pago.";
+
+
+      return;
+    }
+
+
+    const datosPago = {
+
+      citaId:
+      citaActualId,
+
+      metodoPago:
+      metodoSeleccionado
+    };
+
+
+    if (
+            metodoSeleccionado ===
+            "EFECTIVO"
+    ) {
+
+      const montoRecibido =
+              document
+                      .getElementById(
+                              "montoRecibido"
+                      )
+                      .value;
+
+
+      if (
+              montoRecibido === ""
+      ) {
+
+        mensaje.style.color =
+                "#b02a37";
+
+
+        mensaje.textContent =
+                "Debe ingresar el monto recibido.";
+
+
+        return;
+      }
+
+
+      datosPago.montoRecibido =
+              montoRecibido;
+
+    }
+
+    else {
+
+      const ultimos4 =
+              document
+                      .getElementById(
+                              "ultimos4"
+                      )
+                      .value.trim();
+
+
+      if (
+              !/^\d{4}$/
+                      .test(ultimos4)
+      ) {
+
+        mensaje.style.color =
+                "#b02a37";
+
+
+        mensaje.textContent =
+                "Debe ingresar los últimos 4 dígitos de la tarjeta.";
+
+
+        return;
+      }
+
+
+      datosPago.ultimos4 =
+              ultimos4;
+    }
+
+
+    mensaje.style.color =
+            "#666";
+
+
+    mensaje.textContent =
+            "Procesando pago...";
+
+
+    boton.disabled =
+            true;
+
+
+    try {
+
+      const respuesta =
+              await fetch(
+
+                      "/api/caja/pagar",
+
+                      {
+                        method: "POST",
+
+                        headers: {
+
+                          "Content-Type":
+                                  "application/json"
+
+                        },
+
+                        body:
+                                JSON.stringify(
+                                        datosPago
+                                )
+                      }
+
+              );
+
+
+      const datos =
+              await respuesta.json();
+
+
+      if (
+              datos.estado !==
+              "OK"
+      ) {
+
+        mensaje.style.color =
+                "#b02a37";
+
+
+        mensaje.textContent =
+                datos.mensaje;
+
+
+        boton.disabled =
+                false;
+
+
+        return;
+      }
+
+
+      mensaje.style.color =
+              "green";
+
+
+      mensaje.textContent =
+              datos.mensaje;
+
+
+      mostrarComprobante(
+              datos
+      );
+
+
+      boton.disabled =
+              true;
+
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+
+      mensaje.style.color =
+              "#b02a37";
+
+
+      mensaje.textContent =
+              "Error al registrar el pago.";
+
+
+      boton.disabled =
+              false;
+    }
+  }
+
+
+  // =====================================================
+  // MOSTRAR COMPROBANTE
+  // =====================================================
+
+  function mostrarComprobante(
+          datos
+  ) {
+
+    document
+            .getElementById(
+                    "compPaciente"
+            )
+            .textContent =
+            datosCitaActual.paciente;
+
+
+    document
+            .getElementById(
+                    "compCita"
+            )
+            .textContent =
+            citaActualId;
+
+
+    document
+            .getElementById(
+                    "compMetodo"
+            )
+            .textContent =
+            datos.metodoPago;
+
+
+    document
+            .getElementById(
+                    "compMonto"
+            )
+            .textContent =
+            Number(datos.monto)
+                    .toFixed(2);
+
+
+    document
+            .getElementById(
+                    "compReferencia"
+            )
+            .textContent =
+            datos.referencia;
+
+
+    if (
+            datos.metodoPago ===
+            "EFECTIVO"
+    ) {
+
+      document
+              .getElementById(
+                      "filaMontoRecibido"
+              )
+              .style.display =
+              "block";
+
+
+      document
+              .getElementById(
+                      "filaCambio"
+              )
+              .style.display =
+              "block";
+
+
+      document
+              .getElementById(
+                      "compMontoRecibido"
+              )
+              .textContent =
+              Number(
+                      datos.montoRecibido
+              ).toFixed(2);
+
+
+      document
+              .getElementById(
+                      "compCambio"
+              )
+              .textContent =
+              Number(
+                      datos.cambio
+              ).toFixed(2);
+
+    }
+
+    else {
+
+      document
+              .getElementById(
+                      "filaMontoRecibido"
+              )
+              .style.display =
+              "none";
+
+
+      document
+              .getElementById(
+                      "filaCambio"
+              )
+              .style.display =
+              "none";
+    }
+
+
+    document
+            .getElementById(
+                    "comprobante"
+            )
+            .style.display =
+            "block";
+  }
+
+
+  // =====================================================
+  // LIMPIAR MÉTODO
+  // =====================================================
+
+  function limpiarMetodo() {
+
+    metodoSeleccionado =
+            null;
+
+
+    document
+            .querySelectorAll(
+                    ".metodo"
+            )
+            .forEach(
+                    elemento =>
+                            elemento
+                                    .classList
+                                    .remove(
+                                            "activo"
+                                    )
+            );
+
+
+    document
+            .getElementById(
+                    "campoEfectivo"
+            )
+            .style.display =
+            "none";
+
+
+    document
+            .getElementById(
+                    "campoTarjeta"
+            )
+            .style.display =
+            "none";
+
+
+    document
+            .getElementById(
+                    "montoRecibido"
+            )
+            .value =
+            "";
+
+
+    document
+            .getElementById(
+                    "ultimos4"
+            )
+            .value =
+            "";
+
+
+    document
+            .getElementById(
+                    "mensajePago"
+            )
+            .textContent =
+            "";
+
+
+    document
+            .getElementById(
+                    "btnRegistrarPago"
+            )
+            .disabled =
+            false;
+  }
+
+
+  // =====================================================
+  // NUEVO COBRO
+  // =====================================================
+  async function noPuedePagar() {
+
+    if (citaActualId === null) {
+      return;
+    }
+
+    const mensaje =
+            document.getElementById("mensajePago");
+
+    const confirmar =
+            confirm(
+                    "¿Confirma que el paciente no puede realizar el pago en este momento?"
+            );
+
+    if (!confirmar) {
+      return;
+    }
+
+    mensaje.style.color = "#666";
+    mensaje.textContent = "Cancelando operación de cobro...";
+
+    try {
+
+      const respuesta =
+              await fetch(
+                      "/api/caja/no-puede-pagar/" +
+                      citaActualId,
+                      {
+                        method: "POST"
+                      }
+              );
+
+      const datos =
+              await respuesta.json();
+
+      if (datos.estado !== "OK") {
+
+        mensaje.style.color = "#b02a37";
+        mensaje.textContent = datos.mensaje;
+
+        return;
+      }
+
+      mensaje.style.color = "#b02a37";
+
+      mensaje.textContent =
+              datos.mensaje +
+              " La cita permanece en estado " +
+              datos.estadoCita +
+              ".";
+
+      document
+              .getElementById("btnRegistrarPago")
+              .disabled = false;
+
+    } catch (error) {
+
+      console.error(error);
+
+      mensaje.style.color = "#b02a37";
+      mensaje.textContent =
+              "No fue posible cancelar la operación de cobro.";
+    }
+  }
+  function nuevoCobro() {
+
+    citaActualId =
+            null;
+
+
+    datosCitaActual =
+            null;
+
+
+    metodoSeleccionado =
+            null;
+
+
+    document
+            .getElementById(
+                    "valorBusqueda"
+            )
+            .value =
+            "";
+
+
+    document
+            .getElementById(
+                    "mensajeBusqueda"
+            )
+            .textContent =
+            "";
+
+
+    document
+            .getElementById(
+                    "panelPago"
+            )
+            .style.display =
+            "none";
+
+
+    document
+            .getElementById(
+                    "comprobante"
+            )
+            .style.display =
+            "none";
+
+
+    limpiarMetodo();
+  }
+
+
+  // =====================================================
+  // ENTER PARA BUSCAR
+  // =====================================================
+
+  document
+          .getElementById(
+                  "valorBusqueda"
+          )
+          .addEventListener(
+                  "keydown",
+                  function(event) {
+
+                    if (
+                            event.key ===
+                            "Enter"
+                    ) {
+
+                      buscarCita();
+                    }
+                  }
+          );
+
+</script>
+
+
+</body>
+</html>

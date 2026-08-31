@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Listado de Usuarios - HIS</title>
+
+  <style>
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fb;
+      color: #222;
+    }
+
+    header {
+      background-color: #0b5ed7;
+      color: white;
+      padding: 20px 35px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .usuario-actual {
+      font-size: 14px;
+    }
+
+    .contenedor {
+      padding: 35px;
+    }
+
+    .encabezado {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .encabezado h2 {
+      margin: 0;
+      color: #0b5ed7;
+    }
+
+    .btn-crear {
+      background-color: #198754;
+      color: white;
+      text-decoration: none;
+
+      padding: 11px 18px;
+      border-radius: 6px;
+    }
+
+    .filtros {
+      background-color: white;
+      padding: 20px;
+
+      border-radius: 10px;
+
+      box-shadow:
+              0 2px 8px rgba(0,0,0,0.08);
+
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: end;
+
+      margin-bottom: 25px;
+    }
+
+    .grupo {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .grupo label {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    select,
+    input {
+      padding: 10px;
+
+      border: 1px solid #aaa;
+      border-radius: 6px;
+
+      font-size: 14px;
+    }
+
+    .btn-buscar {
+      background-color: #0b5ed7;
+      color: white;
+
+      border: none;
+      padding: 11px 18px;
+
+      border-radius: 6px;
+
+      cursor: pointer;
+    }
+
+    .tabla-contenedor {
+      background-color: white;
+
+      border-radius: 10px;
+
+      box-shadow:
+              0 2px 8px rgba(0,0,0,0.08);
+
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background-color: #0b5ed7;
+      color: white;
+    }
+
+    th,
+    td {
+      padding: 13px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    tbody tr:hover {
+      background-color: #f6f8fb;
+    }
+
+    .estado-activo {
+      color: #198754;
+      font-weight: bold;
+    }
+
+    .estado-inactivo {
+      color: #b02a37;
+      font-weight: bold;
+    }
+
+    .acciones a {
+      text-decoration: none;
+      margin-right: 10px;
+    }
+
+    .editar {
+      color: #0b5ed7;
+    }
+
+    .eliminar {
+      color: #fd7e14;
+      cursor: pointer;
+    }
+
+    .sin-datos {
+      text-align: center;
+      color: #b02a37;
+      font-weight: bold;
+      padding: 25px;
+    }
+
+    .paginacion-contenedor {
+      margin-top: 20px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .paginacion a {
+      display: inline-block;
+
+      padding: 8px 12px;
+
+      background-color: white;
+
+      border: 1px solid #ccc;
+      border-radius: 5px;
+
+      text-decoration: none;
+      color: #0b5ed7;
+
+      margin-right: 4px;
+    }
+
+    .paginacion span {
+      margin: 0 8px;
+    }
+
+    .modal {
+      display: none;
+
+      position: fixed;
+      z-index: 1000;
+
+      left: 0;
+      top: 0;
+
+      width: 100%;
+      height: 100%;
+
+      background-color:
+              rgba(0,0,0,0.5);
+
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-contenido {
+      background-color: white;
+
+      width: 400px;
+      max-width: 90%;
+
+      padding: 30px;
+
+      border-radius: 10px;
+
+      text-align: center;
+    }
+
+    .advertencia {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+
+    .modal-acciones {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+
+      margin-top: 25px;
+    }
+
+    .btn-cancelar {
+      background: none;
+      border: none;
+
+      color: #0b5ed7;
+
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .btn-eliminar {
+      background-color: #dc3545;
+      color: white;
+
+      border: none;
+
+      padding: 10px 18px;
+
+      border-radius: 6px;
+
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<header>
+
+  <h1>
+    Sistema Informático Hospitalario
+  </h1>
+
+  <div class="usuario-actual">
+
+    Administrador:
+    <strong th:text="${usuarioActual}">
+      admin
+    </strong>
+
+  </div>
+
+</header>
+
+
+<div class="contenedor">
+
+  <div class="encabezado">
+
+    <h2>
+      Listado de Usuarios
+    </h2>
+
+    <a
+            href="/admin/usuarios/crear"
+            class="btn-crear">
+      Crear Usuario
+    </a>
+
+  </div>
+
+
+  <!-- FILTROS -->
+
+  <form
+          method="get"
+          action="/admin/usuarios"
+          class="filtros">
+
+    <div class="grupo">
+
+      <label for="campo">
+        Filtrar por campo
+      </label>
+
+      <select
+              id="campo"
+              name="campo">
+
+        <option
+                value=""
+                th:selected="${campo == ''}">
+          Todos
+        </option>
+
+        <option
+                value="id"
+                th:selected="${campo == 'id'}">
+          ID
+        </option>
+
+        <option
+                value="nombre"
+                th:selected="${campo == 'nombre'}">
+          Nombre
+        </option>
+
+        <option
+                value="correo"
+                th:selected="${campo == 'correo'}">
+          Correo Electrónico
+        </option>
+
+        <option
+                value="rol"
+                th:selected="${campo == 'rol'}">
+          Rol
+        </option>
+
+        <option
+                value="usuario"
+                th:selected="${campo == 'usuario'}">
+          Nombre de Usuario
+        </option>
+
+        <option
+                value="dpi"
+                th:selected="${campo == 'dpi'}">
+          DPI
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="grupo">
+
+      <label for="buscar">
+        Buscar
+      </label>
+
+      <input
+              type="text"
+              id="buscar"
+              name="buscar"
+              placeholder="Buscar..."
+              th:value="${buscar}">
+
+    </div>
+
+
+    <div class="grupo">
+
+      <label for="tamanio">
+        Elementos por página
+      </label>
+
+      <select
+              id="tamanio"
+              name="tamanio">
+
+        <option
+                value="10"
+                th:selected="${tamanio == 10}">
+          10
+        </option>
+
+        <option
+                value="25"
+                th:selected="${tamanio == 25}">
+          25
+        </option>
+
+        <option
+                value="50"
+                th:selected="${tamanio == 50}">
+          50
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div>
+
+      <button
+              type="submit"
+              class="btn-buscar">
+        🔍 Buscar
+      </button>
+
+    </div>
+
+  </form>
+
+
+  <!-- TABLA -->
+
+  <div class="tabla-contenedor">
+
+    <table>
+
+      <thead>
+
+      <tr>
+
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Correo Electrónico</th>
+        <th>Rol</th>
+        <th>Nombre de Usuario</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+
+      </tr>
+
+      </thead>
+
+
+      <tbody>
+
+      <tr
+              th:each="usuario : ${usuarios.content}">
+
+        <td th:text="${usuario.id}">
+          1
+        </td>
+
+        <td th:text="${usuario.nombreCompleto}">
+          Nombre
+        </td>
+
+        <td th:text="${usuario.correoElectronico}">
+          correo@hospital.com
+        </td>
+
+        <td th:text="${usuario.rol}">
+          ADMIN
+        </td>
+
+        <td th:text="${usuario.nombreUsuario}">
+          usuario
+        </td>
+
+        <td>
+
+                    <span
+                            th:if="${usuario.activo}"
+                            class="estado-activo">
+                        Activo
+                    </span>
+
+          <span
+                  th:unless="${usuario.activo}"
+                  class="estado-inactivo">
+                        Inactivo
+                    </span>
+
+        </td>
+
+        <td class="acciones">
+
+          <a
+                  th:href="@{/admin/usuarios/editar/{id}(id=${usuario.id})}"
+                  class="editar">
+            Editar
+          </a>
+
+          <a
+                  href="#"
+                  class="eliminar"
+                  th:data-id="${usuario.id}"
+                  th:data-usuario="${usuario.nombreUsuario}"
+                  onclick="abrirModal(this); return false;">
+            Eliminar
+          </a>
+
+        </td>
+
+      </tr>
+
+
+      <tr th:if="${usuarios.totalElements == 0}">
+
+        <td
+                colspan="7"
+                class="sin-datos">
+
+          No se encontraron datos usuarios.
+
+        </td>
+
+      </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+
+  <!-- PAGINACIÓN -->
+
+  <div class="paginacion-contenedor">
+
+    <div>
+
+      Total de registros:
+
+      <strong
+              th:text="${usuarios.totalElements}">
+        0
+      </strong>
+
+    </div>
+
+
+    <div class="paginacion">
+
+      <a
+              th:if="${usuarios.hasPrevious()}"
+              th:href="@{/admin/usuarios(
+                        pagina=${usuarios.number - 1},
+                        tamanio=${tamanio},
+                        campo=${campo},
+                        buscar=${buscar}
+                    )}">
+
+        Anterior
+
+      </a>
+
+
+      <span>
+
+                Página
+
+                <strong
+                        th:text="${usuarios.number + 1}">
+                    1
+                </strong>
+
+                de
+
+                <strong
+                        th:text="${usuarios.totalPages == 0 ? 1 : usuarios.totalPages}">
+                    1
+                </strong>
+
+            </span>
+
+
+      <a
+              th:if="${usuarios.hasNext()}"
+              th:href="@{/admin/usuarios(
+                        pagina=${usuarios.number + 1},
+                        tamanio=${tamanio},
+                        campo=${campo},
+                        buscar=${buscar}
+                    )}">
+
+        Siguiente
+
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- MODAL ELIMINAR -->
+
+<div
+        id="modalEliminar"
+        class="modal">
+
+  <div class="modal-contenido">
+
+    <div class="advertencia">
+      ⚠️
+    </div>
+
+    <h2>
+      Confirmar eliminación
+    </h2>
+
+    <p id="mensajeEliminar">
+
+      ¿Está seguro que desea eliminar este usuario?
+
+    </p>
+
+
+    <div class="modal-acciones">
+
+      <button
+              type="button"
+              class="btn-cancelar"
+              onclick="cerrarModal()">
+
+        Cancelar
+
+      </button>
+
+
+      <button
+              type="button"
+              class="btn-eliminar"
+              onclick="confirmarEliminar()">
+
+        Eliminar
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  let usuarioEliminarId = null;
+
+
+  function abrirModal(elemento) {
+
+    usuarioEliminarId =
+            elemento.dataset.id;
+
+
+    const nombreUsuario =
+            elemento.dataset.usuario;
+
+
+    document
+            .getElementById("mensajeEliminar")
+            .textContent =
+
+            "¿Está seguro que desea eliminar el usuario \"" +
+            nombreUsuario +
+            "\"? Esta acción no se puede deshacer.";
+
+
+    document
+            .getElementById("modalEliminar")
+            .style.display =
+            "flex";
+
+  }
+
+
+  function cerrarModal() {
+
+    usuarioEliminarId = null;
+
+
+    document
+            .getElementById("modalEliminar")
+            .style.display =
+            "none";
+
+  }
+
+
+  async function confirmarEliminar() {
+
+    if (usuarioEliminarId === null) {
+      return;
+    }
+
+    try {
+
+      const respuesta =
+              await fetch(
+                      "/api/admin/usuarios/" +
+                      usuarioEliminarId,
+                      {
+                        method: "DELETE"
+                      }
+              );
+
+      const datos =
+              await respuesta.json();
+
+      if (datos.estado !== "OK") {
+
+        alert(
+                datos.mensaje ||
+                "No fue posible eliminar el usuario."
+        );
+
+        return;
+      }
+
+      cerrarModal();
+
+      alert("Usuario eliminado correctamente.");
+
+      window.location.reload();
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+              "No se pudo conectar con el servidor."
+      );
+    }
+  }
+
+
+  window.addEventListener(
+          "click",
+          function(event) {
+
+            const modal =
+                    document.getElementById(
+                            "modalEliminar"
+                    );
+
+
+            if (event.target === modal) {
+
+              cerrarModal();
+
+            }
+
+          }
+  );
+
+</script>
+
+</body>
+</html>

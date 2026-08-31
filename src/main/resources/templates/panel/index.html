@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Panel Principal - HIS</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f1f5f9;
+            color: #1f2937;
+        }
+
+        /* =========================================
+           ENCABEZADO
+           ========================================= */
+
+        header {
+            background-color: #0b5ed7;
+            color: white;
+            padding: 22px 35px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .titulo h1 {
+            margin: 0;
+            font-size: 27px;
+        }
+
+        .titulo p {
+            margin: 5px 0 0;
+            opacity: 0.9;
+        }
+
+        .usuario {
+            text-align: right;
+        }
+
+        .usuario p {
+            margin: 3px 0;
+        }
+
+        .cerrar {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* =========================================
+           CONTENIDO
+           ========================================= */
+
+        main {
+            max-width: 1200px;
+            margin: 35px auto;
+            padding: 0 25px;
+        }
+
+        .bienvenida {
+            background: white;
+            border-radius: 12px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+
+            box-shadow:
+                    0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        .bienvenida h2 {
+            margin-top: 0;
+            color: #0b5ed7;
+        }
+
+        .bienvenida p {
+            margin-bottom: 0;
+            color: #64748b;
+        }
+
+        /* =========================================
+           MÓDULOS
+           ========================================= */
+
+        .titulo-modulos {
+            margin-bottom: 20px;
+        }
+
+        .modulos {
+            display: grid;
+
+            grid-template-columns:
+                    repeat(auto-fit, minmax(250px, 1fr));
+
+            gap: 22px;
+        }
+
+        .tarjeta {
+            background: white;
+
+            min-height: 190px;
+
+            border-radius: 12px;
+
+            padding: 25px;
+
+            box-shadow:
+                    0 3px 12px rgba(0,0,0,0.08);
+
+            display: flex;
+            flex-direction: column;
+
+            transition: 0.2s;
+        }
+
+        .tarjeta:hover {
+            transform: translateY(-4px);
+
+            box-shadow:
+                    0 7px 18px rgba(0,0,0,0.13);
+        }
+
+        .icono {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .tarjeta h3 {
+            margin: 5px 0 10px;
+            color: #0b5ed7;
+        }
+
+        .tarjeta p {
+            margin: 0 0 20px;
+            color: #64748b;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .boton {
+            display: inline-block;
+
+            background-color: #0b5ed7;
+            color: white;
+
+            text-decoration: none;
+
+            text-align: center;
+
+            padding: 11px 15px;
+
+            border-radius: 6px;
+
+            font-weight: bold;
+        }
+
+        .boton:hover {
+            background-color: #084298;
+        }
+
+        .proximamente {
+            background-color: #94a3b8;
+            cursor: default;
+        }
+
+        .proximamente:hover {
+            background-color: #94a3b8;
+        }
+
+        /* =========================================
+           PIE
+           ========================================= */
+
+        footer {
+            text-align: center;
+            color: #64748b;
+            padding: 30px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 650px) {
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .usuario {
+                text-align: left;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+
+<header>
+
+    <div class="titulo">
+
+        <h1>
+            Sistema Informático Hospitalario
+        </h1>
+
+        <p>
+            Panel Principal
+        </p>
+
+    </div>
+
+
+    <div class="usuario">
+
+        <p>
+            Usuario:
+            <strong th:text="${usuario}">
+                empleado1
+            </strong>
+        </p>
+
+        <p>
+            Rol:
+            <strong th:text="${rol}">
+                ADMIN
+            </strong>
+        </p>
+
+    </div>
+
+</header>
+
+
+<main>
+
+
+    <!-- =========================================
+         BIENVENIDA
+         ========================================= -->
+
+    <section class="bienvenida">
+
+        <h2>
+            Bienvenido al Sistema HIS
+        </h2>
+
+        <p>
+            Seleccione el módulo al que desea ingresar.
+        </p>
+
+    </section>
+
+
+    <h2 class="titulo-modulos">
+        Módulos del Sistema
+    </h2>
+
+
+    <section class="modulos">
+
+
+        <!-- =====================================
+             ADMINISTRACIÓN
+             ===================================== -->
+
+        <div class="tarjeta">
+
+            <div class="icono">
+                👥
+            </div>
+
+            <h3>
+                Administración
+            </h3>
+
+            <p>
+                Gestión de usuarios, roles y
+                configuración administrativa.
+            </p>
+
+            <a href="/admin/usuarios"
+               class="boton">
+
+                Ingresar
+
+            </a>
+
+        </div>
+
+
+        <!-- =====================================
+             RECEPCIÓN
+             ===================================== -->
+
+        <div class="tarjeta">
+
+            <div class="icono">
+                🏥
+            </div>
+
+            <h3>
+                Recepción
+            </h3>
+
+            <p>
+                Registro de llegada, búsqueda de
+                pacientes y gestión de citas.
+            </p>
+
+            <a href="/recepcion"
+               class="boton">
+
+                Ingresar
+
+            </a>
+
+        </div>
+
+
+        <!-- =====================================
+             CAJA
+             ===================================== -->
+
+        <div class="tarjeta">
+
+            <div class="icono">
+                💳
+            </div>
+
+            <h3>
+                Caja
+            </h3>
+
+            <p>
+                Cobro de consultas, registro de
+                pagos y emisión de comprobantes.
+            </p>
+
+            <a href="/caja"
+               class="boton">
+
+                Ingresar
+
+            </a>
+
+        </div>
+
+
+        <!-- =====================================
+             ENFERMERÍA
+             ===================================== -->
+
+        <div class="tarjeta">
+
+            <div class="icono">
+                🩺
+            </div>
+
+            <h3>
+                Enfermería
+            </h3>
+
+            <p>
+                Llamado de pacientes y registro
+                de signos vitales.
+            </p>
+
+            <span class="boton proximamente">
+                Próximamente
+            </span>
+
+        </div>
+
+
+        <!-- =====================================
+             CONSULTA MÉDICA
+             ===================================== -->
+
+        <div class="tarjeta">
+
+            <div class="icono">
+                👨‍⚕️
+            </div>
+
+            <h3>
+                Consulta Médica
+            </h3>
+
+            <p>
+                Atención médica, diagnóstico,
+                recetas y órdenes.
+            </p>
+
+            <span class="boton proximamente">
+                Próximamente
+            </span>
+
+        </div>
+
+
+        <!-- =====================================
+             LABORATORIO
+             ===================================== -->
+
+        <div class="tarjeta">
+
+            <div class="icono">
+                🔬
+            </div>
+
+            <h3>
+                Laboratorio
+            </h3>
+
+            <p>
+                Gestión de órdenes, muestras y
+                resultados de laboratorio.
+            </p>
+
+            <span class="boton proximamente">
+                Próximamente
+            </span>
+
+        </div>
+
+
+        <!-- =====================================
+             FARMACIA
+             ===================================== -->
+
+        <div class="tarjeta">
+
+            <div class="icono">
+                💊
+            </div>
+
+            <h3>
+                Farmacia
+            </h3>
+
+            <p>
+                Despacho de medicamentos y
+                control de inventario.
+            </p>
+
+            <span class="boton proximamente">
+                Próximamente
+            </span>
+
+        </div>
+
+
+        <!-- =====================================
+             AGENDA MÉDICA
+             ===================================== -->
+
+        <div class="tarjeta">
+
+            <div class="icono">
+                📅
+            </div>
+
+            <h3>
+                Agenda Médica
+            </h3>
+
+            <p>
+                Consulta de citas y programación
+                de atención médica.
+            </p>
+
+            <span class="boton proximamente">
+                Próximamente
+            </span>
+
+        </div>
+
+
+    </section>
+
+</main>
+
+
+<footer>
+
+    Sistema Informático Hospitalario - HIS
+
+</footer>
+
+
+</body>
+</html>
