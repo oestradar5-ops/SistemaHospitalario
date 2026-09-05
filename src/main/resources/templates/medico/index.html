@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Panel Médico</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fa;
+      color: #333;
+    }
+
+    header {
+      background: #1f4e79;
+      color: white;
+      padding: 18px 35px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .usuario {
+      text-align: right;
+    }
+
+    .usuario a {
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .contenedor {
+      width: 92%;
+      max-width: 1200px;
+      margin: 30px auto;
+    }
+
+    .titulo {
+      margin-bottom: 25px;
+    }
+
+    .titulo h2 {
+      color: #1f4e79;
+      margin-bottom: 5px;
+    }
+
+    .titulo p {
+      color: #666;
+    }
+
+    .sin-pacientes {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+
+      box-shadow:
+              0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .paciente {
+
+      background: white;
+
+      margin-bottom: 18px;
+
+      padding: 22px;
+
+      border-radius: 10px;
+
+      box-shadow:
+              0 2px 10px rgba(0, 0, 0, 0.08);
+
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      gap: 20px;
+    }
+
+    .informacion {
+      flex: 1;
+    }
+
+    .informacion h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: #1f4e79;
+    }
+
+    .datos {
+      display: grid;
+
+      grid-template-columns:
+                    repeat(2, minmax(180px, 1fr));
+
+      gap: 8px 25px;
+    }
+
+    .datos p {
+      margin: 4px 0;
+    }
+
+    .prioridad {
+
+      display: inline-block;
+
+      padding: 5px 12px;
+
+      border-radius: 20px;
+
+      font-weight: bold;
+
+      font-size: 13px;
+
+      margin-top: 12px;
+    }
+
+    .normal {
+      background: #d1e7dd;
+      color: #0f5132;
+    }
+
+    .emergencia {
+      background: #f8d7da;
+      color: #842029;
+    }
+
+    .acciones {
+      min-width: 180px;
+      text-align: center;
+    }
+
+    .btn {
+
+      display: inline-block;
+
+      background: #198754;
+
+      color: white;
+
+      padding: 12px 18px;
+
+      border-radius: 7px;
+
+      text-decoration: none;
+
+      font-weight: bold;
+    }
+
+    .btn:hover {
+      background: #146c43;
+    }
+
+    .emergencia-card {
+      border-left: 7px solid #dc3545;
+    }
+
+    @media (max-width: 700px) {
+
+      .paciente {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .datos {
+        grid-template-columns: 1fr;
+      }
+
+      .acciones {
+        width: 100%;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<header>
+
+  <div>
+
+    <h1>
+      Panel de Consulta Médica
+    </h1>
+
+  </div>
+
+  <div class="usuario">
+
+    <div>
+      Médico:
+      <strong th:text="${usuarioActual}">
+        doctor
+      </strong>
+    </div>
+
+    <br>
+
+    <a href="/medico/logout">
+      Cerrar sesión
+    </a>
+
+  </div>
+
+</header>
+
+
+<div class="contenedor">
+
+  <div class="titulo">
+
+    <h2>
+      Pacientes en espera
+    </h2>
+
+    <p>
+      Pacientes que ya completaron la toma
+      de signos vitales.
+    </p>
+
+  </div>
+
+
+  <!-- ================================== -->
+  <!-- SIN PACIENTES -->
+  <!-- ================================== -->
+
+  <div
+          class="sin-pacientes"
+          th:if="${#lists.isEmpty(citas)}">
+
+    Actualmente no tiene pacientes
+    pendientes de consulta.
+
+  </div>
+
+
+  <!-- ================================== -->
+  <!-- LISTA DE PACIENTES -->
+  <!-- ================================== -->
+
+  <div
+          th:each="cita : ${citas}"
+
+          th:classappend="
+                ${cita.prioridad == 'EMERGENCIA'}
+                ? ' emergencia-card'
+                : ''
+            "
+
+          class="paciente">
+
+    <div class="informacion">
+
+      <h3>
+
+        Paciente:
+        <span
+                th:text="${cita.paciente.nombreCompleto}">
+                    Nombre paciente
+                </span>
+
+      </h3>
+
+
+      <div class="datos">
+
+        <p>
+          <strong>Cita:</strong>
+
+          #
+          <span
+                  th:text="${cita.id}">
+                    </span>
+        </p>
+
+
+        <p>
+          <strong>DPI:</strong>
+
+          <span
+                  th:text="${cita.paciente.dpi}">
+                    </span>
+        </p>
+
+
+        <p>
+          <strong>Especialidad:</strong>
+
+          <span
+                  th:text="${cita.especialidad.nombre}">
+                    </span>
+        </p>
+
+
+        <p>
+          <strong>Estado:</strong>
+
+          <span
+                  th:text="${cita.estado}">
+                    </span>
+        </p>
+
+
+        <p>
+          <strong>Motivo:</strong>
+
+          <span
+                  th:text="${cita.motivoConsulta}">
+                    </span>
+        </p>
+
+
+        <p>
+          <strong>Hora de llegada:</strong>
+
+          <span
+                  th:text="${cita.horaLlegada}">
+                    </span>
+        </p>
+
+      </div>
+
+
+      <span
+              class="prioridad"
+
+              th:classappend="
+                        ${cita.prioridad == 'EMERGENCIA'}
+                        ? ' emergencia'
+                        : ' normal'
+                    "
+
+              th:text="${cita.prioridad}">
+
+                NORMAL
+
+            </span>
+
+    </div>
+
+
+    <div class="acciones">
+
+      <a
+              class="btn"
+
+              th:href="@{/medico/consulta/{id}(id=${cita.id})}">
+
+        Atender Paciente
+
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+
+</html>

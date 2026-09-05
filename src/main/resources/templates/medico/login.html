@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Acceso Médico</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+
+            font-family: Arial, sans-serif;
+
+            background: #eef3f7;
+
+            min-height: 100vh;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+        }
+
+        .login-container {
+
+            width: 400px;
+
+            background: white;
+
+            padding: 35px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                    0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+
+            text-align: center;
+
+            color: #1f4e79;
+
+            margin-bottom: 10px;
+        }
+
+        .subtitulo {
+
+            text-align: center;
+
+            color: #666;
+
+            margin-bottom: 30px;
+        }
+
+        label {
+
+            display: block;
+
+            margin-top: 15px;
+
+            margin-bottom: 5px;
+
+            font-weight: bold;
+
+            color: #333;
+        }
+
+        input {
+
+            width: 100%;
+
+            padding: 11px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 6px;
+
+            font-size: 15px;
+        }
+
+        input:focus {
+
+            outline: none;
+
+            border-color: #1f4e79;
+        }
+
+        button {
+
+            width: 100%;
+
+            margin-top: 25px;
+
+            padding: 12px;
+
+            border: none;
+
+            border-radius: 6px;
+
+            background: #1f4e79;
+
+            color: white;
+
+            font-size: 16px;
+
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #163a5c;
+        }
+
+        .error {
+
+            margin-top: 20px;
+
+            padding: 10px;
+
+            background: #f8d7da;
+
+            color: #842029;
+
+            border-radius: 5px;
+
+            text-align: center;
+        }
+
+        .volver {
+
+            display: block;
+
+            text-align: center;
+
+            margin-top: 20px;
+
+            color: #1f4e79;
+
+            text-decoration: none;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <h1>Consulta Médica</h1>
+
+    <p class="subtitulo">
+        Sistema Informático Hospitalario
+    </p>
+
+    <form
+            action="/medico/login"
+            method="post">
+
+        <label>
+            Usuario
+        </label>
+
+        <input
+                type="text"
+                name="nombreUsuario"
+                placeholder="Ingrese su usuario"
+                required>
+
+
+        <label>
+            Contraseña
+        </label>
+
+        <input
+                type="password"
+                name="password"
+                placeholder="Ingrese su contraseña"
+                required>
+
+
+        <button type="submit">
+            Iniciar Sesión
+        </button>
+
+    </form>
+
+
+    <div
+            class="error"
+            th:if="${error}"
+            th:text="${error}">
+    </div>
+
+
+    <a
+            href="/"
+            class="volver">
+
+        Volver al portal
+
+    </a>
+
+</div>
+
+</body>
+
+</html>

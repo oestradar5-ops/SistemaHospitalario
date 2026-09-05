@@ -20,12 +20,23 @@ public class SecurityConfig {
                                 // PORTAL
                                 "/",
                                 "/portal",
+
+                                // CAJA
                                 "/caja/**",
                                 "/api/caja/**",
+
+                                // PANEL PRINCIPAL
                                 "/panel",
                                 "/panel/**",
+
+                                // ENFERMERÍA
                                 "/enfermeria/**",
                                 "/api/enfermeria/**",
+
+                                // MÉDICO
+                                "/medico",
+                                "/medico/**",
+                                "/api/medico/**",
 
                                 // LOGIN PACIENTE
                                 "/login",
@@ -46,6 +57,10 @@ public class SecurityConfig {
                                 "/admin/usuarios",
                                 "/admin/usuarios/**",
 
+                                // RECEPCIÓN
+                                "/recepcion/**",
+                                "/api/recepcion/**",
+
                                 // API PACIENTE
                                 "/api/login",
                                 "/api/registro",
@@ -54,17 +69,14 @@ public class SecurityConfig {
                                 // API CITAS
                                 "/api/citas/**",
 
-                                "/recepcion/**",
-                                "/api/recepcion/**",
-
                                 // API PAGOS
                                 "/api/pagos/**",
 
-                                // API ADMINISTRADOR
+                                // API ADMIN
                                 "/api/admin/login",
                                 "/api/admin/usuarios/**",
 
-                                // RECURSOS ESTÁTICOS
+                                // RECURSOS
                                 "/css/**",
                                 "/js/**",
                                 "/img/**",
@@ -77,34 +89,45 @@ public class SecurityConfig {
                         .permitAll()
                 )
 
-                // Usamos nuestros propios formularios
                 .formLogin(form -> form.disable())
 
-                // Desactivar autenticación HTTP Basic
                 .httpBasic(basic -> basic.disable())
 
-                // Ignorar CSRF en nuestras APIs
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(
 
+                                // LOGIN PACIENTE
                                 "/api/login",
 
+                                // LOGIN MÉDICO
+                                "/medico/login",
+
+                                // REGISTRO
                                 "/api/registro",
-                                "/api/caja/**",
 
-                                "/api/admin/login",
-
-                                "/api/recepcion/**",
-
+                                // DPI
                                 "/api/verificar-dpi/**",
 
+                                // CAJA
+                                "/api/caja/**",
+
+                                // ADMIN
+                                "/api/admin/login",
                                 "/api/admin/usuarios/**",
 
-                                // CU-03 - CITAS
+                                // RECEPCIÓN
+                                "/api/recepcion/**",
+
+                                // CITAS
                                 "/api/citas/**",
+
+                                // ENFERMERÍA
                                 "/api/enfermeria/**",
 
-                                // CU-04 - PAGOS
+                                // MÉDICO
+                                "/api/medico/**",
+
+                                // PAGOS
                                 "/api/pagos/**"
                         )
                 );
