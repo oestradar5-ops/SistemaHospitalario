@@ -55,6 +55,10 @@
       margin: 30px auto;
     }
 
+    .seccion {
+      margin-bottom: 45px;
+    }
+
     .titulo {
       margin-bottom: 25px;
     }
@@ -68,15 +72,57 @@
       color: #666;
     }
 
+
+    /* ====================================== */
+    /* MENSAJES */
+    /* ====================================== */
+
+    .mensaje-exito {
+      background: #d1e7dd;
+      color: #0f5132;
+
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+
+      border: 1px solid #badbcc;
+    }
+
+    .mensaje-error {
+      background: #f8d7da;
+      color: #842029;
+
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+
+      border: 1px solid #f5c2c7;
+    }
+
+
+    /* ====================================== */
+    /* SIN PACIENTES */
+    /* ====================================== */
+
     .sin-pacientes {
       background: white;
-      padding: 30px;
+
+      padding: 25px;
+
       border-radius: 10px;
+
       text-align: center;
+
+      color: #666;
 
       box-shadow:
               0 2px 10px rgba(0, 0, 0, 0.08);
     }
+
+
+    /* ====================================== */
+    /* TARJETA DEL PACIENTE */
+    /* ====================================== */
 
     .paciente {
 
@@ -114,7 +160,7 @@
       display: grid;
 
       grid-template-columns:
-                    repeat(2, minmax(180px, 1fr));
+              repeat(2, minmax(180px, 1fr));
 
       gap: 8px 25px;
     }
@@ -122,6 +168,11 @@
     .datos p {
       margin: 4px 0;
     }
+
+
+    /* ====================================== */
+    /* PRIORIDAD */
+    /* ====================================== */
 
     .prioridad {
 
@@ -148,14 +199,51 @@
       color: #842029;
     }
 
+    .emergencia-card {
+      border-left: 7px solid #dc3545;
+    }
+
+
+    /* ====================================== */
+    /* CONSULTA MÉDICA */
+    /* ====================================== */
+
+    .consulta-card {
+      border-left: 7px solid #0d6efd;
+    }
+
+    .estado-consulta {
+
+      display: inline-block;
+
+      background: #cfe2ff;
+
+      color: #084298;
+
+      padding: 5px 12px;
+
+      border-radius: 20px;
+
+      font-weight: bold;
+
+      font-size: 13px;
+
+      margin-top: 12px;
+    }
+
+
+    /* ====================================== */
+    /* ACCIONES */
+    /* ====================================== */
+
     .acciones {
-      min-width: 180px;
+      min-width: 220px;
       text-align: center;
     }
 
-    .btn {
+    .btn-iniciar {
 
-      display: inline-block;
+      width: 100%;
 
       background: #198754;
 
@@ -165,18 +253,53 @@
 
       border-radius: 7px;
 
-      text-decoration: none;
+      border: none;
 
       font-weight: bold;
+
+      font-size: 15px;
+
+      cursor: pointer;
     }
 
-    .btn:hover {
+    .btn-iniciar:hover {
       background: #146c43;
     }
 
-    .emergencia-card {
-      border-left: 7px solid #dc3545;
+
+    .btn-consulta {
+
+      display: inline-block;
+
+      width: 100%;
+
+      background: #0d6efd;
+
+      color: white;
+
+      padding: 12px 18px;
+
+      border-radius: 7px;
+
+      border: none;
+
+      text-decoration: none;
+
+      font-weight: bold;
+
+      font-size: 15px;
+
+      cursor: pointer;
     }
+
+    .btn-consulta:hover {
+      background: #0b5ed7;
+    }
+
+
+    /* ====================================== */
+    /* RESPONSIVE */
+    /* ====================================== */
 
     @media (max-width: 700px) {
 
@@ -193,7 +316,8 @@
         width: 100%;
       }
 
-      .btn {
+      .btn-iniciar,
+      .btn-consulta {
         width: 100%;
       }
     }
@@ -202,7 +326,13 @@
 
 </head>
 
+
 <body>
+
+
+<!-- ========================================== -->
+<!-- ENCABEZADO -->
+<!-- ========================================== -->
 
 <header>
 
@@ -214,13 +344,17 @@
 
   </div>
 
+
   <div class="usuario">
 
     <div>
+
       Médico:
+
       <strong th:text="${usuarioActual}">
         doctor
       </strong>
+
     </div>
 
     <br>
@@ -234,157 +368,502 @@
 </header>
 
 
+
 <div class="contenedor">
 
-  <div class="titulo">
 
-    <h2>
-      Pacientes en espera
-    </h2>
+  <!-- ======================================== -->
+  <!-- MENSAJES -->
+  <!-- ======================================== -->
 
-    <p>
-      Pacientes que ya completaron la toma
-      de signos vitales.
-    </p>
-
+  <div
+          class="mensaje-exito"
+          th:if="${mensaje != null}"
+          th:text="${mensaje}">
   </div>
 
 
-  <!-- ================================== -->
-  <!-- SIN PACIENTES -->
-  <!-- ================================== -->
-
   <div
-          class="sin-pacientes"
-          th:if="${#lists.isEmpty(citas)}">
-
-    Actualmente no tiene pacientes
-    pendientes de consulta.
-
+          class="mensaje-error"
+          th:if="${error != null}"
+          th:text="${error}">
   </div>
 
 
-  <!-- ================================== -->
-  <!-- LISTA DE PACIENTES -->
-  <!-- ================================== -->
 
-  <div
-          th:each="cita : ${citas}"
+  <!-- ======================================== -->
+  <!-- 1. EN ESPERA DE CONSULTA -->
+  <!-- ======================================== -->
 
-          th:classappend="
-                ${cita.prioridad == 'EMERGENCIA'}
-                ? ' emergencia-card'
-                : ''
-            "
+  <div class="seccion">
 
-          class="paciente">
 
-    <div class="informacion">
+    <div class="titulo">
 
-      <h3>
+      <h2>
+        En Espera de Consulta
+      </h2>
 
-        Paciente:
+      <p>
+        Pacientes que ya completaron la toma
+        de signos vitales y están esperando
+        ser atendidos.
+      </p>
+
+    </div>
+
+
+
+    <!-- SIN PACIENTES -->
+
+    <div
+            class="sin-pacientes"
+            th:if="${#lists.isEmpty(citas)}">
+
+      Actualmente no tiene pacientes
+      en espera de consulta.
+
+    </div>
+
+
+
+    <!-- PACIENTES EN ESPERA -->
+
+    <div
+            th:each="cita : ${citas}"
+
+            th:classappend="
+                  ${cita.prioridad == 'EMERGENCIA'}
+                  ? ' emergencia-card'
+                  : ''
+              "
+
+            class="paciente">
+
+
+      <div class="informacion">
+
+
+        <h3>
+
+          Paciente:
+
+          <span
+                  th:text="${cita.paciente.nombreCompleto}">
+
+            Nombre paciente
+
+          </span>
+
+        </h3>
+
+
+
+        <div class="datos">
+
+
+          <p>
+
+            <strong>Cita:</strong>
+
+            #
+
+            <span th:text="${cita.id}">
+            </span>
+
+          </p>
+
+
+          <p>
+
+            <strong>DPI:</strong>
+
+            <span th:text="${cita.paciente.dpi}">
+            </span>
+
+          </p>
+
+
+          <p>
+
+            <strong>Especialidad:</strong>
+
+            <span th:text="${cita.especialidad.nombre}">
+            </span>
+
+          </p>
+
+
+          <p>
+
+            <strong>Estado:</strong>
+
+            <span th:text="${cita.estado}">
+            </span>
+
+          </p>
+
+
+          <p>
+
+            <strong>Motivo:</strong>
+
+            <span th:text="${cita.motivoConsulta}">
+            </span>
+
+          </p>
+
+
+          <p>
+
+            <strong>Hora de llegada:</strong>
+
+            <span th:text="${cita.horaLlegada}">
+            </span>
+
+          </p>
+
+
+        </div>
+
+
+
         <span
-                th:text="${cita.paciente.nombreCompleto}">
-                    Nombre paciente
-                </span>
+                class="prioridad"
 
-      </h3>
+                th:classappend="
+                      ${cita.prioridad == 'EMERGENCIA'}
+                      ? ' emergencia'
+                      : ' normal'
+                  "
 
+                th:text="${cita.prioridad}">
 
-      <div class="datos">
+          NORMAL
 
-        <p>
-          <strong>Cita:</strong>
-
-          #
-          <span
-                  th:text="${cita.id}">
-                    </span>
-        </p>
-
-
-        <p>
-          <strong>DPI:</strong>
-
-          <span
-                  th:text="${cita.paciente.dpi}">
-                    </span>
-        </p>
-
-
-        <p>
-          <strong>Especialidad:</strong>
-
-          <span
-                  th:text="${cita.especialidad.nombre}">
-                    </span>
-        </p>
-
-
-        <p>
-          <strong>Estado:</strong>
-
-          <span
-                  th:text="${cita.estado}">
-                    </span>
-        </p>
-
-
-        <p>
-          <strong>Motivo:</strong>
-
-          <span
-                  th:text="${cita.motivoConsulta}">
-                    </span>
-        </p>
-
-
-        <p>
-          <strong>Hora de llegada:</strong>
-
-          <span
-                  th:text="${cita.horaLlegada}">
-                    </span>
-        </p>
+        </span>
 
       </div>
 
 
-      <span
-              class="prioridad"
 
-              th:classappend="
-                        ${cita.prioridad == 'EMERGENCIA'}
-                        ? ' emergencia'
-                        : ' normal'
-                    "
+      <!-- INICIAR CONSULTA -->
 
-              th:text="${cita.prioridad}">
+      <div class="acciones">
 
-                NORMAL
+        <form
+                th:action="@{/medico/cita/{id}/iniciar(id=${cita.id})}"
+                method="post">
 
-            </span>
+          <button
+                  type="submit"
+                  class="btn-iniciar">
 
-    </div>
+            Iniciar Consulta
 
+          </button>
 
-    <div class="acciones">
+        </form>
 
-      <a
-              class="btn"
+      </div>
 
-              th:href="@{/medico/consulta/{id}(id=${cita.id})}">
-
-        Atender Paciente
-
-      </a>
 
     </div>
 
   </div>
 
+
+
+  <!-- ======================================== -->
+  <!-- 2. EN CONSULTA MÉDICA -->
+  <!-- ======================================== -->
+
+  <div class="seccion">
+
+
+    <div class="titulo">
+
+      <h2>
+        En Consulta Médica
+      </h2>
+
+      <p>
+        Pacientes cuya consulta médica
+        ya fue iniciada.
+      </p>
+
+    </div>
+
+
+
+    <!-- SIN PACIENTES -->
+
+    <div
+            class="sin-pacientes"
+            th:if="${#lists.isEmpty(citasEnConsulta)}">
+
+      Actualmente no tiene pacientes
+      en consulta médica.
+
+    </div>
+
+
+
+    <!-- PACIENTES EN CONSULTA -->
+
+    <div
+            th:each="cita : ${citasEnConsulta}"
+
+            class="paciente consulta-card">
+
+
+      <div class="informacion">
+
+
+        <h3>
+
+          Paciente:
+
+          <span
+                  th:text="${cita.paciente.nombreCompleto}">
+
+            Nombre paciente
+
+          </span>
+
+        </h3>
+
+
+
+        <div class="datos">
+
+
+          <p>
+
+            <strong>Cita:</strong>
+
+            #
+
+            <span th:text="${cita.id}">
+            </span>
+
+          </p>
+
+
+          <p>
+
+            <strong>DPI:</strong>
+
+            <span th:text="${cita.paciente.dpi}">
+            </span>
+
+          </p>
+
+
+          <p>
+
+            <strong>Especialidad:</strong>
+
+            <span th:text="${cita.especialidad.nombre}">
+            </span>
+
+          </p>
+
+
+          <p>
+
+            <strong>Estado:</strong>
+
+            <span th:text="${cita.estado}">
+            </span>
+
+          </p>
+
+
+          <p>
+
+            <strong>Motivo:</strong>
+
+            <span th:text="${cita.motivoConsulta}">
+            </span>
+
+          </p>
+
+
+          <p>
+
+            <strong>Prioridad:</strong>
+
+            <span th:text="${cita.prioridad}">
+            </span>
+
+          </p>
+
+
+        </div>
+
+
+
+        <span class="estado-consulta">
+
+          CONSULTA MÉDICA
+
+        </span>
+
+      </div>
+
+
+
+      <!-- VER / COMPLETAR CONSULTA -->
+
+      <div class="acciones">
+
+        <a
+                class="btn-consulta"
+
+                th:href="@{/medico/consulta/{id}(id=${cita.id})}">
+
+          Ver / Completar Consulta
+
+        </a>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+
 </div>
+
+
+
+<!-- ========================================== -->
+<!-- INFORMACIÓN PARA LLAMADO POR VOZ -->
+<!-- ========================================== -->
+
+<div
+        id="datosLlamado"
+
+        th:if="${llamarPaciente == true}"
+
+        th:data-turno="${numeroTurno}"
+
+        th:data-paciente="${nombrePaciente}"
+
+        style="display:none;">
+</div>
+
+
+
+<script>
+
+
+  // ==========================================
+  // LLAMADO DEL PACIENTE POR VOZ
+  // ==========================================
+
+  document.addEventListener(
+          "DOMContentLoaded",
+          function () {
+
+
+            const datosLlamado =
+                    document.getElementById(
+                            "datosLlamado"
+                    );
+
+
+            if (!datosLlamado) {
+
+              return;
+            }
+
+
+            const numeroTurno =
+                    datosLlamado.dataset.turno;
+
+
+            const nombrePaciente =
+                    datosLlamado.dataset.paciente;
+
+
+            if (!numeroTurno ||
+                    !nombrePaciente) {
+
+              return;
+            }
+
+
+            const texto =
+                    "Turno número "
+                    + numeroTurno
+                    + ". Paciente "
+                    + nombrePaciente
+                    + ", favor pasar a consulta médica.";
+
+
+            console.log(texto);
+
+
+            if (
+                    "speechSynthesis"
+                    in window
+            ) {
+
+
+              const mensaje =
+                      new SpeechSynthesisUtterance(
+                              texto
+                      );
+
+
+              mensaje.lang =
+                      "es-GT";
+
+
+              mensaje.rate =
+                      0.9;
+
+
+              mensaje.pitch =
+                      1;
+
+
+              window.speechSynthesis
+                      .cancel();
+
+
+              window.speechSynthesis
+                      .speak(
+                              mensaje
+                      );
+
+            }
+
+          }
+  );
+
+
+
+  // ==========================================
+  // ACTUALIZAR PANEL CADA 30 SEGUNDOS
+  // ==========================================
+
+  setTimeout(
+          function () {
+
+            window.location.reload();
+
+          },
+
+          30000
+  );
+
+
+</script>
+
 
 </body>
 

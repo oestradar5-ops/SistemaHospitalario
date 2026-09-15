@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Consulta Médica</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fa;
+            color: #333;
+        }
+
+        header {
+            background: #1f4e79;
+            color: white;
+            padding: 18px 35px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .usuario {
+            text-align: right;
+        }
+
+        .usuario a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .contenedor {
+            width: 92%;
+            max-width: 1000px;
+            margin: 30px auto;
+        }
+
+
+        /* ====================================== */
+        /* MENSAJES */
+        /* ====================================== */
+
+        .mensaje-exito {
+            background: #d1e7dd;
+            color: #0f5132;
+
+            padding: 15px;
+
+            border-radius: 8px;
+
+            margin-bottom: 20px;
+
+            border: 1px solid #badbcc;
+        }
+
+        .mensaje-error {
+            background: #f8d7da;
+            color: #842029;
+
+            padding: 15px;
+
+            border-radius: 8px;
+
+            margin-bottom: 20px;
+
+            border: 1px solid #f5c2c7;
+        }
+
+
+        /* ====================================== */
+        /* INFORMACIÓN DEL PACIENTE */
+        /* ====================================== */
+
+        .contexto {
+            background: white;
+
+            padding: 22px;
+
+            border-radius: 10px;
+
+            margin-bottom: 25px;
+
+            box-shadow:
+                    0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .contexto h2 {
+            margin-top: 0;
+            color: #1f4e79;
+        }
+
+        .datos-paciente {
+            display: grid;
+
+            grid-template-columns:
+                    repeat(2, 1fr);
+
+            gap: 12px 30px;
+        }
+
+        .datos-paciente p {
+            margin: 5px 0;
+        }
+
+        .emergencia {
+            display: inline-block;
+
+            margin-top: 15px;
+
+            padding: 6px 13px;
+
+            border-radius: 20px;
+
+            background: #f8d7da;
+            color: #842029;
+
+            font-weight: bold;
+        }
+
+
+        /* ====================================== */
+        /* FORMULARIO */
+        /* ====================================== */
+
+        .formulario {
+            background: white;
+
+            padding: 28px;
+
+            border-radius: 10px;
+
+            box-shadow:
+                    0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .formulario h2 {
+            color: #1f4e79;
+            margin-top: 0;
+        }
+
+        .campo {
+            margin-bottom: 20px;
+        }
+
+        .campo label {
+            display: block;
+
+            font-weight: bold;
+
+            margin-bottom: 7px;
+        }
+
+        .obligatorio {
+            color: #dc3545;
+        }
+
+        .campo input,
+        .campo textarea,
+        .campo select {
+
+            width: 100%;
+
+            padding: 11px;
+
+            border: 1px solid #aaa;
+
+            border-radius: 6px;
+
+            font-family: Arial, sans-serif;
+
+            font-size: 15px;
+        }
+
+        .campo textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .campo input:focus,
+        .campo textarea:focus,
+        .campo select:focus {
+
+            outline: none;
+
+            border-color: #0d6efd;
+        }
+
+        .nota {
+            color: #666;
+            font-size: 13px;
+        }
+
+
+        /* ====================================== */
+        /* BOTONES */
+        /* ====================================== */
+
+        .acciones {
+            display: flex;
+
+            gap: 12px;
+
+            margin-top: 25px;
+        }
+
+        .btn-guardar {
+            background: #198754;
+            color: white;
+
+            border: none;
+
+            padding: 12px 22px;
+
+            border-radius: 7px;
+
+            font-weight: bold;
+
+            font-size: 15px;
+
+            cursor: pointer;
+        }
+
+        .btn-guardar:hover {
+            background: #146c43;
+        }
+
+        .btn-volver {
+            background: #6c757d;
+            color: white;
+
+            padding: 12px 22px;
+
+            border-radius: 7px;
+
+            text-decoration: none;
+
+            font-weight: bold;
+        }
+
+
+        /* ====================================== */
+        /* RESPONSIVE */
+        /* ====================================== */
+
+        @media(max-width:700px) {
+
+            .datos-paciente {
+                grid-template-columns: 1fr;
+            }
+
+            .acciones {
+                flex-direction: column;
+            }
+
+            .btn-guardar,
+            .btn-volver {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- ========================================== -->
+<!-- ENCABEZADO -->
+<!-- ========================================== -->
+
+<header>
+
+    <h1>
+        Consulta Médica
+    </h1>
+
+
+    <div class="usuario">
+
+        Médico:
+
+        <strong th:text="${usuarioActual}">
+            doctor
+        </strong>
+
+        <br><br>
+
+        <a href="/medico">
+            Volver al panel
+        </a>
+
+    </div>
+
+</header>
+
+
+
+<div class="contenedor">
+
+
+    <!-- ====================================== -->
+    <!-- MENSAJE DE ÉXITO -->
+    <!-- ====================================== -->
+
+    <div
+            class="mensaje-exito"
+            th:if="${mensaje != null}"
+            th:text="${mensaje}">
+
+        Consulta guardada correctamente.
+
+    </div>
+
+
+    <!-- ====================================== -->
+    <!-- MENSAJE DE ERROR -->
+    <!-- ====================================== -->
+
+    <div
+            class="mensaje-error"
+            th:if="${error != null}"
+            th:text="${error}">
+
+        Ocurrió un error.
+
+    </div>
+
+
+
+    <!-- ====================================== -->
+    <!-- INFORMACIÓN DEL PACIENTE -->
+    <!-- ====================================== -->
+
+    <div class="contexto">
+
+        <h2>
+            Información del Paciente
+        </h2>
+
+
+        <div class="datos-paciente">
+
+
+            <!-- NÚMERO DE CITA -->
+
+            <p>
+
+                <strong>
+                    Número de cita:
+                </strong>
+
+                #
+
+                <span th:text="${cita.id}">
+                    0
+                </span>
+
+            </p>
+
+
+            <!-- PACIENTE -->
+
+            <p>
+
+                <strong>
+                    Paciente:
+                </strong>
+
+                <span
+                        th:text="${cita.paciente.nombreCompleto}">
+
+                    Paciente
+
+                </span>
+
+            </p>
+
+
+            <!-- DPI -->
+
+            <p>
+
+                <strong>
+                    DPI:
+                </strong>
+
+                <span
+                        th:text="${cita.paciente.dpi}">
+                </span>
+
+            </p>
+
+
+            <!-- ESPECIALIDAD -->
+
+            <p>
+
+                <strong>
+                    Especialidad:
+                </strong>
+
+                <span
+                        th:text="${cita.especialidad.nombre}">
+                </span>
+
+            </p>
+
+
+            <!-- ESTADO -->
+
+            <p>
+
+                <strong>
+                    Estado:
+                </strong>
+
+                <span
+                        th:text="${cita.estado}">
+                </span>
+
+            </p>
+
+
+            <!-- PRIORIDAD -->
+
+            <p>
+
+                <strong>
+                    Prioridad:
+                </strong>
+
+                <span
+                        th:text="${cita.prioridad}">
+                </span>
+
+            </p>
+
+        </div>
+
+
+        <!-- EMERGENCIA -->
+
+        <div
+                class="emergencia"
+                th:if="${cita.prioridad == 'EMERGENCIA'}">
+
+            EMERGENCIA
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ====================================== -->
+    <!-- FORMULARIO CONSULTA MÉDICA -->
+    <!-- ====================================== -->
+
+    <div class="formulario">
+
+
+        <h2>
+            Registro de Consulta
+        </h2>
+
+
+        <p class="nota">
+
+            Los campos marcados con *
+            son obligatorios.
+
+        </p>
+
+
+
+        <form
+                id="formConsulta"
+
+                th:action="@{/medico/consulta/{id}/guardar(id=${cita.id})}"
+
+                method="post">
+
+
+            <!-- ================================== -->
+            <!-- MOTIVO DE VISITA -->
+            <!-- ================================== -->
+
+            <div class="campo">
+
+                <label for="motivoVisita">
+
+                    Motivo de Visita
+
+                    <span class="obligatorio">
+                        *
+                    </span>
+
+                </label>
+
+
+                <textarea
+                        id="motivoVisita"
+
+                        name="motivoVisita"
+
+                        required
+
+                        th:text="${consulta.motivoVisita}">
+
+                </textarea>
+
+            </div>
+
+
+
+            <!-- ================================== -->
+            <!-- HALLAZGOS CLÍNICOS -->
+            <!-- ================================== -->
+
+            <div class="campo">
+
+                <label for="hallazgosClinicos">
+
+                    Hallazgos Clínicos
+
+                </label>
+
+
+                <textarea
+                        id="hallazgosClinicos"
+
+                        name="hallazgosClinicos"
+
+                        placeholder="Ingrese los hallazgos de la evaluación médica"
+
+                        th:text="${consulta.hallazgosClinicos}">
+
+                </textarea>
+
+            </div>
+
+
+
+            <!-- ================================== -->
+            <!-- CÓDIGO CIE-10 -->
+            <!-- ================================== -->
+
+            <div class="campo">
+
+                <label for="codigoCie10">
+
+                    Código CIE-10
+
+                </label>
+
+
+                <input
+                        type="text"
+
+                        id="codigoCie10"
+
+                        name="codigoCie10"
+
+                        th:value="${consulta.codigoCie10}"
+
+                        placeholder="Buscar código o diagnóstico CIE-10"
+
+                        autocomplete="off">
+
+
+                <div class="nota">
+
+                    Ingrese el código CIE-10
+                    correspondiente al diagnóstico.
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ================================== -->
+            <!-- DIAGNÓSTICO -->
+            <!-- ================================== -->
+
+            <div class="campo">
+
+                <label for="diagnostico">
+
+                    Diagnóstico
+
+                    <span class="obligatorio">
+                        *
+                    </span>
+
+                </label>
+
+
+                <textarea
+                        id="diagnostico"
+
+                        name="diagnostico"
+
+                        placeholder="Ingrese el diagnóstico del paciente"
+
+                        th:text="${consulta.diagnostico}">
+
+                </textarea>
+
+            </div>
+
+
+
+            <!-- ================================== -->
+            <!-- PLAN DE TRATAMIENTO -->
+            <!-- ================================== -->
+
+            <div class="campo">
+
+                <label for="planTratamiento">
+
+                    Plan de Tratamiento
+
+                </label>
+
+
+                <textarea
+                        id="planTratamiento"
+
+                        name="planTratamiento"
+
+                        placeholder="Ingrese el tratamiento indicado"
+
+                        th:text="${consulta.planTratamiento}">
+
+                </textarea>
+
+            </div>
+
+
+
+            <!-- ================================== -->
+            <!-- NOTAS ADICIONALES -->
+            <!-- ================================== -->
+
+            <div class="campo">
+
+                <label for="notasAdicionales">
+
+                    Notas Adicionales
+
+                </label>
+
+
+                <textarea
+                        id="notasAdicionales"
+
+                        name="notasAdicionales"
+
+                        placeholder="Observaciones adicionales"
+
+                        th:text="${consulta.notasAdicionales}">
+
+                </textarea>
+
+            </div>
+
+
+
+            <!-- ================================== -->
+            <!-- ESTADO DE CONSULTA -->
+            <!-- ================================== -->
+
+            <div class="campo">
+
+                <label for="estadoConsulta">
+
+                    Estado de Consulta
+
+                </label>
+
+
+                <select
+                        id="estadoConsulta"
+
+                        name="estadoConsulta">
+
+
+                    <option
+                            value="EN_CURSO"
+
+                            th:selected="${consulta.estadoConsulta == 'EN_CURSO'}">
+
+                        En curso
+
+                    </option>
+
+
+                    <option
+                            value="FINALIZADA"
+
+                            th:selected="${consulta.estadoConsulta == 'FINALIZADA'}">
+
+                        Finalizada
+
+                    </option>
+
+
+                </select>
+
+            </div>
+
+
+
+            <!-- ================================== -->
+            <!-- BOTONES -->
+            <!-- ================================== -->
+
+            <div class="acciones">
+
+
+                <button
+                        type="submit"
+
+                        class="btn-guardar">
+
+                    Guardar Consulta
+
+                </button>
+
+
+                <a
+                        href="/medico"
+
+                        class="btn-volver">
+
+                    Volver al Panel
+
+                </a>
+
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+
+</body>
+
+</html>
