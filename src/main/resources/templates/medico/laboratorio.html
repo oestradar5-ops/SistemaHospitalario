@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Orden de Laboratorio</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fa;
+            color: #333;
+        }
+
+        header {
+            background: #1f4e79;
+            color: white;
+            padding: 20px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .usuario {
+            text-align: right;
+        }
+
+        .usuario a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .contenedor {
+            width: 92%;
+            max-width: 1050px;
+            margin: 30px auto;
+        }
+
+        .tarjeta {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .tarjeta h2 {
+            color: #1f4e79;
+            margin-top: 0;
+        }
+
+        .datos-paciente {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 25px;
+        }
+
+        .datos-paciente p {
+            margin: 5px 0;
+        }
+
+        .estado {
+            display: inline-block;
+            padding: 6px 14px;
+            background: #fff3cd;
+            color: #664d03;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .descripcion {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .catalogo {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .examen {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #fafafa;
+        }
+
+        .examen:hover {
+            background: #eaf3ff;
+            border-color: #0d6efd;
+        }
+
+        .examen input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .examen strong {
+            display: block;
+            color: #1f4e79;
+            margin-bottom: 5px;
+        }
+
+        .examen small {
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .contador {
+            margin-top: 20px;
+            padding: 12px;
+            background: #e7f1ff;
+            color: #084298;
+            border-radius: 7px;
+            font-weight: bold;
+        }
+
+        .campo {
+            margin-top: 25px;
+        }
+
+        .campo label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .campo textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 1px solid #aaa;
+            border-radius: 7px;
+            resize: vertical;
+            font-family: Arial, sans-serif;
+            font-size: 15px;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn-guardar {
+            background: #198754;
+            color: white;
+            padding: 13px 22px;
+            border: none;
+            border-radius: 7px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .btn-guardar:hover {
+            background: #146c43;
+        }
+
+        .btn-guardar:disabled {
+            background: #90bca7;
+            cursor: not-allowed;
+        }
+
+        .btn-volver {
+            display: inline-block;
+            background: #6c757d;
+            color: white;
+            padding: 13px 22px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .mensaje-error {
+            display: none;
+            padding: 13px;
+            background: #f8d7da;
+            color: #842029;
+            border-radius: 7px;
+            margin-top: 15px;
+        }
+
+        .error-servidor {
+            background: #f8d7da;
+            color: #842029;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .mensaje-exito {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 700px) {
+
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .datos-paciente,
+            .catalogo {
+                grid-template-columns: 1fr;
+            }
+
+            .acciones {
+                flex-direction: column;
+            }
+
+            .btn-guardar,
+            .btn-volver {
+                width: 100%;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<!-- ====================================== -->
+<!-- ENCABEZADO -->
+<!-- ====================================== -->
+
+<header>
+
+    <h1>Generar Orden de Laboratorio</h1>
+
+    <div class="usuario">
+
+        Médico:
+
+        <strong th:text="${usuarioActual}">
+            doctor
+        </strong>
+
+        <br><br>
+
+        <a th:href="@{/medico}">
+            Volver al Panel
+        </a>
+
+    </div>
+
+</header>
+
+
+<div class="contenedor">
+
+    <!-- ====================================== -->
+    <!-- MENSAJES DEL SERVIDOR -->
+    <!-- ====================================== -->
+
+    <div th:if="${error != null}"
+         class="error-servidor"
+         th:text="${error}">
+    </div>
+
+    <div th:if="${mensaje != null}"
+         class="mensaje-exito"
+         th:text="${mensaje}">
+    </div>
+
+
+    <!-- ====================================== -->
+    <!-- INFORMACIÓN DEL PACIENTE -->
+    <!-- ====================================== -->
+
+    <div class="tarjeta">
+
+        <h2>Información del Paciente</h2>
+
+        <div class="datos-paciente">
+
+            <p>
+                <strong>Número de cita:</strong>
+
+                #<span th:text="${cita.id}">
+                    0
+                </span>
+            </p>
+
+            <p>
+                <strong>Paciente:</strong>
+
+                <span th:text="${cita.paciente.nombreCompleto}">
+                    Nombre del paciente
+                </span>
+            </p>
+
+            <p>
+                <strong>DPI:</strong>
+
+                <span th:text="${cita.paciente.dpi}">
+                    0000000000000
+                </span>
+            </p>
+
+            <p>
+                <strong>Especialidad:</strong>
+
+                <span th:text="${cita.especialidad.nombre}">
+                    Especialidad
+                </span>
+            </p>
+
+            <p>
+                <strong>Estado:</strong>
+
+                <span class="estado"
+                      th:text="${cita.estado}">
+                    EVALUADO
+                </span>
+            </p>
+
+            <p>
+                <strong>Prioridad:</strong>
+
+                <span th:text="${cita.prioridad}">
+                    NORMAL
+                </span>
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ====================================== -->
+    <!-- FORMULARIO DE LABORATORIO -->
+    <!-- ====================================== -->
+
+    <div class="tarjeta">
+
+        <h2>Seleccionar Exámenes</h2>
+
+        <p class="descripcion">
+            Seleccione uno o varios exámenes del catálogo
+            y agregue las observaciones correspondientes.
+        </p>
+
+
+        <!-- ====================================== -->
+        <!-- FORMULARIO CONECTADO A SPRING BOOT -->
+        <!-- ====================================== -->
+
+        <form id="formLaboratorio"
+              th:action="@{/medico/laboratorio/{id}/guardar(id=${cita.id})}"
+              method="post">
+
+            <!-- ====================================== -->
+            <!-- CATÁLOGO DE EXÁMENES -->
+            <!-- ====================================== -->
+
+            <div class="catalogo">
+
+                <label class="examen"
+                       th:each="examen : ${examenes}">
+
+                    <input type="checkbox"
+                           name="examenesIds"
+                           th:value="${examen.id}"
+                           class="check-examen">
+
+                    <span>
+
+                        <strong th:text="${examen.nombre}">
+                            Nombre del examen
+                        </strong>
+
+                        <small th:text="${examen.descripcion}">
+                            Descripción del examen
+                        </small>
+
+                    </span>
+
+                </label>
+
+            </div>
+
+
+            <!-- ====================================== -->
+            <!-- CATÁLOGO VACÍO -->
+            <!-- ====================================== -->
+
+            <p th:if="${#lists.isEmpty(examenes)}">
+                No hay exámenes disponibles en el catálogo.
+            </p>
+
+
+            <!-- ====================================== -->
+            <!-- CONTADOR -->
+            <!-- ====================================== -->
+
+            <div class="contador">
+
+                Exámenes seleccionados:
+
+                <span id="cantidadSeleccionados">
+                    0
+                </span>
+
+            </div>
+
+
+            <!-- ====================================== -->
+            <!-- ERROR DE VALIDACIÓN -->
+            <!-- ====================================== -->
+
+            <div class="mensaje-error"
+                 id="mensajeError">
+
+                Debe seleccionar al menos un examen.
+
+            </div>
+
+
+            <!-- ====================================== -->
+            <!-- OBSERVACIONES -->
+            <!-- ====================================== -->
+
+            <div class="campo">
+
+                <label for="observaciones">
+                    Observaciones
+                </label>
+
+                <textarea
+                        id="observaciones"
+                        name="observaciones"
+                        placeholder="Ingrese observaciones médicas para el laboratorio"></textarea>
+
+            </div>
+
+
+            <!-- ====================================== -->
+            <!-- BOTONES -->
+            <!-- ====================================== -->
+
+            <div class="acciones">
+
+                <button type="submit"
+                        id="btnGuardar"
+                        class="btn-guardar">
+
+                    Guardar Orden
+
+                </button>
+
+                <a th:href="@{/medico}"
+                   class="btn-volver">
+
+                    Volver al Panel
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // ======================================
+    // OBTENER ELEMENTOS
+    // ======================================
+
+    const checks =
+        document.querySelectorAll(".check-examen");
+
+    const contador =
+        document.getElementById("cantidadSeleccionados");
+
+    const mensajeError =
+        document.getElementById("mensajeError");
+
+    const formulario =
+        document.getElementById("formLaboratorio");
+
+    const btnGuardar =
+        document.getElementById("btnGuardar");
+
+
+    // ======================================
+    // CONTAR EXÁMENES SELECCIONADOS
+    // ======================================
+
+    function actualizarContador() {
+
+        let cantidad = 0;
+
+        checks.forEach(function(check) {
+
+            if (check.checked) {
+                cantidad++;
+            }
+
+        });
+
+        contador.textContent = cantidad;
+
+        if (cantidad > 0) {
+            mensajeError.style.display = "none";
+        }
+
+    }
+
+
+    // ======================================
+    // DETECTAR CAMBIOS EN LOS CHECKBOX
+    // ======================================
+
+    checks.forEach(function(check) {
+
+        check.addEventListener(
+            "change",
+            actualizarContador
+        );
+
+    });
+
+
+    // ======================================
+    // VALIDAR Y ENVIAR FORMULARIO
+    // ======================================
+
+    formulario.addEventListener(
+        "submit",
+        function(event) {
+
+            const seleccionados =
+                document.querySelectorAll(
+                    ".check-examen:checked"
+                );
+
+            // VALIDAR QUE EXISTAN EXÁMENES
+
+            if (seleccionados.length === 0) {
+
+                event.preventDefault();
+
+                mensajeError.style.display = "block";
+
+                return;
+            }
+
+            // EVITAR DOBLE ENVÍO
+
+            btnGuardar.disabled = true;
+
+            btnGuardar.textContent =
+                "Guardando orden...";
+
+            // NO UTILIZAR event.preventDefault()
+            // AQUÍ, PARA PERMITIR EL ENVÍO
+            // AL CONTROLADOR SPRING BOOT.
+
+        }
+    );
+
+</script>
+
+</body>
+</html>

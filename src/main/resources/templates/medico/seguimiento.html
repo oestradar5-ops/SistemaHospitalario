@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Programar Seguimiento Médico</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fa;
+            color: #333;
+        }
+
+        header {
+            background: #1f4e79;
+            color: white;
+            padding: 20px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .usuario {
+            text-align: right;
+        }
+
+        .usuario a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .contenedor {
+            width: 92%;
+            max-width: 1100px;
+            margin: 30px auto;
+        }
+
+        .tarjeta {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .tarjeta h2 {
+            margin-top: 0;
+            color: #1f4e79;
+        }
+
+        .datos-paciente {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .estado {
+            background: #fff3cd;
+            color: #664d03;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+
+        .descripcion {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .campo {
+            margin-top: 20px;
+        }
+
+        .campo label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .campo input,
+        .campo textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #aaa;
+            border-radius: 7px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        .campo textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        button,
+        .btn-volver {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 7px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-guardar {
+            background: #198754;
+            color: white;
+        }
+
+        .btn-guardar:hover {
+            background: #146c43;
+        }
+
+        .btn-guardar:disabled {
+            background: #8bbba5;
+            cursor: not-allowed;
+        }
+
+        .btn-volver {
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-volver:hover {
+            background: #565e64;
+        }
+
+        .mensaje-error {
+            display: none;
+            background: #f8d7da;
+            color: #842029;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .error-servidor {
+            background: #f8d7da;
+            color: #842029;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .mensaje-exito {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .tabla-contenedor {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #1f4e79;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #f1f5f9;
+        }
+
+        .estado-programado {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+
+        .sin-registros {
+            background: #eef2f6;
+            padding: 18px;
+            border-radius: 8px;
+            color: #555;
+        }
+
+        @media (max-width: 700px) {
+
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .datos-paciente {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<!-- ====================================== -->
+<!-- ENCABEZADO -->
+<!-- ====================================== -->
+
+<header>
+
+    <h1>Programar Seguimiento Médico</h1>
+
+    <div class="usuario">
+
+        Médico:
+        <strong th:text="${usuarioActual}">
+            doctor
+        </strong>
+
+        <br><br>
+
+        <a th:href="@{/medico}">
+            Volver al Panel
+        </a>
+
+    </div>
+
+</header>
+
+
+<div class="contenedor">
+
+    <!-- ====================================== -->
+    <!-- MENSAJES DEL SERVIDOR -->
+    <!-- ====================================== -->
+
+    <div th:if="${error != null}"
+         class="error-servidor"
+         th:text="${error}">
+    </div>
+
+    <div th:if="${mensaje != null}"
+         class="mensaje-exito"
+         th:text="${mensaje}">
+    </div>
+
+
+    <!-- ====================================== -->
+    <!-- INFORMACIÓN DEL PACIENTE -->
+    <!-- ====================================== -->
+
+    <div class="tarjeta">
+
+        <h2>Información del Paciente</h2>
+
+        <div class="datos-paciente">
+
+            <p>
+                <strong>Número de cita:</strong>
+                #<span th:text="${cita.id}">0</span>
+            </p>
+
+            <p>
+                <strong>Paciente:</strong>
+
+                <span th:text="${cita.paciente.nombreCompleto}">
+                    Nombre del paciente
+                </span>
+            </p>
+
+            <p>
+                <strong>DPI:</strong>
+
+                <span th:text="${cita.paciente.dpi}">
+                    0000000000000
+                </span>
+            </p>
+
+            <p>
+                <strong>Especialidad:</strong>
+
+                <span th:text="${cita.especialidad.nombre}">
+                    Especialidad
+                </span>
+            </p>
+
+            <p>
+                <strong>Estado:</strong>
+
+                <span class="estado"
+                      th:text="${cita.estado}">
+                    EVALUADO
+                </span>
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ====================================== -->
+    <!-- FORMULARIO DE SEGUIMIENTO -->
+    <!-- ====================================== -->
+
+    <div class="tarjeta">
+
+        <h2>Nuevo Seguimiento Médico</h2>
+
+        <p class="descripcion">
+            Registre la fecha en la que el paciente
+            deberá regresar para una evaluación de seguimiento.
+        </p>
+
+        <!-- FORMULARIO CONECTADO A SPRING BOOT -->
+
+        <form id="formSeguimiento"
+              th:action="@{/medico/seguimiento/{id}/guardar(id=${cita.id})}"
+              method="post">
+
+            <!-- FECHA -->
+
+            <div class="campo">
+
+                <label for="fechaSeguimiento">
+                    Fecha de Seguimiento *
+                </label>
+
+                <input type="date"
+                       id="fechaSeguimiento"
+                       name="fechaSeguimiento"
+                       th:min="${fechaMinima}"
+                       required>
+
+            </div>
+
+
+            <!-- MOTIVO -->
+
+            <div class="campo">
+
+                <label for="motivo">
+                    Motivo del Seguimiento *
+                </label>
+
+                <input type="text"
+                       id="motivo"
+                       name="motivo"
+                       maxlength="250"
+                       placeholder="Ej. Revisión de resultados de laboratorio"
+                       required>
+
+            </div>
+
+
+            <!-- OBSERVACIONES -->
+
+            <div class="campo">
+
+                <label for="observaciones">
+                    Observaciones Médicas
+                </label>
+
+                <textarea id="observaciones"
+                          name="observaciones"
+                          placeholder="Ej. Presentar resultados de laboratorio y continuar tratamiento indicado"></textarea>
+
+            </div>
+
+
+            <!-- MENSAJE DE ERROR -->
+
+            <div class="mensaje-error"
+                 id="mensajeError">
+                Complete correctamente los campos obligatorios.
+            </div>
+
+
+            <!-- BOTONES -->
+
+            <div class="acciones">
+
+                <button type="submit"
+                        id="btnGuardar"
+                        class="btn-guardar">
+                    Guardar Seguimiento
+                </button>
+
+                <a th:href="@{/medico}"
+                   class="btn-volver">
+                    Volver al Panel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- ====================================== -->
+    <!-- HISTORIAL DE SEGUIMIENTOS -->
+    <!-- ====================================== -->
+
+    <div class="tarjeta">
+
+        <h2>Historial de Seguimientos</h2>
+
+        <p class="descripcion">
+            Seguimientos registrados para esta cita médica.
+        </p>
+
+        <!-- SIN REGISTROS -->
+
+        <div th:if="${#lists.isEmpty(seguimientos)}"
+             class="sin-registros">
+
+            Todavía no existen seguimientos médicos
+            registrados para esta cita.
+
+        </div>
+
+
+        <!-- TABLA DE SEGUIMIENTOS -->
+
+        <div th:unless="${#lists.isEmpty(seguimientos)}"
+             class="tabla-contenedor">
+
+            <table>
+
+                <thead>
+
+                <tr>
+                    <th>No.</th>
+                    <th>Fecha de Seguimiento</th>
+                    <th>Motivo</th>
+                    <th>Observaciones</th>
+                    <th>Estado</th>
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                <tr th:each="seguimiento : ${seguimientos}">
+
+                    <td th:text="${seguimiento.id}">
+                        1
+                    </td>
+
+                    <td th:text="${seguimiento.fechaSeguimiento}">
+                        2026-10-20
+                    </td>
+
+                    <td th:text="${seguimiento.motivo}">
+                        Revisión médica
+                    </td>
+
+                    <td th:text="${seguimiento.observaciones}">
+                        Observaciones
+                    </td>
+
+                    <td>
+
+                        <span class="estado-programado"
+                              th:text="${seguimiento.estado}">
+                            PROGRAMADO
+                        </span>
+
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // ======================================
+    // VALIDAR Y ENVIAR EL FORMULARIO
+    // ======================================
+
+    const formulario =
+        document.getElementById("formSeguimiento");
+
+    const mensajeError =
+        document.getElementById("mensajeError");
+
+    const botonGuardar =
+        document.getElementById("btnGuardar");
+
+
+    formulario.addEventListener("submit", function(event) {
+
+        const fechaInput =
+            document.getElementById("fechaSeguimiento");
+
+        const fecha =
+            fechaInput.value;
+
+        const motivo =
+            document.getElementById("motivo").value.trim();
+
+        // VALIDAR CAMPOS OBLIGATORIOS
+
+        if (!fecha || !motivo) {
+
+            event.preventDefault();
+
+            mensajeError.textContent =
+                "Debe completar la fecha y el motivo del seguimiento.";
+
+            mensajeError.style.display = "block";
+
+            return;
+        }
+
+        // VALIDAR FECHA FUTURA
+
+        const fechaMinima =
+            fechaInput.min;
+
+        if (fechaMinima && fecha < fechaMinima) {
+
+            event.preventDefault();
+
+            mensajeError.textContent =
+                "La fecha de seguimiento debe ser posterior a la fecha actual.";
+
+            mensajeError.style.display = "block";
+
+            return;
+        }
+
+        // VALIDACIÓN CORRECTA
+
+        mensajeError.style.display = "none";
+
+        // EVITAR ENVÍOS DUPLICADOS
+
+        botonGuardar.disabled = true;
+
+        botonGuardar.textContent =
+            "Guardando seguimiento...";
+
+        // NO UTILIZAR event.preventDefault()
+        // Permitir el envío a Spring Boot.
+
+    });
+
+</script>
+
+</body>
+</html>

@@ -121,7 +121,7 @@
 
 
     /* ====================================== */
-    /* TARJETA DEL PACIENTE */
+    /* TARJETA PACIENTE */
     /* ====================================== */
 
     .paciente {
@@ -157,6 +157,7 @@
     }
 
     .datos {
+
       display: grid;
 
       grid-template-columns:
@@ -219,6 +220,34 @@
       background: #cfe2ff;
 
       color: #084298;
+
+      padding: 5px 12px;
+
+      border-radius: 20px;
+
+      font-weight: bold;
+
+      font-size: 13px;
+
+      margin-top: 12px;
+    }
+
+
+    /* ====================================== */
+    /* EVALUADOS */
+    /* ====================================== */
+
+    .evaluado-card {
+      border-left: 7px solid #ffc107;
+    }
+
+    .estado-evaluado {
+
+      display: inline-block;
+
+      background: #fff3cd;
+
+      color: #664d03;
 
       padding: 5px 12px;
 
@@ -298,10 +327,116 @@
 
 
     /* ====================================== */
+    /* ACCIONES DE PACIENTE EVALUADO */
+    /* ====================================== */
+
+    .acciones-evaluado {
+
+      min-width: 240px;
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 8px;
+    }
+
+    .btn-laboratorio,
+    .btn-receta,
+    .btn-seguimiento,
+    .btn-finalizar {
+
+      display: block;
+
+      width: 100%;
+
+      padding: 11px 15px;
+
+      border-radius: 7px;
+
+      border: none;
+
+      text-decoration: none;
+
+      text-align: center;
+
+      font-weight: bold;
+
+      font-size: 14px;
+
+      cursor: pointer;
+    }
+
+
+    /* LABORATORIO */
+
+    .btn-laboratorio {
+      background: #0dcaf0;
+      color: #000;
+    }
+
+    .btn-laboratorio:hover {
+      background: #31d2f2;
+    }
+
+
+    /* RECETA */
+
+    .btn-receta {
+      background: #6f42c1;
+      color: white;
+    }
+
+    .btn-receta:hover {
+      background: #59359a;
+    }
+
+
+    /* SEGUIMIENTO */
+
+    .btn-seguimiento {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-seguimiento:hover {
+      background: #5c636a;
+    }
+
+
+    /* FINALIZAR ATENCIÓN */
+
+    .btn-finalizar {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-finalizar:hover {
+      background: #bb2d3b;
+    }
+
+
+    .acciones-evaluado form {
+      margin: 0;
+      width: 100%;
+    }
+
+
+    /* ====================================== */
     /* RESPONSIVE */
     /* ====================================== */
 
     @media (max-width: 700px) {
+
+      header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+
+      .usuario {
+        text-align: center;
+      }
 
       .paciente {
         flex-direction: column;
@@ -312,12 +447,18 @@
         grid-template-columns: 1fr;
       }
 
-      .acciones {
+      .acciones,
+      .acciones-evaluado {
         width: 100%;
+        min-width: 0;
       }
 
       .btn-iniciar,
-      .btn-consulta {
+      .btn-consulta,
+      .btn-laboratorio,
+      .btn-receta,
+      .btn-seguimiento,
+      .btn-finalizar {
         width: 100%;
       }
     }
@@ -731,6 +872,265 @@
 
 
     </div>
+
+  </div>
+
+
+
+  <!-- ======================================== -->
+  <!-- 3. EVALUADOS - PENDIENTES DE CIERRE -->
+  <!-- ======================================== -->
+
+  <div class="seccion">
+
+
+    <div class="titulo">
+
+      <h2>
+        Evaluados - Pendientes de Cierre
+      </h2>
+
+      <p>
+        Pacientes cuya consulta médica ya fue
+        finalizada y están pendientes de completar
+        las indicaciones médicas.
+      </p>
+
+    </div>
+
+
+
+    <!-- SIN PACIENTES EVALUADOS -->
+
+    <div
+            class="sin-pacientes"
+            th:if="${#lists.isEmpty(citasEvaluadas)}">
+
+      Actualmente no tiene pacientes
+      evaluados pendientes de cierre.
+
+    </div>
+
+
+
+    <!-- PACIENTES EVALUADOS -->
+
+    <div
+            th:each="cita : ${citasEvaluadas}"
+
+            th:classappend="
+                  ${cita.prioridad == 'EMERGENCIA'}
+                  ? ' emergencia-card'
+                  : ''
+              "
+
+            class="paciente evaluado-card">
+
+
+      <div class="informacion">
+
+
+        <h3>
+
+          Paciente:
+
+          <span
+                  th:text="${cita.paciente.nombreCompleto}">
+
+            Nombre paciente
+
+          </span>
+
+        </h3>
+
+
+
+        <div class="datos">
+
+
+          <!-- CITA -->
+
+          <p>
+
+            <strong>Cita:</strong>
+
+            #
+
+            <span th:text="${cita.id}">
+            </span>
+
+          </p>
+
+
+          <!-- DPI -->
+
+          <p>
+
+            <strong>DPI:</strong>
+
+            <span th:text="${cita.paciente.dpi}">
+            </span>
+
+          </p>
+
+
+          <!-- ESPECIALIDAD -->
+
+          <p>
+
+            <strong>Especialidad:</strong>
+
+            <span th:text="${cita.especialidad.nombre}">
+            </span>
+
+          </p>
+
+
+          <!-- ESTADO -->
+
+          <p>
+
+            <strong>Estado:</strong>
+
+            <span th:text="${cita.estado}">
+            </span>
+
+          </p>
+
+
+          <!-- MOTIVO -->
+
+          <p>
+
+            <strong>Motivo:</strong>
+
+            <span th:text="${cita.motivoConsulta}">
+            </span>
+
+          </p>
+
+
+          <!-- PRIORIDAD -->
+
+          <p>
+
+            <strong>Prioridad:</strong>
+
+            <span th:text="${cita.prioridad}">
+            </span>
+
+          </p>
+
+
+        </div>
+
+
+
+        <!-- ESTADO EVALUADO -->
+
+        <span class="estado-evaluado">
+
+          EVALUADO
+
+        </span>
+
+
+        <!-- PRIORIDAD -->
+
+        <span
+                class="prioridad"
+
+                th:classappend="
+                      ${cita.prioridad == 'EMERGENCIA'}
+                      ? ' emergencia'
+                      : ' normal'
+                  "
+
+                th:text="${cita.prioridad}">
+
+          NORMAL
+
+        </span>
+
+
+      </div>
+
+
+
+      <!-- ====================================== -->
+      <!-- ACCIONES POST CONSULTA -->
+      <!-- ====================================== -->
+
+      <div class="acciones-evaluado">
+
+
+        <!-- LABORATORIO -->
+
+        <a
+                class="btn-laboratorio"
+
+                th:href="@{/medico/laboratorio/{id}(id=${cita.id})}">
+
+          Laboratorio
+
+        </a>
+
+
+
+        <!-- RECETA -->
+
+        <a
+                class="btn-receta"
+
+                th:href="@{/medico/receta/{id}(id=${cita.id})}">
+
+          Receta
+
+        </a>
+
+
+
+        <!-- SEGUIMIENTO -->
+
+        <a
+                class="btn-seguimiento"
+
+                th:href="@{/medico/seguimiento/{id}(id=${cita.id})}">
+
+          Seguimiento
+
+        </a>
+
+
+
+        <!-- FINALIZAR ATENCIÓN -->
+
+        <form
+                th:action="@{/medico/cita/{id}/finalizar-atencion(id=${cita.id})}"
+
+                method="post"
+
+                onsubmit="return confirm('¿Está seguro de finalizar la atención de este paciente?');">
+
+
+          <button
+                  type="submit"
+
+                  class="btn-finalizar">
+
+            Finalizar Atención
+
+          </button>
+
+
+        </form>
+
+
+      </div>
+
+
+    </div>
+
 
   </div>
 

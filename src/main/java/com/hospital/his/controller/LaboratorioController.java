@@ -1,0 +1,375 @@
+package com.hospital.his.controller;
+
+import com.hospital.his.entity.Cita;
+import com.hospital.his.entity.CatalogoExamen;
+import com.hospital.his.entity.OrdenExamen;
+import com.hospital.his.entity.OrdenLaboratorio;
+
+import com.hospital.his.repository.CitaRepository;
+import com.hospital.his.repository.CatalogoExamenRepository;
+import com.hospital.his.repository.OrdenLaboratorioRepository;
+
+import jakarta.servlet.http.HttpSession;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Controller
+public class LaboratorioController {
+
+    // ==========================================
+    // REPOSITORIOS
+    // ==========================================
+
+    private final CitaRepository citaRepository;
+
+    private final CatalogoExamenRepository catalogoExamenRepository;
+
+    private final OrdenLaboratorioRepository ordenLaboratorioRepository;
+
+
+    // ==========================================
+    // CONSTRUCTOR
+    // ==========================================
+
+    public LaboratorioController(
+            CitaRepository citaRepository,
+            CatalogoExamenRepository catalogoExamenRepository,
+            OrdenLaboratorioRepository ordenLaboratorioRepository) {
+
+        this.citaRepository = citaRepository;
+
+        this.catalogoExamenRepository = catalogoExamenRepository;
+
+        this.ordenLaboratorioRepository = ordenLaboratorioRepository;
+    }
+
+
+    // ==========================================
+    // VALIDAR SESIÓN DEL MÉDICO
+    // ==========================================
+
+    private boolean esMedico(HttpSession session) {
+
+        String usuario =
+                (String) session.getAttribute("usuario");
+
+        String rol =
+                (String) session.getAttribute("rol");
+
+        return usuario != null
+                && "MEDICO".equalsIgnoreCase(rol);
+    }
+
+
+    // ==========================================
+    // VALIDAR QUE LA CITA PERTENECE AL MÉDICO
+    // ==========================================
+
+    private boolean perteneceAlMedico(
+            Cita cita,
+            String nombreUsuario) {
+
+        return cita.getMedico() != null
+                && cita.getMedico().getUsuario() != null
+                && nombreUsuario.equalsIgnoreCase(
+                cita.getMedico()
+                        .getUsuario()
+                        .getNombreUsuario()
+        );
+    }
+
+
+    // ==========================================
+    // MOSTRAR FORMULARIO DE LABORATORIO
+    // CU-08 FA01
+    // ==========================================
+
+    @GetMapping("/medico/laboratorio/{id}")
+    public String mostrarLaboratorio(
+            @PathVariable Long id,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        // VALIDAR SESIÓN
+
+        if (!esMedico(session)) {
+            return "redirect:/medico/login";
+        }
+
+        // BUSCAR CITA
+
+        Optional<Cita> citaOptional =
+                citaRepository.findById(id);
+
+        if (citaOptional.isEmpty()) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "La cita seleccionada no existe."
+            );
+
+            return "redirect:/medico";
+        }
+
+        Cita cita = citaOptional.get();
+
+        // VALIDAR MÉDICO
+
+        String nombreUsuario =
+                (String) session.getAttribute("usuario");
+
+        if (!perteneceAlMedico(cita, nombreUsuario)) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "No tiene autorización para generar órdenes de esta cita."
+            );
+
+            return "redirect:/medico";
+        }
+
+        // VALIDAR ESTADO
+
+        if (!"EVALUADO".equalsIgnoreCase(cita.getEstado())) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "La cita debe estar evaluada para generar una orden de laboratorio."
+            );
+
+            return "redirect:/medico";
+        }
+
+        // ENVIAR INFORMACIÓN AL FORMULARIO
+
+        model.addAttribute("cita", cita);
+
+        model.addAttribute(
+                "usuarioActual",
+                nombreUsuario
+        );
+
+        model.addAttribute(
+                "examenes",
+                catalogoExamenRepository
+                        .findByActivoTrueOrderByNombreAsc()
+        );
+
+        return "medico/laboratorio";
+    }
+
+
+    // ==========================================
+    // GUARDAR ORDEN DE LABORATORIO
+    // CU-08 FA01
+    // ==========================================
+
+    @PostMapping("/medico/laboratorio/{id}/guardar")
+    @Transactional
+    public String guardarOrden(
+            @PathVariable Long id,
+
+            @RequestParam(
+                    name = "examenesIds",
+                    required = false
+            )
+            List<Long> examenesIds,
+
+            @RequestParam(
+                    name = "observaciones",
+                    required = false,
+                    defaultValue = ""
+            )
+            String observaciones,
+
+            HttpSession session,
+
+            RedirectAttributes redirectAttributes) {
+
+        // ======================================
+        // VALIDAR SESIÓN
+        // ======================================
+
+        if (!esMedico(session)) {
+            return "redirect:/medico/login";
+        }
+
+        // ======================================
+        // BUSCAR CITA
+        // ======================================
+
+        Optional<Cita> citaOptional =
+                citaRepository.findById(id);
+
+        if (citaOptional.isEmpty()) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "La cita seleccionada no existe."
+            );
+
+            return "redirect:/medico";
+        }
+
+        Cita cita = citaOptional.get();
+
+        // ======================================
+        // VALIDAR MÉDICO
+        // ======================================
+
+        String nombreUsuario =
+                (String) session.getAttribute("usuario");
+
+        if (!perteneceAlMedico(cita, nombreUsuario)) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "No tiene autorización para generar órdenes de esta cita."
+            );
+
+            return "redirect:/medico";
+        }
+
+        // ======================================
+        // VALIDAR ESTADO DE LA CITA
+        // ======================================
+
+        if (!"EVALUADO".equalsIgnoreCase(cita.getEstado())) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "La cita debe estar evaluada para generar una orden de laboratorio."
+            );
+
+            return "redirect:/medico";
+        }
+
+        // ======================================
+        // VALIDAR EXÁMENES SELECCIONADOS
+        // ======================================
+
+        if (examenesIds == null || examenesIds.isEmpty()) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Debe seleccionar al menos un examen de laboratorio."
+            );
+
+            return "redirect:/medico/laboratorio/" + id;
+        }
+
+        // Eliminar identificadores repetidos.
+
+        Set<Long> idsUnicos =
+                new LinkedHashSet<>(examenesIds);
+
+        // Consultar los exámenes en PostgreSQL.
+
+        List<CatalogoExamen> examenes =
+                catalogoExamenRepository.findAllById(idsUnicos);
+
+        // ======================================
+        // VALIDAR QUE EXISTAN Y ESTÉN ACTIVOS
+        // ======================================
+
+        if (examenes.size() != idsUnicos.size()
+                || examenes.stream().anyMatch(
+                examen -> !Boolean.TRUE.equals(
+                        examen.getActivo()
+                )
+        )) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Uno o varios exámenes seleccionados no existen o están inactivos."
+            );
+
+            return "redirect:/medico/laboratorio/" + id;
+        }
+
+        // ======================================
+        // CREAR ORDEN DE LABORATORIO
+        // ======================================
+
+        OrdenLaboratorio orden =
+                new OrdenLaboratorio();
+
+        orden.setCita(cita);
+
+        orden.setObservaciones(
+                observaciones == null
+                        ? ""
+                        : observaciones.trim()
+        );
+
+        orden.setEstado("PENDIENTE");
+
+        // ======================================
+        // AGREGAR EXÁMENES A LA ORDEN
+        // ======================================
+
+        List<OrdenExamen> detalles =
+                new ArrayList<>();
+
+        for (CatalogoExamen examen : examenes) {
+
+            OrdenExamen detalle =
+                    new OrdenExamen();
+
+            detalle.setOrden(orden);
+
+            detalle.setExamen(examen);
+
+            detalles.add(detalle);
+        }
+
+        orden.setExamenes(detalles);
+
+        // ======================================
+        // GUARDAR ORDEN Y EXÁMENES
+        // ======================================
+
+        OrdenLaboratorio ordenGuardada =
+                ordenLaboratorioRepository.saveAndFlush(orden);
+
+        // ======================================
+        // PREPARAR MENSAJE DE CONFIRMACIÓN
+        // ======================================
+
+        String nombresExamenes =
+                examenes.stream()
+                        .map(CatalogoExamen::getNombre)
+                        .collect(Collectors.joining(", "));
+
+        redirectAttributes.addFlashAttribute(
+                "mensaje",
+                "Orden de laboratorio #"
+                        + ordenGuardada.getId()
+                        + " registrada correctamente. Exámenes: "
+                        + nombresExamenes
+        );
+
+        // ======================================
+        // REGRESAR AL PANEL MÉDICO
+        // ======================================
+
+        return "redirect:/medico";
+    }
+}

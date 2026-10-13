@@ -19,20 +19,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-
 @Controller
 public class MedicoController {
 
+    // ==========================================
+    // REPOSITORIOS
+    // ==========================================
 
     private final CitaRepository citaRepository;
 
-    private final ConsultaMedicaRepository
-            consultaMedicaRepository;
+    private final ConsultaMedicaRepository consultaMedicaRepository;
 
 
     // ==========================================
@@ -43,11 +43,8 @@ public class MedicoController {
             CitaRepository citaRepository,
             ConsultaMedicaRepository consultaMedicaRepository) {
 
-        this.citaRepository =
-                citaRepository;
-
-        this.consultaMedicaRepository =
-                consultaMedicaRepository;
+        this.citaRepository = citaRepository;
+        this.consultaMedicaRepository = consultaMedicaRepository;
     }
 
 
@@ -55,22 +52,17 @@ public class MedicoController {
     // VERIFICAR SESIÓN DEL MÉDICO
     // ==========================================
 
-    private boolean esMedico(
-            HttpSession session) {
+    private boolean esMedico(HttpSession session) {
 
         String usuario =
-                (String) session
-                        .getAttribute("usuario");
+                (String) session.getAttribute("usuario");
 
         String rol =
-                (String) session
-                        .getAttribute("rol");
-
+                (String) session.getAttribute("rol");
 
         return usuario != null
                 && rol != null
-                && "MEDICO"
-                .equalsIgnoreCase(rol);
+                && "MEDICO".equalsIgnoreCase(rol);
     }
 
 
@@ -82,19 +74,14 @@ public class MedicoController {
             Cita cita,
             String nombreUsuario) {
 
-
-        return cita.getMedico() != null
-
-                && cita.getMedico()
-                .getUsuario() != null
-
-                && nombreUsuario
-                .equalsIgnoreCase(
-
-                        cita.getMedico()
-                                .getUsuario()
-                                .getNombreUsuario()
-                );
+        return nombreUsuario != null
+                && cita.getMedico() != null
+                && cita.getMedico().getUsuario() != null
+                && nombreUsuario.equalsIgnoreCase(
+                cita.getMedico()
+                        .getUsuario()
+                        .getNombreUsuario()
+        );
     }
 
 
@@ -107,16 +94,14 @@ public class MedicoController {
             HttpSession session,
             Model model) {
 
+        // VALIDAR SESIÓN
 
         if (!esMedico(session)) {
-
             return "redirect:/medico/login";
         }
 
-
         String nombreUsuario =
-                (String) session
-                        .getAttribute("usuario");
+                (String) session.getAttribute("usuario");
 
 
         // ======================================
@@ -129,46 +114,34 @@ public class MedicoController {
                                 "EN_ESPERA"
                         );
 
-
         List<Cita> citasEnEsperaDelMedico =
                 citasEnEspera.stream()
 
                         .filter(cita ->
-
                                 perteneceAlMedico(
                                         cita,
                                         nombreUsuario
                                 )
                         )
 
-
                         // EMERGENCIAS PRIMERO
 
                         .sorted(
-
                                 Comparator
                                         .comparingInt(
-
                                                 (Cita cita) ->
-
                                                         "EMERGENCIA"
                                                                 .equalsIgnoreCase(
                                                                         cita.getPrioridad()
                                                                 )
-
                                                                 ? 0
                                                                 : 1
                                         )
 
                                         .thenComparing(
-
                                                 cita ->
-
-                                                        cita.getHoraLlegada()
-                                                                == null
-
+                                                        cita.getHoraLlegada() == null
                                                                 ? cita.getFechaCreacion()
-
                                                                 : cita.getHoraLlegada()
                                         )
                         )
@@ -186,12 +159,34 @@ public class MedicoController {
                                 "CONSULTA_MEDICA"
                         );
 
-
         List<Cita> citasEnConsultaDelMedico =
                 citasEnConsulta.stream()
 
                         .filter(cita ->
+                                perteneceAlMedico(
+                                        cita,
+                                        nombreUsuario
+                                )
+                        )
 
+                        .toList();
+
+
+        // ======================================
+        // CITAS EVALUADAS
+        // PENDIENTES DE CIERRE
+        // ======================================
+
+        List<Cita> citasEvaluadas =
+                citaRepository
+                        .findByEstadoOrderByFechaCreacionAsc(
+                                "EVALUADO"
+                        );
+
+        List<Cita> citasEvaluadasDelMedico =
+                citasEvaluadas.stream()
+
+                        .filter(cita ->
                                 perteneceAlMedico(
                                         cita,
                                         nombreUsuario
@@ -210,18 +205,20 @@ public class MedicoController {
                 nombreUsuario
         );
 
-
         model.addAttribute(
                 "citas",
                 citasEnEsperaDelMedico
         );
-
 
         model.addAttribute(
                 "citasEnConsulta",
                 citasEnConsultaDelMedico
         );
 
+        model.addAttribute(
+                "citasEvaluadas",
+                citasEvaluadasDelMedico
+        );
 
         return "medico/index";
     }
@@ -238,123 +235,89 @@ public class MedicoController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
-
         // VALIDAR SESIÓN
 
         if (!esMedico(session)) {
-
             return "redirect:/medico/login";
         }
-
 
         // BUSCAR CITA
 
         Optional<Cita> citaOptional =
                 citaRepository.findById(id);
 
-
         if (citaOptional.isEmpty()) {
 
-            redirectAttributes
-                    .addFlashAttribute(
-                            "error",
-                            "La cita seleccionada no existe."
-                    );
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "La cita seleccionada no existe."
+            );
 
             return "redirect:/medico";
         }
 
-
-        Cita cita =
-                citaOptional.get();
-
+        Cita cita = citaOptional.get();
 
         // VALIDAR ESTADO
 
-        if (!"EN_ESPERA"
-                .equalsIgnoreCase(
-                        cita.getEstado()
-                )) {
+        if (!"EN_ESPERA".equalsIgnoreCase(cita.getEstado())) {
 
-            redirectAttributes
-                    .addFlashAttribute(
-                            "error",
-                            "La cita no se encuentra en estado En Espera."
-                    );
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "La cita no se encuentra en estado En Espera."
+            );
 
             return "redirect:/medico";
         }
-
 
         // VALIDAR MÉDICO
 
         String nombreUsuario =
-                (String) session
-                        .getAttribute("usuario");
+                (String) session.getAttribute("usuario");
 
+        if (!perteneceAlMedico(cita, nombreUsuario)) {
 
-        if (!perteneceAlMedico(
-                cita,
-                nombreUsuario
-        )) {
-
-            redirectAttributes
-                    .addFlashAttribute(
-                            "error",
-                            "No tiene autorización para atender esta cita."
-                    );
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "No tiene autorización para atender esta cita."
+            );
 
             return "redirect:/medico";
         }
 
-
         // CAMBIAR ESTADO
 
-        cita.setEstado(
-                "CONSULTA_MEDICA"
-        );
-
+        cita.setEstado("CONSULTA_MEDICA");
 
         citaRepository.save(cita);
 
-
         // MENSAJE
 
-        redirectAttributes
-                .addFlashAttribute(
-                        "mensaje",
-                        "Consulta iniciada correctamente para la cita #"
-                                + cita.getId()
-                );
-
+        redirectAttributes.addFlashAttribute(
+                "mensaje",
+                "Consulta iniciada correctamente para la cita #"
+                        + cita.getId()
+        );
 
         // LLAMADO POR VOZ
 
-        redirectAttributes
-                .addFlashAttribute(
-                        "llamarPaciente",
-                        true
-                );
+        redirectAttributes.addFlashAttribute(
+                "llamarPaciente",
+                true
+        );
 
-
-        redirectAttributes
-                .addFlashAttribute(
-                        "numeroTurno",
-                        cita.getId()
-                );
-
+        redirectAttributes.addFlashAttribute(
+                "numeroTurno",
+                cita.getId()
+        );
 
         if (cita.getPaciente() != null) {
 
-            redirectAttributes
-                    .addFlashAttribute(
-                            "nombrePaciente",
-
-                            cita.getPaciente()
-                                    .getNombreCompleto()
-                    );
+            redirectAttributes.addFlashAttribute(
+                    "nombrePaciente",
+                    cita.getPaciente().getNombreCompleto()
+            );
         }
-
 
         return "redirect:/medico";
     }
@@ -372,95 +335,67 @@ public class MedicoController {
             Model model,
             RedirectAttributes redirectAttributes) {
 
-
         // VALIDAR SESIÓN
 
         if (!esMedico(session)) {
-
             return "redirect:/medico/login";
         }
-
 
         // BUSCAR CITA
 
         Optional<Cita> citaOptional =
                 citaRepository.findById(id);
 
-
         if (citaOptional.isEmpty()) {
 
-            redirectAttributes
-                    .addFlashAttribute(
-                            "error",
-                            "La cita seleccionada no existe."
-                    );
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "La cita seleccionada no existe."
+            );
 
             return "redirect:/medico";
         }
 
-
-        Cita cita =
-                citaOptional.get();
-
+        Cita cita = citaOptional.get();
 
         // VALIDAR MÉDICO
 
         String nombreUsuario =
-                (String) session
-                        .getAttribute("usuario");
+                (String) session.getAttribute("usuario");
 
+        if (!perteneceAlMedico(cita, nombreUsuario)) {
 
-        if (!perteneceAlMedico(
-                cita,
-                nombreUsuario
-        )) {
-
-            redirectAttributes
-                    .addFlashAttribute(
-                            "error",
-                            "No tiene autorización para consultar esta cita."
-                    );
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "No tiene autorización para consultar esta cita."
+            );
 
             return "redirect:/medico";
         }
-
 
         // VALIDAR ESTADO
 
-        if (!"CONSULTA_MEDICA"
-                .equalsIgnoreCase(
-                        cita.getEstado()
-                )) {
+        if (!"CONSULTA_MEDICA".equalsIgnoreCase(cita.getEstado())) {
 
-            redirectAttributes
-                    .addFlashAttribute(
-                            "error",
-                            "La cita no se encuentra en Consulta Médica."
-                    );
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "La cita no se encuentra en Consulta Médica."
+            );
 
             return "redirect:/medico";
         }
 
-
-        // ======================================
         // BUSCAR CONSULTA EXISTENTE
-        // ======================================
 
-        Optional<ConsultaMedica>
-                consultaOptional =
-                consultaMedicaRepository
-                        .findByCitaId(id);
-
+        Optional<ConsultaMedica> consultaOptional =
+                consultaMedicaRepository.findByCitaId(id);
 
         ConsultaMedica consulta =
-                consultaOptional
-                        .orElseGet(
-                                ConsultaMedica::new
-                        );
+                consultaOptional.orElseGet(
+                        ConsultaMedica::new
+                );
 
-
-        // Si todavía no existe,
-        // precargar motivo de la cita
+        // SI NO EXISTE, PRECARGAR DATOS
 
         if (consulta.getId() == null) {
 
@@ -468,31 +403,19 @@ public class MedicoController {
                     cita.getMotivoConsulta()
             );
 
-            consulta.setEstadoConsulta(
-                    "EN_CURSO"
-            );
+            consulta.setEstadoConsulta("EN_CURSO");
         }
-
 
         // ENVIAR INFORMACIÓN
 
-        model.addAttribute(
-                "cita",
-                cita
-        );
+        model.addAttribute("cita", cita);
 
-
-        model.addAttribute(
-                "consulta",
-                consulta
-        );
-
+        model.addAttribute("consulta", consulta);
 
         model.addAttribute(
                 "usuarioActual",
                 nombreUsuario
         );
-
 
         return "medico/consulta";
     }
@@ -545,16 +468,13 @@ public class MedicoController {
 
             RedirectAttributes redirectAttributes) {
 
-
         // ======================================
         // VALIDAR SESIÓN
         // ======================================
 
         if (!esMedico(session)) {
-
             return "redirect:/medico/login";
         }
-
 
         // ======================================
         // BUSCAR CITA
@@ -563,142 +483,93 @@ public class MedicoController {
         Optional<Cita> citaOptional =
                 citaRepository.findById(id);
 
-
         if (citaOptional.isEmpty()) {
 
-            redirectAttributes
-                    .addFlashAttribute(
-                            "error",
-                            "La cita seleccionada no existe."
-                    );
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "La cita seleccionada no existe."
+            );
 
             return "redirect:/medico";
         }
 
-
-        Cita cita =
-                citaOptional.get();
-
+        Cita cita = citaOptional.get();
 
         // ======================================
         // VALIDAR MÉDICO
         // ======================================
 
         String nombreUsuario =
-                (String) session
-                        .getAttribute("usuario");
+                (String) session.getAttribute("usuario");
 
+        if (!perteneceAlMedico(cita, nombreUsuario)) {
 
-        if (!perteneceAlMedico(
-                cita,
-                nombreUsuario
-        )) {
-
-            redirectAttributes
-                    .addFlashAttribute(
-                            "error",
-                            "No tiene autorización para modificar esta consulta."
-                    );
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "No tiene autorización para modificar esta consulta."
+            );
 
             return "redirect:/medico";
         }
-
 
         // ======================================
         // VALIDAR ESTADO DE LA CITA
         // ======================================
 
-        if (!"CONSULTA_MEDICA"
-                .equalsIgnoreCase(
-                        cita.getEstado()
-                )) {
+        if (!"CONSULTA_MEDICA".equalsIgnoreCase(cita.getEstado())) {
 
-            redirectAttributes
-                    .addFlashAttribute(
-                            "error",
-                            "La cita no se encuentra en Consulta Médica."
-                    );
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "La cita no se encuentra en Consulta Médica."
+            );
 
             return "redirect:/medico";
         }
-
 
         // ======================================
         // VALIDAR MOTIVO DE VISITA
         // ======================================
 
-        if (motivoVisita == null
-                || motivoVisita.isBlank()) {
+        if (motivoVisita == null || motivoVisita.isBlank()) {
 
-            redirectAttributes
-                    .addFlashAttribute(
-                            "error",
-                            "El Motivo de Visita es obligatorio."
-                    );
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "El Motivo de Visita es obligatorio."
+            );
 
-            return "redirect:/medico/consulta/"
-                    + id;
+            return "redirect:/medico/consulta/" + id;
         }
-
-
-        // ======================================
-        // FA05
-        // FINALIZAR SIN DIAGNÓSTICO
-        // ======================================
-
-        if ("FINALIZADA"
-                .equalsIgnoreCase(
-                        estadoConsulta
-                )
-
-                &&
-
-                (diagnostico == null
-                        || diagnostico.isBlank())) {
-
-
-            redirectAttributes
-                    .addFlashAttribute(
-                            "error",
-
-                            "No es posible finalizar la consulta sin registrar un diagnóstico. "
-                                    + "El campo Diagnóstico es obligatorio."
-                    );
-
-
-            return "redirect:/medico/consulta/"
-                    + id;
-        }
-
 
         // ======================================
         // VALIDAR ESTADO DE CONSULTA
         // ======================================
 
-        if (!"EN_CURSO"
-                .equalsIgnoreCase(
-                        estadoConsulta
-                )
+        if (!"EN_CURSO".equalsIgnoreCase(estadoConsulta)
+                && !"FINALIZADA".equalsIgnoreCase(estadoConsulta)) {
 
-                &&
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "El estado de consulta seleccionado no es válido."
+            );
 
-                !"FINALIZADA"
-                        .equalsIgnoreCase(
-                                estadoConsulta
-                        )) {
-
-
-            redirectAttributes
-                    .addFlashAttribute(
-                            "error",
-                            "El estado de consulta seleccionado no es válido."
-                    );
-
-
-            return "redirect:/medico/consulta/"
-                    + id;
+            return "redirect:/medico/consulta/" + id;
         }
 
+        // ======================================
+        // FA05 - FINALIZAR SIN DIAGNÓSTICO
+        // ======================================
+
+        if ("FINALIZADA".equalsIgnoreCase(estadoConsulta)
+                && (diagnostico == null || diagnostico.isBlank())) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "No es posible finalizar la consulta sin registrar un diagnóstico. "
+                            + "El campo Diagnóstico es obligatorio."
+            );
+
+            return "redirect:/medico/consulta/" + id;
+        }
 
         // ======================================
         // BUSCAR O CREAR CONSULTA
@@ -707,11 +578,7 @@ public class MedicoController {
         ConsultaMedica consulta =
                 consultaMedicaRepository
                         .findByCitaId(id)
-
-                        .orElseGet(
-                                ConsultaMedica::new
-                        );
-
+                        .orElseGet(ConsultaMedica::new);
 
         // ======================================
         // ASIGNAR DATOS
@@ -744,84 +611,202 @@ public class MedicoController {
         );
 
         consulta.setEstadoConsulta(
-                estadoConsulta
-                        .toUpperCase()
+                estadoConsulta.toUpperCase()
         );
-
 
         // ======================================
         // CONSULTA FINALIZADA
         // ======================================
 
-        if ("FINALIZADA"
-                .equalsIgnoreCase(
-                        estadoConsulta
-                )) {
+        if ("FINALIZADA".equalsIgnoreCase(estadoConsulta)) {
 
             consulta.setFechaFinalizacion(
                     LocalDateTime.now()
             );
+
+        } else {
+
+            consulta.setFechaFinalizacion(null);
         }
-
-        else {
-
-            consulta.setFechaFinalizacion(
-                    null
-            );
-        }
-
 
         // ======================================
         // GUARDAR EN POSTGRESQL
         // ======================================
 
-        consultaMedicaRepository
-                .save(consulta);
-
+        consultaMedicaRepository.save(consulta);
 
         // ======================================
         // SI QUEDA EN CURSO
         // ======================================
 
-        if ("EN_CURSO"
-                .equalsIgnoreCase(
-                        estadoConsulta
-                )) {
+        if ("EN_CURSO".equalsIgnoreCase(estadoConsulta)) {
 
+            redirectAttributes.addFlashAttribute(
+                    "mensaje",
+                    "La consulta ha sido guardada correctamente."
+            );
 
-            redirectAttributes
-                    .addFlashAttribute(
-                            "mensaje",
-
-                            "La consulta ha sido guardada correctamente."
-                    );
-
-
-            return "redirect:/medico/consulta/"
-                    + id;
+            return "redirect:/medico/consulta/" + id;
         }
 
-
         // ======================================
-        // SI SE FINALIZA LA CONSULTA
+        // SI SE FINALIZA LA EVALUACIÓN
         // ======================================
 
-        cita.setEstado(
-                "EVALUADO"
-        );
-
+        cita.setEstado("EVALUADO");
 
         citaRepository.save(cita);
 
+        redirectAttributes.addFlashAttribute(
+                "mensaje",
+                "La consulta ha sido finalizada exitosamente. "
+                        + "El paciente puede proceder a las siguientes indicaciones médicas."
+        );
 
-        redirectAttributes
-                .addFlashAttribute(
-                        "mensaje",
+        return "redirect:/medico";
+    }
 
-                        "La consulta ha sido finalizada exitosamente. "
-                                + "El paciente puede proceder a las siguientes indicaciones médicas."
-                );
 
+    // ==========================================
+    // FINALIZAR ATENCIÓN MÉDICA
+    // CU-08 - CIERRE DEFINITIVO
+    // ==========================================
+
+    @PostMapping("/medico/cita/{id}/finalizar-atencion")
+    public String finalizarAtencion(
+            @PathVariable Long id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        // ======================================
+        // VALIDAR SESIÓN
+        // ======================================
+
+        if (!esMedico(session)) {
+            return "redirect:/medico/login";
+        }
+
+        // ======================================
+        // BUSCAR CITA
+        // ======================================
+
+        Optional<Cita> citaOptional =
+                citaRepository.findById(id);
+
+        if (citaOptional.isEmpty()) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "La cita seleccionada no existe."
+            );
+
+            return "redirect:/medico";
+        }
+
+        Cita cita = citaOptional.get();
+
+        // ======================================
+        // VALIDAR MÉDICO RESPONSABLE
+        // ======================================
+
+        String nombreUsuario =
+                (String) session.getAttribute("usuario");
+
+        if (!perteneceAlMedico(cita, nombreUsuario)) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "No tiene autorización para finalizar esta atención."
+            );
+
+            return "redirect:/medico";
+        }
+
+        // ======================================
+        // VALIDAR ESTADO DE LA CITA
+        // ======================================
+
+        if (!"EVALUADO".equalsIgnoreCase(cita.getEstado())) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "La cita debe estar evaluada antes de finalizar la atención."
+            );
+
+            return "redirect:/medico";
+        }
+
+        // ======================================
+        // BUSCAR CONSULTA MÉDICA
+        // ======================================
+
+        Optional<ConsultaMedica> consultaOptional =
+                consultaMedicaRepository.findByCitaId(id);
+
+        if (consultaOptional.isEmpty()) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "No se encontró una consulta médica registrada."
+            );
+
+            return "redirect:/medico";
+        }
+
+        ConsultaMedica consulta = consultaOptional.get();
+
+        // ======================================
+        // VALIDAR CONSULTA FINALIZADA
+        // ======================================
+
+        if (!"FINALIZADA".equalsIgnoreCase(
+                consulta.getEstadoConsulta())) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Debe finalizar la evaluación médica antes de cerrar la atención."
+            );
+
+            return "redirect:/medico";
+        }
+
+        // ======================================
+        // VALIDAR DIAGNÓSTICO
+        // ======================================
+
+        if (consulta.getDiagnostico() == null
+                || consulta.getDiagnostico().isBlank()) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "No puede finalizar la atención sin un diagnóstico."
+            );
+
+            return "redirect:/medico";
+        }
+
+        // ======================================
+        // CAMBIAR ESTADO DE LA CITA
+        // ======================================
+
+        cita.setEstado("ATENCION_FINALIZADA");
+
+        // ======================================
+        // GUARDAR EN POSTGRESQL
+        // ======================================
+
+        citaRepository.save(cita);
+
+        // ======================================
+        // MENSAJE DE CONFIRMACIÓN
+        // ======================================
+
+        redirectAttributes.addFlashAttribute(
+                "mensaje",
+                "La atención médica de la cita #"
+                        + cita.getId()
+                        + " ha sido finalizada correctamente."
+        );
 
         return "redirect:/medico";
     }
