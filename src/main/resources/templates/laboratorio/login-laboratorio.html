@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Acceso de Laboratorio | Sistema Hospitalario</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f766e, #134e4a);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            width: 100%;
+            max-width: 420px;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #134e4a;
+            font-size: 25px;
+            margin-bottom: 10px;
+        }
+
+        .subtitulo {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #334155;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #0f766e;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            background: #0f766e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #115e59;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #mensaje {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        #mensaje:empty {
+            display: none;
+        }
+
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .exito {
+            color: #15803d;
+            background: #f0fdf4;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .volver {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #0f766e;
+            text-decoration: none;
+        }
+
+        .volver:hover {
+            text-decoration: underline;
+        }
+
+        .pie {
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <h1>Laboratorio Clínico</h1>
+
+    <p class="subtitulo">
+        Sistema Hospitalario<br>
+        Acceso exclusivo para personal autorizado
+    </p>
+
+    <form id="formLogin">
+
+        <label for="nombreUsuario">
+            Nombre de usuario
+        </label>
+
+        <input
+                type="text"
+                id="nombreUsuario"
+                name="nombreUsuario"
+                placeholder="Ingrese su usuario"
+                autocomplete="username"
+                maxlength="100"
+                required
+        >
+
+        <label for="password">
+            Contraseña
+        </label>
+
+        <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Ingrese su contraseña"
+                autocomplete="current-password"
+                required
+        >
+
+        <button type="submit" id="btnIngresar">
+            Iniciar sesión
+        </button>
+
+    </form>
+
+    <div
+            id="mensaje"
+            role="status"
+            aria-live="polite">
+    </div>
+
+    <a href="/" class="volver">
+        ← Volver al inicio
+    </a>
+
+    <p class="pie">
+        Sistema Hospitalario | Módulo de Laboratorio
+    </p>
+
+</div>
+
+<script>
+
+    // ==========================================
+    // ELEMENTOS DEL FORMULARIO
+    // ==========================================
+
+    const formulario = document.getElementById("formLogin");
+    const mensaje = document.getElementById("mensaje");
+    const boton = document.getElementById("btnIngresar");
+
+    const campoUsuario = document.getElementById("nombreUsuario");
+    const campoPassword = document.getElementById("password");
+
+    // ==========================================
+    // MOSTRAR MENSAJES
+    // ==========================================
+
+    function mostrarMensaje(texto, tipo) {
+        mensaje.textContent = texto;
+        mensaje.className = tipo || "";
+    }
+
+    // ==========================================
+    // INICIAR SESIÓN
+    // ==========================================
+
+    formulario.addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const nombreUsuario = campoUsuario.value.trim();
+        const password = campoPassword.value;
+
+        // ==========================================
+        // VALIDAR CAMPOS
+        // ==========================================
+
+        if (!nombreUsuario || !password) {
+
+            mostrarMensaje(
+                "Debe ingresar su usuario y contraseña.",
+                "error"
+            );
+
+            return;
+        }
+
+        // ==========================================
+        // DESHABILITAR BOTÓN
+        // ==========================================
+
+        boton.disabled = true;
+        boton.textContent = "Verificando...";
+
+        mostrarMensaje("", "");
+
+        let inicioExitoso = false;
+
+        try {
+
+            // ==========================================
+            // ENVIAR CREDENCIALES
+            // ==========================================
+
+            const respuesta = await fetch("/api/laboratorio/login", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                credentials: "same-origin",
+
+                body: JSON.stringify({
+                    nombreUsuario: nombreUsuario,
+                    password: password
+                })
+
+            });
+
+            // ==========================================
+            // VERIFICAR RESPUESTA HTTP
+            // ==========================================
+
+            if (!respuesta.ok) {
+
+                if (respuesta.status === 403) {
+
+                    mostrarMensaje(
+                        "Acceso denegado. Verifique la configuración de seguridad.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+                if (respuesta.status === 404) {
+
+                    mostrarMensaje(
+                        "No se encontró el servicio de autenticación.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+                mostrarMensaje(
+                    "Ocurrió un error al comunicarse con el servidor.",
+                    "error"
+                );
+
+                return;
+            }
+
+            // ==========================================
+            // LEER RESPUESTA DEL SERVIDOR
+            // ==========================================
+
+            const datos = await respuesta.json();
+
+            // ==========================================
+            // LOGIN CORRECTO
+            // ==========================================
+
+            if (
+                datos.estado === "OK" &&
+                datos.rol === "LABORATORIO"
+            ) {
+
+                inicioExitoso = true;
+
+                mostrarMensaje(
+                    "Inicio de sesión exitoso. Redirigiendo al panel...",
+                    "exito"
+                );
+
+                window.location.replace("/laboratorio/panel");
+
+                return;
+            }
+
+            // ==========================================
+            // CUENTA BLOQUEADA
+            // ==========================================
+
+            if (datos.estado === "BLOQUEADO") {
+
+                mostrarMensaje(
+                    datos.mensaje ||
+                    "Su cuenta se encuentra bloqueada temporalmente.",
+                    "error"
+                );
+
+                return;
+            }
+
+            // ==========================================
+            // ROL NO AUTORIZADO
+            // ==========================================
+
+            if (datos.estado === "ROL_NO_AUTORIZADO") {
+
+                mostrarMensaje(
+                    "Este acceso es exclusivo para el personal de laboratorio.",
+                    "error"
+                );
+
+                return;
+            }
+
+            // ==========================================
+            // CREDENCIALES INCORRECTAS
+            // ==========================================
+
+            mostrarMensaje(
+                datos.mensaje ||
+                "Usuario o contraseña incorrectos.",
+                "error"
+            );
+
+        } catch (error) {
+
+            console.error("Error de autenticación:", error);
+
+            mostrarMensaje(
+                "No fue posible conectar con el servidor. Intente nuevamente.",
+                "error"
+            );
+
+        } finally {
+
+            // ==========================================
+            // RESTAURAR BOTÓN
+            // ==========================================
+
+            if (!inicioExitoso) {
+                boton.disabled = false;
+                boton.textContent = "Iniciar sesión";
+            }
+
+        }
+
+    });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Resultados de Laboratorio | Médico</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        header {
+            background: #1e40af;
+            color: white;
+            padding: 25px 35px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        header p {
+            margin-bottom: 0;
+            color: #dbeafe;
+        }
+
+        .contenedor {
+            max-width: 1200px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .seccion {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            color: #1e3a8a;
+            margin-top: 0;
+        }
+
+        h3 {
+            color: #1d4ed8;
+        }
+
+        .boton {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .boton:hover {
+            background: #1d4ed8;
+        }
+
+        .datos {
+            display: grid;
+            grid-template-columns:
+                    repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .dato {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .dato strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #1e40af;
+        }
+
+        .tabla-contenedor {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            background: #1e40af;
+            color: white;
+            padding: 14px;
+            text-align: left;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .estado-publicado {
+            display: inline-block;
+            background: #dcfce7;
+            color: #166534;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .fuera-rango {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .aviso {
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 20px;
+            border-radius: 6px;
+            line-height: 1.6;
+        }
+
+        .aviso-vacio {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            color: #92400e;
+        }
+
+        .texto-secundario {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .encabezado-orden {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .resultado {
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .pie {
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+            padding: 15px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>🩺 Resultados de Laboratorio</h1>
+
+    <p>
+        Sistema Informático Hospitalario (HIS)
+    </p>
+
+</header>
+
+<div class="contenedor">
+
+    <!-- ======================================
+         REGRESAR AL PANEL MÉDICO
+         ====================================== -->
+
+    <a class="boton"
+       th:href="@{/medico}">
+
+        ← Regresar al panel médico
+
+    </a>
+
+
+    <!-- ======================================
+         INFORMACIÓN DE LA CITA
+         ====================================== -->
+
+    <div class="seccion" style="margin-top: 25px;">
+
+        <h2>Consulta de resultados publicados</h2>
+
+        <div class="datos">
+
+            <div class="dato">
+
+                <strong>Número de cita</strong>
+
+                <span th:text="${citaId}">
+                    1
+                </span>
+
+            </div>
+
+            <div class="dato">
+
+                <strong>Médico responsable</strong>
+
+                <span th:text="${usuarioActual}">
+                    Médico
+                </span>
+
+            </div>
+
+            <div class="dato">
+
+                <strong>Acceso</strong>
+
+                <span>
+                    Consulta de resultados
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================
+         SIN RESULTADOS PUBLICADOS
+         ====================================== -->
+
+    <div class="seccion"
+         th:if="${#lists.isEmpty(ordenesPublicadas)}">
+
+        <div class="aviso aviso-vacio">
+
+            <h3>Sin resultados publicados</h3>
+
+            <p>
+                Actualmente no existen resultados
+                de laboratorio publicados
+                para esta cita médica.
+            </p>
+
+            <p>
+                Los resultados aparecerán aquí
+                cuando el módulo de Laboratorio
+                complete su publicación.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================
+         ÓRDENES CON RESULTADOS PUBLICADOS
+         ====================================== -->
+
+    <div th:each="orden : ${ordenesPublicadas}"
+         class="seccion">
+
+        <!-- INFORMACIÓN DE LA ORDEN -->
+
+        <div class="encabezado-orden">
+
+            <h2>
+                Orden de Laboratorio #
+
+                <span th:text="${orden.id}">
+                    1
+                </span>
+            </h2>
+
+            <span class="estado-publicado">
+                Resultados publicados
+            </span>
+
+        </div>
+
+
+        <div class="datos">
+
+            <div class="dato">
+
+                <strong>Estado de la orden</strong>
+
+                <span th:text="${orden.estado}">
+                    COMPLETADA
+                </span>
+
+            </div>
+
+            <div class="dato">
+
+                <strong>Fecha de solicitud</strong>
+
+                <span th:text="${orden.fecha != null
+                        ? #temporals.format(
+                            orden.fecha,
+                            'dd/MM/yyyy HH:mm'
+                          )
+                        : '-'}">
+                </span>
+
+            </div>
+
+            <div class="dato">
+
+                <strong>Exámenes publicados</strong>
+
+                <span th:text="${#lists.size(orden.resultados)}">
+                    0
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================
+             TABLA DE RESULTADOS
+             ================================== -->
+
+        <div class="tabla-contenedor">
+
+            <table>
+
+                <thead>
+
+                <tr>
+                    <th>Examen</th>
+                    <th>Resultado</th>
+                    <th>Unidad</th>
+                    <th>Observaciones</th>
+                    <th>Fuera de rango</th>
+                    <th>Fecha de publicación</th>
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                <tr th:each="resultado : ${orden.resultados}">
+
+                    <!-- NOMBRE DEL EXAMEN -->
+
+                    <td th:text="${resultado.nombre}">
+                        Examen
+                    </td>
+
+
+                    <!-- RESULTADO -->
+
+                    <td>
+
+                        <span class="resultado"
+                              th:text="${resultado.valor}">
+                            Resultado
+                        </span>
+
+                    </td>
+
+
+                    <!-- UNIDAD -->
+
+                    <td th:text="${resultado.unidad != null
+                            && !#strings.isEmpty(resultado.unidad)
+                            ? resultado.unidad
+                            : '-'}">
+
+                        -
+
+                    </td>
+
+
+                    <!-- OBSERVACIONES -->
+
+                    <td th:text="${resultado.notas != null
+                            && !#strings.isEmpty(resultado.notas)
+                            ? resultado.notas
+                            : 'Sin observaciones'}">
+
+                        Sin observaciones
+
+                    </td>
+
+
+                    <!-- FUERA DE RANGO -->
+
+                    <td>
+
+                        <span th:if="${resultado.fueraRango}"
+                              class="fuera-rango">
+
+                            ⚠️ Sí
+
+                        </span>
+
+                        <span th:unless="${resultado.fueraRango}">
+
+                            No
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- FECHA DE PUBLICACIÓN -->
+
+                    <td th:text="${resultado.fechaPublicacion != null
+                            ? #temporals.format(
+                                resultado.fechaPublicacion,
+                                'dd/MM/yyyy HH:mm'
+                              )
+                            : '-'}">
+
+                        -
+
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================
+         INFORMACIÓN IMPORTANTE
+         ====================================== -->
+
+    <div class="seccion">
+
+        <div class="aviso">
+
+            <strong>Información importante</strong>
+
+            <p>
+                Esta pantalla permite consultar
+                únicamente los resultados
+                publicados por el laboratorio.
+            </p>
+
+            <p>
+                Los resultados son de solo lectura.
+                No pueden modificarse desde
+                el módulo Médico.
+            </p>
+
+            <p>
+                La interpretación clínica de los
+                resultados corresponde al médico
+                responsable de la atención.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================
+         PIE DE PÁGINA
+         ====================================== -->
+
+    <div class="pie">
+
+        Sistema Informático Hospitalario |
+        Gestión de Laboratorio - CU-09
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

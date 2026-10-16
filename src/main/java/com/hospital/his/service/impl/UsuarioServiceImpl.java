@@ -193,7 +193,176 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuario.getNombreUsuario()
         );
     }
+    // ==========================================
+    // LOGIN DEL PERSONAL DE LABORATORIO
+    // CU-09
+    // ==========================================
 
+    @Override
+    public LoginResponse iniciarSesionLaboratorio(
+            String nombreUsuario,
+            String password) {
+
+        Optional<Usuario> usuarioOptional =
+                usuarioRepository.findByNombreUsuario(nombreUsuario);
+
+        // Verificar que el usuario exista
+        if (usuarioOptional.isEmpty()) {
+
+            return new LoginResponse(
+                    "ERROR",
+                    "Usuario o contraseña incorrectos.",
+                    null
+            );
+        }
+
+        Usuario usuario = usuarioOptional.get();
+
+        // ==========================================
+        // VERIFICAR BLOQUEO
+        // ==========================================
+
+        LoginResponse bloqueo = verificarBloqueo(usuario);
+
+        if (bloqueo != null) {
+            return bloqueo;
+        }
+
+        // ==========================================
+        // VERIFICAR CONTRASEÑA
+        // ==========================================
+
+        if (!usuario.getPassword().equals(password)) {
+            return registrarIntentoFallido(usuario);
+        }
+
+        // ==========================================
+        // VERIFICAR CUENTA ACTIVA
+        // ==========================================
+
+        if (!Boolean.TRUE.equals(usuario.getActivo())) {
+
+            return new LoginResponse(
+                    "ERROR",
+                    "La cuenta se encuentra inactiva.",
+                    null
+            );
+        }
+
+        // ==========================================
+        // VERIFICAR ROL LABORATORIO
+        // ==========================================
+
+        if (!"LABORATORIO".equalsIgnoreCase(usuario.getRol())) {
+
+            return new LoginResponse(
+                    "ROL_NO_AUTORIZADO",
+                    "Este acceso es exclusivo para el personal de laboratorio.",
+                    usuario.getRol()
+            );
+        }
+
+        // ==========================================
+        // LOGIN CORRECTO
+        // ==========================================
+
+        reiniciarIntentos(usuario);
+
+        return new LoginResponse(
+                "OK",
+                "Inicio de sesión de laboratorio exitoso.",
+                usuario.getRol(),
+                null,
+                usuario.getNombreUsuario()
+        );
+    }
+    // ==========================================
+// LOGIN DEL PERSONAL DE FARMACIA
+// CU-11
+// ==========================================
+
+    @Override
+    public LoginResponse iniciarSesionFarmacia(
+            String nombreUsuario,
+            String password) {
+
+        // ==========================================
+        // BUSCAR USUARIO
+        // ==========================================
+
+        Optional<Usuario> usuarioOptional =
+                usuarioRepository.findByNombreUsuario(nombreUsuario);
+
+        if (usuarioOptional.isEmpty()) {
+
+            return new LoginResponse(
+                    "ERROR",
+                    "Usuario o contraseña incorrectos.",
+                    null
+            );
+        }
+
+        Usuario usuario = usuarioOptional.get();
+
+        // ==========================================
+        // VERIFICAR BLOQUEO
+        // ==========================================
+
+        LoginResponse bloqueo = verificarBloqueo(usuario);
+
+        if (bloqueo != null) {
+            return bloqueo;
+        }
+
+        // ==========================================
+        // VERIFICAR CONTRASEÑA
+        // ==========================================
+
+        if (!usuario.getPassword().equals(password)) {
+
+            return registrarIntentoFallido(usuario);
+        }
+
+        // ==========================================
+        // VERIFICAR CUENTA ACTIVA
+        // ==========================================
+
+        if (!Boolean.TRUE.equals(usuario.getActivo())) {
+
+            return new LoginResponse(
+                    "ERROR",
+                    "La cuenta se encuentra inactiva.",
+                    null
+            );
+        }
+
+        // ==========================================
+        // VERIFICAR ROL FARMACIA
+        // ==========================================
+
+        if (!"FARMACIA".equalsIgnoreCase(usuario.getRol())) {
+
+            return new LoginResponse(
+                    "ROL_NO_AUTORIZADO",
+                    "Este acceso es exclusivo para el personal de farmacia.",
+                    usuario.getRol()
+            );
+        }
+
+        // ==========================================
+        // LOGIN CORRECTO
+        // ==========================================
+
+        reiniciarIntentos(usuario);
+
+        return new LoginResponse(
+                "OK",
+                "Inicio de sesión de farmacia exitoso.",
+                usuario.getRol(),
+                null,
+                usuario.getNombreUsuario()
+        );
+    }
     // ==========================================
     // REGISTRAR INTENTO FALLIDO
     // ==========================================

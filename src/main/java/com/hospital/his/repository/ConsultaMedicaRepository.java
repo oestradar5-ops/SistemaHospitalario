@@ -9,6 +9,11 @@ import java.util.Optional;
 public interface ConsultaMedicaRepository
         extends JpaRepository<ConsultaMedica, Long> {
 
-    Optional<ConsultaMedica>
-    findByCitaId(Long citaId);
+    // ==========================================
+    // BUSCAR CONSULTA MÉDICA POR ID DE CITA
+    // CU-08 Y CU-12
+    // ==========================================
+
+    Optional<ConsultaMedica> findByCitaId(Long citaId);
+
 }

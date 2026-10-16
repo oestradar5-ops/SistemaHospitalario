@@ -258,6 +258,38 @@
 
 
         /* ====================================== */
+        /* CU-12 - AGENDAR SEGUIMIENTO */
+        /* ====================================== */
+
+        .btn-seguimiento {
+            background: #1565c0;
+            color: white;
+            padding: 12px 22px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .btn-seguimiento:hover {
+            background: #0d47a1;
+        }
+
+        .aviso-seguimiento {
+            margin-top: 15px;
+            padding: 12px 15px;
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #1565c0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        /* ====================================== */
         /* RESPONSIVE */
         /* ====================================== */
 
@@ -272,7 +304,8 @@
             }
 
             .btn-guardar,
-            .btn-volver {
+            .btn-volver,
+            .btn-seguimiento {
                 width: 100%;
                 text-align: center;
             }
@@ -740,27 +773,26 @@
 
             <div class="acciones">
 
-
-                <button
-                        type="submit"
-
-                        class="btn-guardar">
-
+                <!-- CU-08: GUARDAR CONSULTA -->
+                <button type="submit" class="btn-guardar">
                     Guardar Consulta
-
                 </button>
 
-
-                <a
-                        href="/medico"
-
-                        class="btn-volver">
-
-                    Volver al Panel
-
+                <!-- CU-12: SOLO SI LA CONSULTA YA FUE GUARDADA -->
+                <a th:if="${consulta.id != null}"
+                   th:href="@{/medico/citas-seguimiento/nueva/{id}(id=${consulta.id})}"
+                   class="btn-seguimiento">
+                    📅 Agendar Seguimiento
                 </a>
 
+                <a th:href="@{/medico}" class="btn-volver">
+                    Volver al Panel
+                </a>
 
+            </div>
+
+            <div class="aviso-seguimiento" th:if="${consulta.id == null}">
+                Para agendar una cita de seguimiento, primero debe guardar la consulta médica.
             </div>
 
 

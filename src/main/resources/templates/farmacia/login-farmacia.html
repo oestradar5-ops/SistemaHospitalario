@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Inicio de Sesión | Farmacia HIS</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f766e, #164e63);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 430px;
+            background: white;
+            border-radius: 18px;
+            padding: 38px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
+        }
+
+        .icono {
+            width: 75px;
+            height: 75px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background: #ccfbf1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 38px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #134e4a;
+            font-size: 27px;
+            margin-bottom: 8px;
+        }
+
+        .subtitulo {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #0d9488;
+            box-shadow: 0 0 0 3px #ccfbf1;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #0f766e;
+            color: white;
+            border: none;
+            border-radius: 9px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #115e59;
+        }
+
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .mensaje {
+            display: none;
+            padding: 13px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .exito {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .volver {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .volver a {
+            text-decoration: none;
+            color: #0f766e;
+            font-size: 14px;
+        }
+
+        .volver a:hover {
+            text-decoration: underline;
+        }
+
+        .pie {
+            text-align: center;
+            margin-top: 25px;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <div class="icono">💊</div>
+
+    <h1>Farmacia HIS</h1>
+
+    <p class="subtitulo">
+        Sistema Médico Hospitalario<br>
+        Acceso exclusivo para personal de Farmacia
+    </p>
+
+    <div id="mensaje" class="mensaje"></div>
+
+    <form id="loginForm">
+
+        <label for="nombreUsuario">
+            Nombre de usuario
+        </label>
+
+        <input
+                type="text"
+                id="nombreUsuario"
+                placeholder="Ingrese su usuario"
+                autocomplete="username"
+                required
+        >
+
+        <label for="password">
+            Contraseña
+        </label>
+
+        <input
+                type="password"
+                id="password"
+                placeholder="Ingrese su contraseña"
+                autocomplete="current-password"
+                required
+        >
+
+        <button type="submit" id="btnLogin">
+            Iniciar sesión
+        </button>
+
+    </form>
+
+    <div class="volver">
+        <a href="/">
+            ← Volver al portal principal
+        </a>
+    </div>
+
+    <div class="pie">
+        Sistema Médico HIS · Módulo de Farmacia
+    </div>
+
+</div>
+
+<script th:inline="javascript">
+
+    const formulario = document.getElementById("loginForm");
+    const mensaje = document.getElementById("mensaje");
+    const boton = document.getElementById("btnLogin");
+
+    // Token CSRF proporcionado por Spring Security
+    const csrfToken = /*[[${_csrf?.token}]]*/ null;
+    const csrfHeader = /*[[${_csrf?.headerName}]]*/ null;
+
+    function mostrarMensaje(texto, tipo) {
+
+        mensaje.textContent = texto;
+        mensaje.className = "mensaje " + tipo;
+        mensaje.style.display = "block";
+    }
+
+    formulario.addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+        boton.disabled = true;
+        boton.textContent = "Verificando...";
+
+        mensaje.style.display = "none";
+
+        const datos = {
+            nombreUsuario:
+                document.getElementById("nombreUsuario").value.trim(),
+
+            password:
+            document.getElementById("password").value
+        };
+
+        try {
+
+            const headers = {
+                "Content-Type": "application/json"
+            };
+
+            if (csrfToken && csrfHeader) {
+                headers[csrfHeader] = csrfToken;
+            }
+
+            const respuesta = await fetch("/api/farmacia/login", {
+                method: "POST",
+                headers: headers,
+                credentials: "same-origin",
+                body: JSON.stringify(datos)
+            });
+
+            const resultado = await respuesta.json();
+
+            if (resultado.estado === "OK"
+                && resultado.rol === "FARMACIA") {
+
+                mostrarMensaje(
+                    "Inicio de sesión correcto. Redirigiendo...",
+                    "exito"
+                );
+
+                window.location.href = "/farmacia";
+
+                return;
+            }
+
+            if (resultado.estado === "BLOQUEADO") {
+
+                mostrarMensaje(
+                    resultado.mensaje ||
+                    "Cuenta bloqueada temporalmente.",
+                    "error"
+                );
+
+                return;
+            }
+
+            mostrarMensaje(
+                resultado.mensaje ||
+                "No fue posible iniciar sesión.",
+                "error"
+            );
+
+        } catch (error) {
+
+            mostrarMensaje(
+                "No fue posible conectar con el servidor.",
+                "error"
+            );
+
+        } finally {
+
+            boton.disabled = false;
+            boton.textContent = "Iniciar sesión";
+        }
+    });
+
+</script>
+
+</body>
+</html>

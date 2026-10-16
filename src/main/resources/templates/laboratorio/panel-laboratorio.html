@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Panel de Laboratorio | Sistema Hospitalario</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    header {
+      background: #0f766e;
+      color: white;
+      padding: 20px 35px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .contenedor {
+      max-width: 1300px;
+      margin: 35px auto;
+      padding: 0 20px;
+    }
+
+    .bienvenida {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+    }
+
+    .bienvenida h2,
+    .seccion h2 {
+      color: #134e4a;
+    }
+
+    .tarjetas {
+      display: grid;
+      grid-template-columns:
+                    repeat(auto-fit, minmax(230px, 1fr));
+      gap: 20px;
+    }
+
+    .tarjeta {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .tarjeta h3 {
+      color: #334155;
+      font-size: 16px;
+    }
+
+    .tarjeta p {
+      font-size: 30px;
+      font-weight: bold;
+      color: #0f766e;
+      margin-bottom: 0;
+    }
+
+    .seccion {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      margin-top: 25px;
+    }
+
+    .tabla-contenedor {
+      overflow-x: auto;
+      margin-top: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1100px;
+    }
+
+    th {
+      background: #0f766e;
+      color: white;
+      padding: 14px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 13px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    tbody tr:hover {
+      background: #f0fdfa;
+    }
+
+    .etiqueta {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .pendiente {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .proceso {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .completada {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .pagada {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .sin-pago {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .externa {
+      background: #ede9fe;
+      color: #6d28d9;
+    }
+
+    .interna {
+      background: #e2e8f0;
+      color: #475569;
+    }
+
+    .sin-registros {
+      text-align: center;
+      padding: 30px;
+      color: #64748b;
+    }
+
+    .aviso {
+      margin-top: 20px;
+      padding: 15px;
+      background: #ecfeff;
+      border-left: 4px solid #0f766e;
+      border-radius: 5px;
+    }
+
+    /* ==========================================
+       BOTÓN VER DETALLES
+       ========================================== */
+
+    .boton {
+      display: inline-block;
+      background: #0f766e;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: bold;
+      text-align: center;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+
+    .boton:hover {
+      background: #115e59;
+    }
+
+    @media (max-width: 700px) {
+      header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .contenedor {
+        margin: 20px auto;
+        padding: 0 12px;
+      }
+
+      .seccion {
+        padding: 15px;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+
+<!-- ==========================================
+     ENCABEZADO
+     ========================================== -->
+
+<header>
+
+  <h1>🔬 Laboratorio Clínico</h1>
+
+  <span>Panel del Personal de Laboratorio</span>
+
+</header>
+
+
+<div class="contenedor">
+
+  <!-- ==========================================
+       BIENVENIDA
+       ========================================== -->
+
+  <div class="bienvenida">
+
+    <h2>Bienvenido al Laboratorio</h2>
+
+    <p>
+      Usuario:
+      <strong th:text="${usuarioLaboratorio}">
+        Personal de laboratorio
+      </strong>
+    </p>
+
+    <p>
+      Consulte las órdenes médicas y dé seguimiento
+      a los exámenes de laboratorio.
+    </p>
+
+  </div>
+
+
+  <!-- ==========================================
+       INDICADORES
+       ========================================== -->
+
+  <div class="tarjetas">
+
+    <div class="tarjeta">
+
+      <h3>Órdenes pendientes</h3>
+
+      <p th:text="${pendientes}">0</p>
+
+    </div>
+
+
+    <div class="tarjeta">
+
+      <h3>En proceso</h3>
+
+      <p th:text="${enProceso}">0</p>
+
+    </div>
+
+
+    <div class="tarjeta">
+
+      <h3>Resultados publicados</h3>
+
+      <p th:text="${resultadosPublicados}">0</p>
+
+    </div>
+
+
+    <div class="tarjeta">
+
+      <h3>Órdenes completadas</h3>
+
+      <p th:text="${completadas}">0</p>
+
+    </div>
+
+  </div>
+
+
+  <!-- ==========================================
+       GESTIÓN DE ÓRDENES
+       ========================================== -->
+
+  <div class="seccion">
+
+    <h2>Gestión de Órdenes de Laboratorio</h2>
+
+    <p>
+      Órdenes solicitadas por los médicos
+      y registradas en el sistema hospitalario.
+    </p>
+
+
+    <!-- ==========================================
+         TABLA DE ÓRDENES
+         ========================================== -->
+
+    <div class="tabla-contenedor">
+
+      <table>
+
+        <thead>
+
+        <tr>
+
+          <th>Orden</th>
+
+          <th>Paciente</th>
+
+          <th>Médico</th>
+
+          <th>Fecha</th>
+
+          <th>Estado</th>
+
+          <th>Tipo</th>
+
+          <th>Pago</th>
+
+          <th>Total</th>
+
+          <th>Acciones</th>
+
+        </tr>
+
+        </thead>
+
+
+        <tbody>
+
+        <!-- ==========================================
+             SIN ÓRDENES REGISTRADAS
+             ========================================== -->
+
+        <tr th:if="${#lists.isEmpty(ordenes)}">
+
+          <td colspan="9" class="sin-registros">
+
+            No existen órdenes de laboratorio registradas.
+
+          </td>
+
+        </tr>
+
+
+        <!-- ==========================================
+             LISTAR ÓRDENES DE POSTGRESQL
+             ========================================== -->
+
+        <tr th:each="orden : ${ordenes}">
+
+
+          <!-- NÚMERO DE ORDEN -->
+
+          <td th:text="${orden.id}">
+
+            1
+
+          </td>
+
+
+          <!-- PACIENTE -->
+
+          <td th:text="${orden.paciente}">
+
+            Paciente
+
+          </td>
+
+
+          <!-- MÉDICO -->
+
+          <td th:text="${orden.medico}">
+
+            Médico
+
+          </td>
+
+
+          <!-- FECHA -->
+
+          <td th:text="${orden.fecha != null ? #temporals.format(orden.fecha, 'dd/MM/yyyy HH:mm') : '-'}">
+
+            Fecha
+
+          </td>
+
+
+          <!-- ESTADO DE LA ORDEN -->
+
+          <td>
+
+                        <span
+                                class="etiqueta"
+
+                                th:classappend="${orden.estado == 'PENDIENTE' ? 'pendiente' : (orden.estado == 'EN_PROCESO' ? 'proceso' : (orden.estado == 'COMPLETADA' ? 'completada' : ''))}"
+
+                                th:text="${orden.estado}">
+
+                            PENDIENTE
+
+                        </span>
+
+          </td>
+
+
+          <!-- TIPO DE ORDEN -->
+
+          <td>
+
+                        <span
+                                class="etiqueta"
+
+                                th:classappend="${orden.externa ? 'externa' : 'interna'}"
+
+                                th:text="${orden.externa ? 'Externa' : 'Interna'}">
+
+                            Interna
+
+                        </span>
+
+          </td>
+
+
+          <!-- ESTADO DEL PAGO -->
+
+          <td>
+
+            <!-- ORDEN EXTERNA -->
+
+            <span
+                    class="etiqueta externa"
+
+                    th:if="${orden.externa}">
+
+                            Gestión externa
+
+                        </span>
+
+
+            <!-- ORDEN INTERNA -->
+
+            <span
+                    class="etiqueta"
+
+                    th:unless="${orden.externa}"
+
+                    th:classappend="${orden.pagada ? 'pagada' : 'sin-pago'}"
+
+                    th:text="${orden.pagada ? 'Pago registrado' : 'Pago pendiente'}">
+
+                            Pago pendiente
+
+                        </span>
+
+          </td>
+
+
+          <!-- MONTO TOTAL -->
+
+          <td th:text="${'Q ' + #numbers.formatDecimal(orden.monto, 1, 2)}">
+
+            Q 0.00
+
+          </td>
+
+
+          <!-- ==========================================
+               ACCIONES
+               ========================================== -->
+
+          <td>
+
+            <a
+                    class="boton"
+
+                    th:href="@{/laboratorio/orden/{id}(id=${orden.id})}">
+
+              Ver detalles
+
+            </a>
+
+          </td>
+
+
+        </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <!-- ==========================================
+         AVISO IMPORTANTE
+         ========================================== -->
+
+    <div class="aviso">
+
+      <strong>Importante:</strong>
+
+      El procesamiento de órdenes internas requiere
+      confirmación del pago por el módulo de Caja.
+
+      Las órdenes externas tienen un procedimiento diferente.
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

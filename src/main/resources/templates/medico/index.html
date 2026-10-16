@@ -404,6 +404,29 @@
     }
 
 
+    /* ====================================== */
+    /* CU-12 - AGENDAR CITA DE SEGUIMIENTO */
+    /* ====================================== */
+
+    .btn-agendar-seguimiento {
+      display: block;
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 7px;
+      border: none;
+      background: #198754;
+      color: white;
+      text-decoration: none;
+      text-align: center;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-agendar-seguimiento:hover {
+      background: #146c43;
+    }
+
     /* FINALIZAR ATENCIÓN */
 
     .btn-finalizar {
@@ -461,6 +484,60 @@
       .btn-finalizar {
         width: 100%;
       }
+    }
+    /* ====================================== */
+    /* CU-09: CONSULTAR RESULTADOS */
+    /* ====================================== */
+
+    .btn-ver-resultados {
+      display: block;
+      width: 100%;
+      background: #0f766e;
+      color: white;
+      padding: 11px 15px;
+      border-radius: 7px;
+      border: none;
+      text-decoration: none;
+      text-align: center;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-ver-resultados:hover {
+      background: #115e59;
+    }
+
+    /* CU-11: ACCESO A AUTORIZACIONES DE MEDICAMENTOS */
+    .acceso-sustituciones {
+      background: linear-gradient(110deg, #e9f5ff, #f5faff);
+      border: 1px solid #c9dff4;
+      border-left: 6px solid #1f4e79;
+      border-radius: 10px;
+      padding: 22px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .acceso-sustituciones h2 { color: #1f4e79; margin: 0 0 8px; }
+    .acceso-sustituciones p { margin: 0; color: #526273; }
+    .btn-sustituciones {
+      display: inline-block;
+      padding: 13px 20px;
+      border-radius: 8px;
+      background: #1f4e79;
+      color: #fff;
+      font-weight: bold;
+      text-decoration: none;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .btn-sustituciones:hover { background: #173b5d; }
+    @media (max-width: 700px) {
+      .acceso-sustituciones { flex-direction: column; align-items: stretch; }
+      .btn-sustituciones { white-space: normal; }
     }
 
   </style>
@@ -531,6 +608,20 @@
   </div>
 
 
+
+
+  <!-- ======================================== -->
+  <!-- CU-11: AUTORIZACIONES DE MEDICAMENTOS -->
+  <!-- ======================================== -->
+  <section class="acceso-sustituciones" aria-labelledby="titulo-sustituciones">
+    <div>
+      <h2 id="titulo-sustituciones">💊 Autorizaciones de medicamentos</h2>
+      <p>Revise las solicitudes de sustitución enviadas por Farmacia y responda según corresponda.</p>
+    </div>
+    <a class="btn-sustituciones" th:href="@{/medico/sustituciones}">
+      Ver solicitudes de sustitución
+    </a>
+  </section>
 
   <!-- ======================================== -->
   <!-- 1. EN ESPERA DE CONSULTA -->
@@ -1076,7 +1167,18 @@
         </a>
 
 
+        <!-- ====================================== -->
+        <!-- CU-09: VER RESULTADOS DE LABORATORIO -->
+        <!-- ====================================== -->
 
+        <a class="btn-ver-resultados"
+           th:href="@{/medico/cita/{citaId}/laboratorio(
+       citaId=${cita.id}
+   )}">
+
+          🔬 Ver resultados de laboratorio
+
+        </a>
         <!-- RECETA -->
 
         <a
@@ -1102,6 +1204,15 @@
         </a>
 
 
+
+        <!-- ====================================== -->
+        <!-- CU-12 - AGENDAR CITA DE SEGUIMIENTO -->
+        <!-- ====================================== -->
+
+        <a class="btn-agendar-seguimiento"
+           th:href="@{/medico/citas-seguimiento/nueva-desde-cita/{id}(id=${cita.id})}">
+          📅 Agendar Cita de Seguimiento
+        </a>
 
         <!-- FINALIZAR ATENCIÓN -->
 

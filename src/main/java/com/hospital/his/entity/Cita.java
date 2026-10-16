@@ -8,10 +8,18 @@ import java.time.LocalDateTime;
 @Table(name = "citas")
 public class Cita {
 
+    // ==========================================
+    // IDENTIFICADOR
+    // ==========================================
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
+    // ==========================================
+    // PACIENTE
+    // ==========================================
 
     @ManyToOne
     @JoinColumn(
@@ -21,6 +29,10 @@ public class Cita {
     private Usuario paciente;
 
 
+    // ==========================================
+    // MÉDICO
+    // ==========================================
+
     @ManyToOne
     @JoinColumn(
             name = "medico_id",
@@ -28,6 +40,10 @@ public class Cita {
     )
     private Medico medico;
 
+
+    // ==========================================
+    // SUCURSAL
+    // ==========================================
 
     @ManyToOne
     @JoinColumn(
@@ -37,6 +53,10 @@ public class Cita {
     private Sucursal sucursal;
 
 
+    // ==========================================
+    // ESPECIALIDAD
+    // ==========================================
+
     @ManyToOne
     @JoinColumn(
             name = "especialidad_id",
@@ -45,12 +65,21 @@ public class Cita {
     private Especialidad especialidad;
 
 
+    // ==========================================
+    // HORARIO MÉDICO
+    // ==========================================
+
     @ManyToOne
     @JoinColumn(
             name = "horario_id",
             nullable = false
     )
     private HorarioMedico horario;
+
+
+    // ==========================================
+    // MOTIVO DE CONSULTA
+    // ==========================================
 
     @Column(
             name = "motivo_consulta",
@@ -60,9 +89,20 @@ public class Cita {
     private String motivoConsulta;
 
 
-    @Column(nullable = false, length = 50)
+    // ==========================================
+    // ESTADO DE LA CITA
+    // ==========================================
+
+    @Column(
+            nullable = false,
+            length = 50
+    )
     private String estado = "PENDIENTE_DE_PAGO";
 
+
+    // ==========================================
+    // FECHA DE CREACIÓN
+    // ==========================================
 
     @Column(
             name = "fecha_creacion",
@@ -70,11 +110,20 @@ public class Cita {
     )
     private LocalDateTime fechaCreacion;
 
+
+    // ==========================================
+    // HORA DE LLEGADA
+    // ==========================================
+
     @Column(
             name = "hora_llegada"
     )
     private LocalDateTime horaLlegada;
 
+
+    // ==========================================
+    // PRIORIDAD
+    // ==========================================
 
     @Column(
             name = "prioridad",
@@ -82,8 +131,12 @@ public class Cita {
             length = 30
     )
     private String prioridad = "NORMAL";
-    public Cita() {
-    }
+
+
+    // ==========================================
+    // ORIGEN DE LA CITA
+    // ==========================================
+
     @Column(
             name = "origen_cita",
             nullable = false,
@@ -91,159 +144,307 @@ public class Cita {
     )
     private String origenCita = "PORTAL";
 
+
+    // ==========================================
+    // CU-12 - CONSULTA MÉDICA DE ORIGEN
+    // ==========================================
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "consulta_origen_id"
+    )
+    private ConsultaMedica consultaOrigen;
+
+
+    // ==========================================
+    // CU-12 - TIPO DE SEGUIMIENTO
+    // ==========================================
+
+    @Column(
+            name = "tipo_seguimiento",
+            length = 50
+    )
+    private String tipoSeguimiento;
+
+
+    // ==========================================
+    // CU-12 - CONTROL DE RECORDATORIOS
+    // ==========================================
+
+    @Column(
+            name = "recordatorio_seguimiento_enviado"
+    )
+    private Boolean recordatorioSeguimientoEnviado = false;
+
+
+    // ==========================================
+    // CONSTRUCTOR VACÍO
+    // ==========================================
+
+    public Cita() {
+    }
+
+
+    // ==========================================
+    // VALORES PREDETERMINADOS
+    // ==========================================
+
     @PrePersist
     public void prePersist() {
 
         if (fechaCreacion == null) {
-            fechaCreacion =
-                    LocalDateTime.now();
+
+            fechaCreacion = LocalDateTime.now();
         }
 
-        if (estado == null ||
-                estado.isBlank()) {
+        if (estado == null || estado.isBlank()) {
 
-            estado =
-                    "PENDIENTE_DE_PAGO";
+            estado = "PENDIENTE_DE_PAGO";
         }
 
-        if (prioridad == null ||
-                prioridad.isBlank()) {
+        if (prioridad == null || prioridad.isBlank()) {
 
-            prioridad =
-                    "NORMAL";
+            prioridad = "NORMAL";
         }
 
-        if (origenCita == null ||
-                origenCita.isBlank()) {
+        if (origenCita == null || origenCita.isBlank()) {
 
-            origenCita =
-                    "PORTAL";
+            origenCita = "PORTAL";
+        }
+
+        if (recordatorioSeguimientoEnviado == null) {
+
+            recordatorioSeguimientoEnviado = false;
         }
     }
 
 
+    // ==========================================
+    // GETTERS Y SETTERS GENERALES
+    // ==========================================
+
     public Long getId() {
+
         return id;
     }
 
     public void setId(Long id) {
+
         this.id = id;
     }
 
 
+    // ==========================================
+    // PACIENTE
+    // ==========================================
+
     public Usuario getPaciente() {
+
         return paciente;
     }
 
-    public void setPaciente(
-            Usuario paciente) {
+    public void setPaciente(Usuario paciente) {
 
         this.paciente = paciente;
     }
 
 
+    // ==========================================
+    // MÉDICO
+    // ==========================================
+
     public Medico getMedico() {
+
         return medico;
     }
 
-    public void setMedico(
-            Medico medico) {
+    public void setMedico(Medico medico) {
 
         this.medico = medico;
     }
 
 
+    // ==========================================
+    // SUCURSAL
+    // ==========================================
+
     public Sucursal getSucursal() {
+
         return sucursal;
     }
 
-    public void setSucursal(
-            Sucursal sucursal) {
+    public void setSucursal(Sucursal sucursal) {
 
         this.sucursal = sucursal;
     }
 
 
+    // ==========================================
+    // ESPECIALIDAD
+    // ==========================================
+
     public Especialidad getEspecialidad() {
+
         return especialidad;
     }
 
-    public void setEspecialidad(
-            Especialidad especialidad) {
+    public void setEspecialidad(Especialidad especialidad) {
 
         this.especialidad = especialidad;
     }
 
 
+    // ==========================================
+    // HORARIO MÉDICO
+    // ==========================================
+
     public HorarioMedico getHorario() {
+
         return horario;
     }
 
-    public void setHorario(
-            HorarioMedico horario) {
+    public void setHorario(HorarioMedico horario) {
 
         this.horario = horario;
     }
 
 
+    // ==========================================
+    // MOTIVO DE CONSULTA
+    // ==========================================
+
     public String getMotivoConsulta() {
+
         return motivoConsulta;
     }
 
-    public void setMotivoConsulta(
-            String motivoConsulta) {
+    public void setMotivoConsulta(String motivoConsulta) {
 
-        this.motivoConsulta =
-                motivoConsulta;
+        this.motivoConsulta = motivoConsulta;
     }
 
 
+    // ==========================================
+    // ESTADO
+    // ==========================================
+
     public String getEstado() {
+
         return estado;
     }
 
-    public void setEstado(
-            String estado) {
+    public void setEstado(String estado) {
 
         this.estado = estado;
     }
 
 
+    // ==========================================
+    // FECHA DE CREACIÓN
+    // ==========================================
+
     public LocalDateTime getFechaCreacion() {
+
         return fechaCreacion;
     }
 
-    public void setFechaCreacion(
-            LocalDateTime fechaCreacion) {
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
 
-        this.fechaCreacion =
-                fechaCreacion;
+        this.fechaCreacion = fechaCreacion;
     }
+
+
+    // ==========================================
+    // HORA DE LLEGADA
+    // ==========================================
+
     public LocalDateTime getHoraLlegada() {
+
         return horaLlegada;
     }
 
-    public void setHoraLlegada(
-            LocalDateTime horaLlegada) {
+    public void setHoraLlegada(LocalDateTime horaLlegada) {
 
         this.horaLlegada = horaLlegada;
     }
 
 
+    // ==========================================
+    // PRIORIDAD
+    // ==========================================
+
     public String getPrioridad() {
+
         return prioridad;
     }
 
-    public void setPrioridad(
-            String prioridad) {
+    public void setPrioridad(String prioridad) {
 
         this.prioridad = prioridad;
     }
+
+
+    // ==========================================
+    // ORIGEN DE CITA
+    // ==========================================
+
     public String getOrigenCita() {
+
         return origenCita;
     }
 
     public void setOrigenCita(String origenCita) {
+
         this.origenCita = origenCita;
     }
+
+
+    // ==========================================
+    // CU-12 - CONSULTA ORIGINAL
+    // ==========================================
+
+    public ConsultaMedica getConsultaOrigen() {
+
+        return consultaOrigen;
+    }
+
+    public void setConsultaOrigen(
+            ConsultaMedica consultaOrigen) {
+
+        this.consultaOrigen = consultaOrigen;
+    }
+
+
+    // ==========================================
+    // CU-12 - TIPO DE SEGUIMIENTO
+    // ==========================================
+
+    public String getTipoSeguimiento() {
+
+        return tipoSeguimiento;
+    }
+
+    public void setTipoSeguimiento(
+            String tipoSeguimiento) {
+
+        this.tipoSeguimiento = tipoSeguimiento;
+    }
+
+
+    // ==========================================
+    // CU-12 - RECORDATORIO ENVIADO
+    // ==========================================
+
+    public Boolean getRecordatorioSeguimientoEnviado() {
+
+        return recordatorioSeguimientoEnviado;
+    }
+
+    public void setRecordatorioSeguimientoEnviado(
+            Boolean recordatorioSeguimientoEnviado) {
+
+        this.recordatorioSeguimientoEnviado =
+                recordatorioSeguimientoEnviado;
+    }
+
 }

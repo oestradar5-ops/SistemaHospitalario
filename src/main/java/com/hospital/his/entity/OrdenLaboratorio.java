@@ -2,6 +2,7 @@ package com.hospital.his.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,7 @@ public class OrdenLaboratorio {
 
 
     // ==========================================
-    // ESTADO
+    // ESTADO DE LA ORDEN
     // ==========================================
 
     @Column(
@@ -66,6 +67,54 @@ public class OrdenLaboratorio {
 
 
     // ==========================================
+    // ORDEN EXTERNA
+    // CU-09
+    // ==========================================
+
+    @Column(
+            name = "orden_externa",
+            nullable = false
+    )
+    private Boolean ordenExterna = false;
+
+
+    // ==========================================
+    // MONTO TOTAL DE LA ORDEN
+    // CU-09
+    // ==========================================
+
+    @Column(
+            name = "monto_total",
+            nullable = false,
+            precision = 10,
+            scale = 2
+    )
+    private BigDecimal montoTotal = BigDecimal.ZERO;
+
+
+    // ==========================================
+    // FECHA DE PAGO
+    // CU-09
+    // ==========================================
+
+    @Column(
+            name = "fecha_pago"
+    )
+    private LocalDateTime fechaPago;
+
+
+    // ==========================================
+    // FECHA DE FINALIZACIÓN
+    // CU-09
+    // ==========================================
+
+    @Column(
+            name = "fecha_completada"
+    )
+    private LocalDateTime fechaCompletada;
+
+
+    // ==========================================
     // EXÁMENES DE LA ORDEN
     // ==========================================
 
@@ -74,12 +123,11 @@ public class OrdenLaboratorio {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<OrdenExamen> examenes =
-            new ArrayList<>();
+    private List<OrdenExamen> examenes = new ArrayList<>();
 
 
     // ==========================================
-    // CONSTRUCTOR
+    // CONSTRUCTOR VACÍO
     // ==========================================
 
     public OrdenLaboratorio() {
@@ -87,7 +135,7 @@ public class OrdenLaboratorio {
 
 
     // ==========================================
-    // FECHA AUTOMÁTICA
+    // VALORES AUTOMÁTICOS
     // ==========================================
 
     @PrePersist
@@ -99,6 +147,14 @@ public class OrdenLaboratorio {
 
         if (estado == null || estado.isBlank()) {
             estado = "PENDIENTE";
+        }
+
+        if (ordenExterna == null) {
+            ordenExterna = false;
+        }
+
+        if (montoTotal == null) {
+            montoTotal = BigDecimal.ZERO;
         }
     }
 
@@ -115,6 +171,11 @@ public class OrdenLaboratorio {
         this.id = id;
     }
 
+
+    // ==========================================
+    // CITA
+    // ==========================================
+
     public Cita getCita() {
         return cita;
     }
@@ -122,6 +183,11 @@ public class OrdenLaboratorio {
     public void setCita(Cita cita) {
         this.cita = cita;
     }
+
+
+    // ==========================================
+    // OBSERVACIONES
+    // ==========================================
 
     public String getObservaciones() {
         return observaciones;
@@ -131,6 +197,11 @@ public class OrdenLaboratorio {
         this.observaciones = observaciones;
     }
 
+
+    // ==========================================
+    // ESTADO
+    // ==========================================
+
     public String getEstado() {
         return estado;
     }
@@ -139,6 +210,11 @@ public class OrdenLaboratorio {
         this.estado = estado;
     }
 
+
+    // ==========================================
+    // FECHA DE CREACIÓN
+    // ==========================================
+
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }
@@ -146,6 +222,63 @@ public class OrdenLaboratorio {
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
     }
+
+
+    // ==========================================
+    // ORDEN EXTERNA
+    // ==========================================
+
+    public Boolean getOrdenExterna() {
+        return ordenExterna;
+    }
+
+    public void setOrdenExterna(Boolean ordenExterna) {
+        this.ordenExterna = ordenExterna;
+    }
+
+
+    // ==========================================
+    // MONTO TOTAL
+    // ==========================================
+
+    public BigDecimal getMontoTotal() {
+        return montoTotal;
+    }
+
+    public void setMontoTotal(BigDecimal montoTotal) {
+        this.montoTotal = montoTotal;
+    }
+
+
+    // ==========================================
+    // FECHA DE PAGO
+    // ==========================================
+
+    public LocalDateTime getFechaPago() {
+        return fechaPago;
+    }
+
+    public void setFechaPago(LocalDateTime fechaPago) {
+        this.fechaPago = fechaPago;
+    }
+
+
+    // ==========================================
+    // FECHA COMPLETADA
+    // ==========================================
+
+    public LocalDateTime getFechaCompletada() {
+        return fechaCompletada;
+    }
+
+    public void setFechaCompletada(LocalDateTime fechaCompletada) {
+        this.fechaCompletada = fechaCompletada;
+    }
+
+
+    // ==========================================
+    // LISTA DE EXÁMENES
+    // ==========================================
 
     public List<OrdenExamen> getExamenes() {
         return examenes;

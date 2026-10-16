@@ -11,6 +11,14 @@
 
   <title>Caja - HIS</title>
 
+  <meta name="_csrf"
+        th:if="${_csrf != null}"
+        th:content="${_csrf.token}">
+
+  <meta name="_csrf_header"
+        th:if="${_csrf != null}"
+        th:content="${_csrf.headerName}">
+
   <style>
 
     body {
@@ -23,7 +31,6 @@
       background-color: #198754;
       color: white;
       padding: 20px 35px;
-
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -48,8 +55,7 @@
       background-color: white;
       padding: 25px;
       border-radius: 12px;
-      box-shadow:
-              0 3px 12px rgba(0,0,0,0.10);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.10);
       margin-bottom: 25px;
     }
 
@@ -245,12 +251,98 @@
       }
     }
 
+    /* ESTILOS DE LABORATORIO */
+
+    .lab-etiqueta {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .lab-input {
+      padding: 12px;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .lab-aviso {
+      color: #856404;
+      background: #fff3cd;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 12px;
+    }
+
+    .lab-oculto {
+      display: none;
+    }
+
+    .lab-boton {
+      padding: 12px 20px;
+      border: 0;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #198754;
+      color: white;
+    }
+
+    .lab-boton:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .lab-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .lab-grid > div {
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+
+    .lab-grid strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    @media(max-width:700px) {
+      .lab-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+
+      body.imprimir-lab header,
+      body.imprimir-lab #panelBusqueda,
+      body.imprimir-lab #panelPago,
+      body.imprimir-lab #comprobante,
+      body.imprimir-lab #panelLaboratorio {
+        display: none !important;
+      }
+
+      body.imprimir-lab #comprobanteLaboratorio {
+        display: block !important;
+        box-shadow: none;
+      }
+
+      body.imprimir-lab #comprobanteLaboratorio button {
+        display: none !important;
+      }
+    }
+
   </style>
 
 </head>
 
 <body>
-
 
 <header>
 
@@ -276,22 +368,15 @@
 
 </header>
 
-
 <div class="contenedor">
 
+  <!-- BÚSQUEDA DE CITAS -->
 
-  <!-- =====================================================
-       BÚSQUEDA
-       ===================================================== -->
-
-  <div
-          id="panelBusqueda"
-          class="panel">
+  <div id="panelBusqueda" class="panel">
 
     <h2>
       Buscar Cita Pendiente de Pago
     </h2>
-
 
     <div class="alternancia">
 
@@ -305,7 +390,6 @@
 
       </button>
 
-
       <button
               type="button"
               id="btnDpi"
@@ -318,14 +402,12 @@
 
     </div>
 
-
     <div class="fila-busqueda">
 
       <input
               type="text"
               id="valorBusqueda"
               placeholder="Ingrese número de cita">
-
 
       <button
               type="button"
@@ -338,7 +420,6 @@
 
     </div>
 
-
     <div
             id="mensajeBusqueda"
             class="mensaje">
@@ -346,10 +427,7 @@
 
   </div>
 
-
-  <!-- =====================================================
-       DATOS DE CITA
-       ===================================================== -->
+  <!-- DATOS DE LA CONSULTA -->
 
   <div
           id="panelPago"
@@ -359,122 +437,67 @@
       Detalle de la Consulta
     </h2>
 
-
     <div class="datos">
 
       <div class="dato">
-
-        <strong>
-          No. de Cita
-        </strong>
-
+        <strong>No. de Cita</strong>
         <span id="citaId"></span>
-
       </div>
 
-
       <div class="dato">
-
-        <strong>
-          Paciente
-        </strong>
-
+        <strong>Paciente</strong>
         <span id="paciente"></span>
-
       </div>
 
-
       <div class="dato">
-
-        <strong>
-          DPI
-        </strong>
-
+        <strong>DPI</strong>
         <span id="dpi"></span>
-
       </div>
 
-
       <div class="dato">
-
-        <strong>
-          Estado
-        </strong>
-
+        <strong>Estado</strong>
         <span id="estadoCita"></span>
-
       </div>
 
-
       <div class="dato">
-
-        <strong>
-          Especialidad
-        </strong>
-
+        <strong>Especialidad</strong>
         <span id="especialidad"></span>
-
       </div>
 
-
       <div class="dato">
-
-        <strong>
-          Médico
-        </strong>
-
+        <strong>Médico</strong>
         <span id="medico"></span>
-
       </div>
 
-
       <div class="dato">
-
-        <strong>
-          Fecha
-        </strong>
-
+        <strong>Fecha</strong>
         <span id="fecha"></span>
-
       </div>
-
 
       <div class="dato">
-
-        <strong>
-          Hora
-        </strong>
-
+        <strong>Hora</strong>
         <span id="hora"></span>
-
       </div>
-
 
       <div
               class="dato"
               style="grid-column:1 / -1;">
 
-        <strong>
-          Monto total
-        </strong>
+        <strong>Monto total</strong>
 
         <span class="monto">
-                    Q<span id="montoTotal">250.00</span>
-                </span>
+          Q<span id="montoTotal">250.00</span>
+        </span>
 
       </div>
 
     </div>
 
-
-    <!-- =================================================
-         MÉTODO DE PAGO
-         ================================================= -->
+    <!-- MÉTODO DE PAGO -->
 
     <h3>
       Método de Pago
     </h3>
-
 
     <div class="metodos">
 
@@ -482,45 +505,33 @@
               type="button"
               class="metodo"
               onclick="seleccionarMetodo('EFECTIVO', this)">
-
         Efectivo
-
       </button>
-
 
       <button
               type="button"
               class="metodo"
               onclick="seleccionarMetodo('VISA', this)">
-
         Visa
-
       </button>
-
 
       <button
               type="button"
               class="metodo"
               onclick="seleccionarMetodo('MASTERCARD', this)">
-
         Mastercard
-
       </button>
-
 
       <button
               type="button"
               class="metodo"
               onclick="seleccionarMetodo('DEBITO', this)">
-
         Débito
-
       </button>
 
     </div>
 
-
-    <!-- EFECTIVO -->
+    <!-- PAGO EN EFECTIVO -->
 
     <div
             id="campoEfectivo"
@@ -539,8 +550,7 @@
 
     </div>
 
-
-    <!-- TARJETA -->
+    <!-- PAGO CON TARJETA -->
 
     <div
             id="campoTarjeta"
@@ -560,12 +570,10 @@
 
     </div>
 
-
     <div
             id="mensajePago"
             class="mensaje">
     </div>
-
 
     <div class="acciones">
 
@@ -593,10 +601,10 @@
 
   </div>
 
-
-  <!-- =====================================================
-       COMPROBANTE
-       ===================================================== -->
+  <!-- CONTINÚA EN LA PARTE 2 -->
+  <!-- ============================================= -->
+  <!-- COMPROBANTE DE PAGO DE CONSULTA MÉDICA -->
+  <!-- ============================================= -->
 
   <div
           id="comprobante"
@@ -606,86 +614,53 @@
       Comprobante de Pago
     </h3>
 
-
     <p>
-      <strong>
-        Paciente:
-      </strong>
-
+      <strong>Paciente:</strong>
       <span id="compPaciente"></span>
     </p>
 
-
     <p>
-      <strong>
-        No. Cita:
-      </strong>
-
+      <strong>No. Cita:</strong>
       <span id="compCita"></span>
     </p>
 
-
     <p>
-      <strong>
-        Método de pago:
-      </strong>
-
+      <strong>Método de pago:</strong>
       <span id="compMetodo"></span>
     </p>
 
-
     <p>
-      <strong>
-        Monto:
-      </strong>
-
+      <strong>Monto:</strong>
       Q<span id="compMonto"></span>
     </p>
-
 
     <p
             id="filaMontoRecibido"
             style="display:none;">
 
-      <strong>
-        Monto recibido:
-      </strong>
-
+      <strong>Monto recibido:</strong>
       Q<span id="compMontoRecibido"></span>
 
     </p>
-
 
     <p
             id="filaCambio"
             style="display:none;">
 
-      <strong>
-        Cambio:
-      </strong>
-
+      <strong>Cambio:</strong>
       Q<span id="compCambio"></span>
 
     </p>
 
-
     <p>
-      <strong>
-        No. de transacción:
-      </strong>
-
+      <strong>No. de transacción:</strong>
       <span id="compReferencia"></span>
     </p>
 
-
     <p>
-      <strong>
-        Estado de la cita:
-      </strong>
-
+      <strong>Estado de la cita:</strong>
       CONFIRMADA
     </p>
-
 
     <div class="acciones">
 
@@ -697,7 +672,6 @@
         Imprimir
 
       </button>
-
 
       <button
               type="button"
@@ -713,859 +687,874 @@
   </div>
 
 
+  <!-- ============================================= -->
+  <!-- NUEVA SECCIÓN: COBRO DE LABORATORIO -->
+  <!-- ============================================= -->
+
+  <div
+          id="panelLaboratorio"
+          class="panel">
+
+    <h2>
+      Cobro de Laboratorio
+    </h2>
+
+    <p>
+      Busque una orden de laboratorio para consultar
+      los exámenes solicitados y registrar su pago.
+    </p>
+
+    <!-- CU-10: BUSCAR POR ORDEN O DPI -->
+    <div class="alternancia">
+      <button type="button" id="labTipoOrden" class="btn-tipo activo"
+              onclick="seleccionarTipoBusquedaLaboratorio('ORDEN')">Por número de orden</button>
+      <button type="button" id="labTipoDpi" class="btn-tipo"
+              onclick="seleccionarTipoBusquedaLaboratorio('DPI')">Por DPI</button>
+    </div>
+
+    <label for="labNumeroOrden" class="lab-etiqueta" id="labEtiquetaBusqueda">
+      Número de orden de laboratorio
+    </label>
+    <div class="fila-busqueda">
+      <input type="text" id="labNumeroOrden" class="lab-input"
+             inputmode="numeric" placeholder="Ejemplo: 3" autocomplete="off">
+      <button type="button" class="btn-buscar" onclick="buscarOrdenLaboratorio()">
+        Buscar
+      </button>
+    </div>
+    <div id="labMensajeBusqueda" class="mensaje" role="status"></div>
+
+    <div id="labResultadosDpi" class="lab-oculto" style="overflow-x:auto;margin-top:18px;">
+      <h3>Órdenes pendientes de pago</h3>
+      <table style="width:100%;border-collapse:collapse;text-align:left;">
+        <thead>
+        <tr style="background:#e8f5e9;">
+          <th style="padding:10px;">Orden</th>
+          <th style="padding:10px;">Paciente</th>
+          <th style="padding:10px;">DPI</th>
+          <th style="padding:10px;">Exámenes</th>
+          <th style="padding:10px;">Fecha</th>
+          <th style="padding:10px;">Total</th>
+          <th style="padding:10px;">Acción</th>
+        </tr>
+        </thead>
+        <tbody id="labCuerpoResultados"></tbody>
+      </table>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- DETALLE DE LA ORDEN -->
+    <!-- ============================================= -->
+
+    <div
+            id="labDetalleOrden"
+            class="lab-oculto">
+
+      <hr style="margin:25px 0;">
+
+      <h3>
+        Detalle de la Orden
+      </h3>
+
+      <div class="lab-grid">
+
+        <div>
+          <strong>Número de orden</strong>
+          <span id="labOrdenId"></span>
+        </div>
+
+        <div>
+          <strong>Paciente</strong>
+          <span id="labPaciente"></span>
+        </div>
+
+        <div>
+          <strong>Médico solicitante</strong>
+          <span id="labMedico"></span>
+        </div>
+
+        <div>
+          <strong>Estado de la orden</strong>
+          <span id="labEstadoOrden"></span>
+        </div>
+
+        <div>
+          <strong>Estado del pago</strong>
+          <span id="labEstadoPago"></span>
+        </div>
+
+        <div>
+          <strong>Monto total</strong>
+
+          <span class="monto">
+            Q<span id="labMontoTotal">0.00</span>
+          </span>
+        </div>
+
+      </div>
+
+
+      <!-- ============================================= -->
+      <!-- AVISO DE ORDEN PAGADA -->
+      <!-- ============================================= -->
+
+      <div
+              id="labAvisoPagada"
+              class="lab-aviso lab-oculto">
+
+        Esta orden ya tiene un pago registrado.
+        No se puede cobrar nuevamente.
+
+      </div>
+
+
+      <!-- ============================================= -->
+      <!-- MÉTODO DE PAGO DE LABORATORIO -->
+      <!-- ============================================= -->
+
+      <!-- FA02: paciente no puede pagar. No registra pagos ni modifica la orden. -->
+      <div id="labAccionNoPuedePagar" class="acciones" style="display:none;justify-content:flex-start;">
+        <button type="button" id="labBtnNoPuedePagar" class="btn-nuevo"
+                onclick="noPuedePagarLaboratorio()">
+          No puede realizar el pago
+        </button>
+      </div>
+      <div id="labMensajeNoPuedePagar" class="mensaje" role="status" aria-live="polite"></div>
+
+      <div id="labFormularioPago">
+
+        <h3>
+          Método de Pago
+        </h3>
+
+        <p>
+          Seleccione el método de pago para
+          esta orden de laboratorio.
+        </p>
+
+        <div class="metodos">
+
+          <button
+                  type="button"
+                  id="labBtnEfectivo"
+                  class="metodo"
+                  onclick="seleccionarMetodoLaboratorio('EFECTIVO')">
+
+            Efectivo
+
+          </button>
+
+          <button type="button" id="labBtnVisa" class="metodo"
+                  onclick="seleccionarMetodoLaboratorio('VISA')">Visa</button>
+          <button type="button" id="labBtnMastercard" class="metodo"
+                  onclick="seleccionarMetodoLaboratorio('MASTERCARD')">Mastercard</button>
+          <button type="button" id="labBtnDebito" class="metodo"
+                  onclick="seleccionarMetodoLaboratorio('DEBITO')">Débito</button>
+
+        </div>
+
+
+        <!-- ============================================= -->
+        <!-- PAGO EN EFECTIVO -->
+        <!-- ============================================= -->
+
+        <div
+                id="labCampoEfectivo"
+                class="campo">
+
+          <label for="labMontoRecibido">
+            Monto recibido
+          </label>
+
+          <input
+                  type="number"
+                  id="labMontoRecibido"
+                  min="0"
+                  step="0.01"
+                  placeholder="Ejemplo: 150.00">
+
+        </div>
+
+
+        <!-- ============================================= -->
+        <!-- PAGO CON TARJETA -->
+        <!-- ============================================= -->
+
+        <div
+                id="labCampoTarjeta"
+                class="campo">
+
+          <label for="labUltimos4">Últimos 4 dígitos de la tarjeta</label>
+          <input type="text" id="labUltimos4" maxlength="4" inputmode="numeric"
+                 pattern="[0-9]{4}" placeholder="Ejemplo: 1234"
+                 oninput="this.value=this.value.replace(/\D/g, '').slice(0,4)">
+
+          <label for="labReferenciaTarjeta" style="display:block;margin-top:12px;">
+            Referencia de autorización externa
+          </label>
+          <input type="text" id="labReferenciaTarjeta" maxlength="70"
+                 placeholder="Referencia de transacción aprobada">
+          <p style="color:#666;font-size:13px;">
+            Registre únicamente una transacción ya autorizada mediante el terminal bancario.
+            Esta aplicación no se conecta al banco ni valida autorizaciones.
+          </p>
+
+          <!-- FA04: rechazo informado por la terminal bancaria -->
+          <div style="margin-top:14px;">
+            <button type="button" id="labBtnTarjetaRechazada"
+                    class="lab-boton" style="background:#b02a37;"
+                    onclick="tarjetaRechazadaLaboratorio()">
+              Tarjeta rechazada por la terminal
+            </button>
+          </div>
+
+        </div>
+
+
+        <!-- ============================================= -->
+        <!-- MENSAJES DEL PAGO -->
+        <!-- ============================================= -->
+
+        <div
+                id="labMensajePago"
+                class="mensaje">
+        </div>
+
+
+        <!-- ============================================= -->
+        <!-- BOTONES DE LABORATORIO -->
+        <!-- ============================================= -->
+
+        <div class="acciones">
+
+          <button
+                  type="button"
+                  class="btn-nuevo"
+                  onclick="limpiarCobroLaboratorio()">
+
+            Nuevo cobro
+
+          </button>
+
+          <button
+                  type="button"
+                  id="labBtnRegistrarPago"
+                  class="btn-pagar"
+                  onclick="registrarPagoLaboratorio()">
+
+            Registrar pago de laboratorio
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ============================================= -->
+  <!-- COMPROBANTE DE PAGO DE LABORATORIO -->
+  <!-- ============================================= -->
+
+  <div
+          id="comprobanteLaboratorio"
+          class="panel comprobante">
+
+    <h3>
+      Comprobante de Pago de Laboratorio
+    </h3>
+
+    <p>
+      <strong>Número de orden:</strong>
+      <span id="labCompOrden"></span>
+    </p>
+
+    <p>
+      <strong>Paciente:</strong>
+      <span id="labCompPaciente"></span>
+    </p>
+
+    <p>
+      <strong>Médico solicitante:</strong>
+      <span id="labCompMedico"></span>
+    </p>
+
+    <p>
+      <strong>Método de pago:</strong>
+      <span id="labCompMetodo"></span>
+    </p>
+
+    <p>
+      <strong>Monto total:</strong>
+      Q<span id="labCompMonto"></span>
+    </p>
+
+    <p
+            id="labFilaCambio"
+            style="display:none;">
+
+      <strong>Cambio:</strong>
+      Q<span id="labCompCambio"></span>
+
+    </p>
+
+    <p>
+      <strong>Referencia:</strong>
+      <span id="labCompReferencia"></span>
+    </p>
+
+    <p>
+      <strong>Estado del pago:</strong>
+      APROBADO
+    </p>
+
+    <div class="acciones">
+
+      <button
+              type="button"
+              class="btn-nuevo"
+              onclick="imprimirComprobanteLaboratorio()">
+
+        Imprimir comprobante
+
+      </button>
+
+      <button
+              type="button"
+              class="btn-nuevo"
+              onclick="limpiarCobroLaboratorio()">
+
+        Nuevo cobro
+
+      </button>
+
+    </div>
+
+  </div>
+
 </div>
 
-
+<!-- ============================================= -->
+<!-- EL JAVASCRIPT COMIENZA EN LA PARTE 3 -->
+<!-- ============================================= -->
 <script>
 
-  let tipoBusqueda =
-          "CITA";
+  // =====================================================
+  // VARIABLES DE CONSULTAS MÉDICAS
+  // =====================================================
 
-
-  let citaActualId =
-          null;
-
-
-  let metodoSeleccionado =
-          null;
-
-
-  let datosCitaActual =
-          null;
-
+  let tipoBusqueda = "CITA";
+  let citaActualId = null;
+  let metodoSeleccionado = null;
+  let datosCitaActual = null;
 
   // =====================================================
-  // TIPO DE BÚSQUEDA
+  // SEGURIDAD CSRF
+  // =====================================================
+
+  function obtenerHeadersJSON() {
+
+    const headers = {
+      "Content-Type": "application/json"
+    };
+
+    const token = document.querySelector(
+            'meta[name="_csrf"]'
+    );
+
+    const header = document.querySelector(
+            'meta[name="_csrf_header"]'
+    );
+
+    if (token && header) {
+      headers[header.content] = token.content;
+    }
+
+    return headers;
+  }
+
+  function obtenerHeadersCSRF() {
+
+    const headers = {};
+
+    const token = document.querySelector(
+            'meta[name="_csrf"]'
+    );
+
+    const header = document.querySelector(
+            'meta[name="_csrf_header"]'
+    );
+
+    if (token && header) {
+      headers[header.content] = token.content;
+    }
+
+    return headers;
+  }
+
+  // =====================================================
+  // SELECCIONAR TIPO DE BÚSQUEDA DE CONSULTA
   // =====================================================
 
   function seleccionarTipo(tipo) {
 
-    tipoBusqueda =
-            tipo;
+    tipoBusqueda = tipo;
 
+    document.getElementById("btnCita")
+            .classList.remove("activo");
 
-    document
-            .getElementById("btnCita")
-            .classList
-            .remove("activo");
+    document.getElementById("btnDpi")
+            .classList.remove("activo");
 
-
-    document
-            .getElementById("btnDpi")
-            .classList
-            .remove("activo");
-
+    const input = document.getElementById("valorBusqueda");
 
     if (tipo === "CITA") {
 
-      document
-              .getElementById("btnCita")
-              .classList
-              .add("activo");
+      document.getElementById("btnCita")
+              .classList.add("activo");
 
+      input.placeholder = "Ingrese número de cita";
 
-      document
-              .getElementById("valorBusqueda")
-              .placeholder =
-              "Ingrese número de cita";
+    } else {
 
+      document.getElementById("btnDpi")
+              .classList.add("activo");
+
+      input.placeholder = "Ingrese DPI de 13 dígitos";
     }
-
-    else {
-
-      document
-              .getElementById("btnDpi")
-              .classList
-              .add("activo");
-
-
-      document
-              .getElementById("valorBusqueda")
-              .placeholder =
-              "Ingrese DPI de 13 dígitos";
-    }
-
 
     nuevoCobro();
   }
 
-
   // =====================================================
-  // BUSCAR CITA
+  // BUSCAR CITA MÉDICA
   // =====================================================
 
   async function buscarCita() {
 
-    const valor =
-            document
-                    .getElementById(
-                            "valorBusqueda"
-                    )
-                    .value.trim();
+    const valor = document.getElementById(
+            "valorBusqueda"
+    ).value.trim();
 
+    const mensaje = document.getElementById(
+            "mensajeBusqueda"
+    );
 
-    const mensaje =
-            document
-                    .getElementById(
-                            "mensajeBusqueda"
-                    );
+    document.getElementById("panelPago")
+            .style.display = "none";
 
+    document.getElementById("comprobante")
+            .style.display = "none";
 
-    document
-            .getElementById(
-                    "panelPago"
-            )
-            .style.display =
-            "none";
-
-
-    document
-            .getElementById(
-                    "comprobante"
-            )
-            .style.display =
-            "none";
-
+    citaActualId = null;
+    datosCitaActual = null;
 
     if (valor === "") {
 
-      mensaje.style.color =
-              "#b02a37";
-
-
+      mensaje.style.color = "#b02a37";
       mensaje.textContent =
               "Debe ingresar un criterio de búsqueda.";
 
-
       return;
     }
-
 
     if (
             tipoBusqueda === "CITA" &&
             !/^\d+$/.test(valor)
     ) {
 
-      mensaje.style.color =
-              "#b02a37";
-
-
+      mensaje.style.color = "#b02a37";
       mensaje.textContent =
               "El número de cita debe ser numérico.";
 
-
       return;
     }
-
 
     if (
             tipoBusqueda === "DPI" &&
             !/^\d{13}$/.test(valor)
     ) {
 
-      mensaje.style.color =
-              "#b02a37";
-
-
+      mensaje.style.color = "#b02a37";
       mensaje.textContent =
               "El DPI debe contener exactamente 13 dígitos.";
-
 
       return;
     }
 
-
-    mensaje.style.color =
-            "#666";
-
-
+    mensaje.style.color = "#666";
     mensaje.textContent =
             "Buscando cita pendiente...";
 
-
     try {
 
-      let url;
+      const url = tipoBusqueda === "CITA"
+              ? "/api/caja/cita/" + valor
+              : "/api/caja/dpi/" + valor;
 
+      const respuesta = await fetch(url);
 
-      if (tipoBusqueda === "CITA") {
-
-        url =
-                "/api/caja/cita/" +
-                valor;
-
-      }
-
-      else {
-
-        url =
-                "/api/caja/dpi/" +
-                valor;
-      }
-
-
-      const respuesta =
-              await fetch(url);
-
-
-      const datos =
-              await respuesta.json();
-
+      const datos = await respuesta.json();
 
       if (datos.estado !== "OK") {
 
-        mensaje.style.color =
-                "#b02a37";
-
-
+        mensaje.style.color = "#b02a37";
         mensaje.textContent =
-                datos.mensaje;
-
+                datos.mensaje || "No se encontró la cita.";
 
         return;
       }
 
+      mensaje.textContent = "";
 
-      mensaje.textContent =
-              "";
+      mostrarCita(datos);
 
-
-      mostrarCita(
-              datos
-      );
-
-    }
-
-    catch (error) {
+    } catch (error) {
 
       console.error(error);
 
-
-      mensaje.style.color =
-              "#b02a37";
-
-
+      mensaje.style.color = "#b02a37";
       mensaje.textContent =
               "No fue posible realizar la búsqueda.";
     }
   }
 
-
   // =====================================================
-  // MOSTRAR CITA
+  // MOSTRAR DATOS DE CITA
   // =====================================================
 
   function mostrarCita(datos) {
 
-    datosCitaActual =
-            datos;
+    datosCitaActual = datos;
+    citaActualId = datos.citaId;
 
+    document.getElementById("citaId")
+            .textContent = datos.citaId;
 
-    citaActualId =
-            datos.citaId;
+    document.getElementById("paciente")
+            .textContent = datos.paciente;
 
+    document.getElementById("dpi")
+            .textContent = datos.dpi;
 
-    document
-            .getElementById("citaId")
-            .textContent =
-            datos.citaId;
+    document.getElementById("estadoCita")
+            .textContent = datos.estadoCita;
 
+    document.getElementById("especialidad")
+            .textContent = datos.especialidad;
 
-    document
-            .getElementById("paciente")
-            .textContent =
-            datos.paciente;
+    document.getElementById("medico")
+            .textContent = datos.medico;
 
+    document.getElementById("fecha")
+            .textContent = datos.fecha;
 
-    document
-            .getElementById("dpi")
-            .textContent =
-            datos.dpi;
+    document.getElementById("hora")
+            .textContent = datos.hora;
 
+    document.getElementById("montoTotal")
+            .textContent = Number(datos.monto).toFixed(2);
 
-    document
-            .getElementById("estadoCita")
-            .textContent =
-            datos.estadoCita;
-
-
-    document
-            .getElementById("especialidad")
-            .textContent =
-            datos.especialidad;
-
-
-    document
-            .getElementById("medico")
-            .textContent =
-            datos.medico;
-
-
-    document
-            .getElementById("fecha")
-            .textContent =
-            datos.fecha;
-
-
-    document
-            .getElementById("hora")
-            .textContent =
-            datos.hora;
-
-
-    document
-            .getElementById("montoTotal")
-            .textContent =
-            Number(datos.monto)
-                    .toFixed(2);
-
-
-    document
-            .getElementById(
-                    "panelPago"
-            )
-            .style.display =
-            "block";
-
+    document.getElementById("panelPago")
+            .style.display = "block";
 
     limpiarMetodo();
   }
 
-
   // =====================================================
-  // SELECCIONAR MÉTODO
+  // SELECCIONAR MÉTODO DE PAGO DE CONSULTA
   // =====================================================
 
-  function seleccionarMetodo(
-          metodo,
-          boton
-  ) {
+  function seleccionarMetodo(metodo, boton) {
 
-    metodoSeleccionado =
-            metodo;
+    metodoSeleccionado = metodo;
 
+    document.querySelectorAll(
+            "#panelPago .metodo"
+    ).forEach(elemento => {
+      elemento.classList.remove("activo");
+    });
 
-    document
-            .querySelectorAll(
-                    ".metodo"
-            )
-            .forEach(
-                    elemento =>
-                            elemento
-                                    .classList
-                                    .remove(
-                                            "activo"
-                                    )
-            );
+    boton.classList.add("activo");
 
+    document.getElementById("campoEfectivo")
+            .style.display = metodo === "EFECTIVO"
+            ? "block" : "none";
 
-    boton.classList
-            .add("activo");
+    document.getElementById("campoTarjeta")
+            .style.display = metodo === "EFECTIVO"
+            ? "none" : "block";
 
-
-    document
-            .getElementById(
-                    "campoEfectivo"
-            )
-            .style.display =
-            metodo === "EFECTIVO"
-                    ? "block"
-                    : "none";
-
-
-    document
-            .getElementById(
-                    "campoTarjeta"
-            )
-            .style.display =
-            metodo === "EFECTIVO"
-                    ? "none"
-                    : "block";
-
-
-    document
-            .getElementById(
-                    "mensajePago"
-            )
-            .textContent =
-            "";
+    document.getElementById("mensajePago")
+            .textContent = "";
   }
 
-
   // =====================================================
-  // SOLO CUATRO DÍGITOS
+  // VALIDAR ÚLTIMOS CUATRO DÍGITOS
   // =====================================================
 
   function soloCuatroDigitos() {
 
-    const input =
-            document
-                    .getElementById(
-                            "ultimos4"
-                    );
+    const input = document.getElementById("ultimos4");
 
-
-    input.value =
-            input.value
-                    .replace(/\D/g, "")
-                    .substring(0, 4);
+    input.value = input.value
+            .replace(/\D/g, "")
+            .substring(0, 4);
   }
 
-
   // =====================================================
-  // REGISTRAR PAGO
+  // REGISTRAR PAGO DE CONSULTA MÉDICA
   // =====================================================
 
   async function registrarPago() {
 
-    const mensaje =
-            document
-                    .getElementById(
-                            "mensajePago"
-                    );
+    const mensaje = document.getElementById(
+            "mensajePago"
+    );
 
-
-    const boton =
-            document
-                    .getElementById(
-                            "btnRegistrarPago"
-                    );
-
+    const boton = document.getElementById(
+            "btnRegistrarPago"
+    );
 
     if (citaActualId === null) {
 
-      mensaje.style.color =
-              "#b02a37";
-
-
+      mensaje.style.color = "#b02a37";
       mensaje.textContent =
               "No existe una cita seleccionada.";
 
-
       return;
     }
-
 
     if (metodoSeleccionado === null) {
 
-      mensaje.style.color =
-              "#b02a37";
-
-
+      mensaje.style.color = "#b02a37";
       mensaje.textContent =
               "Debe seleccionar un método de pago.";
-
 
       return;
     }
 
-
     const datosPago = {
-
-      citaId:
-      citaActualId,
-
-      metodoPago:
-      metodoSeleccionado
+      citaId: citaActualId,
+      metodoPago: metodoSeleccionado
     };
 
+    if (metodoSeleccionado === "EFECTIVO") {
 
-    if (
-            metodoSeleccionado ===
-            "EFECTIVO"
-    ) {
+      const montoRecibido = document.getElementById(
+              "montoRecibido"
+      ).value;
 
-      const montoRecibido =
-              document
-                      .getElementById(
-                              "montoRecibido"
-                      )
-                      .value;
+      if (montoRecibido === "") {
 
-
-      if (
-              montoRecibido === ""
-      ) {
-
-        mensaje.style.color =
-                "#b02a37";
-
-
+        mensaje.style.color = "#b02a37";
         mensaje.textContent =
                 "Debe ingresar el monto recibido.";
 
+        return;
+      }
+
+      const recibido = Number(montoRecibido);
+      const total = Number(datosCitaActual.monto);
+
+      if (
+              !Number.isFinite(recibido) ||
+              recibido < total
+      ) {
+
+        mensaje.style.color = "#b02a37";
+        mensaje.textContent =
+                "El monto recibido es insuficiente.";
 
         return;
       }
 
+      datosPago.montoRecibido = montoRecibido;
 
-      datosPago.montoRecibido =
-              montoRecibido;
+    } else {
 
-    }
+      const ultimos4 = document.getElementById(
+              "ultimos4"
+      ).value.trim();
 
-    else {
+      if (!/^\d{4}$/.test(ultimos4)) {
 
-      const ultimos4 =
-              document
-                      .getElementById(
-                              "ultimos4"
-                      )
-                      .value.trim();
-
-
-      if (
-              !/^\d{4}$/
-                      .test(ultimos4)
-      ) {
-
-        mensaje.style.color =
-                "#b02a37";
-
-
+        mensaje.style.color = "#b02a37";
         mensaje.textContent =
                 "Debe ingresar los últimos 4 dígitos de la tarjeta.";
 
-
         return;
       }
 
-
-      datosPago.ultimos4 =
-              ultimos4;
+      datosPago.ultimos4 = ultimos4;
     }
 
+    mensaje.style.color = "#666";
+    mensaje.textContent = "Procesando pago...";
 
-    mensaje.style.color =
-            "#666";
-
-
-    mensaje.textContent =
-            "Procesando pago...";
-
-
-    boton.disabled =
-            true;
-
+    boton.disabled = true;
 
     try {
 
-      const respuesta =
-              await fetch(
+      const respuesta = await fetch(
+              "/api/caja/pagar",
+              {
+                method: "POST",
+                headers: obtenerHeadersJSON(),
+                body: JSON.stringify(datosPago)
+              }
+      );
 
-                      "/api/caja/pagar",
+      const datos = await respuesta.json();
 
-                      {
-                        method: "POST",
+      if (datos.estado !== "OK") {
 
-                        headers: {
-
-                          "Content-Type":
-                                  "application/json"
-
-                        },
-
-                        body:
-                                JSON.stringify(
-                                        datosPago
-                                )
-                      }
-
-              );
-
-
-      const datos =
-              await respuesta.json();
-
-
-      if (
-              datos.estado !==
-              "OK"
-      ) {
-
-        mensaje.style.color =
-                "#b02a37";
-
-
+        mensaje.style.color = "#b02a37";
         mensaje.textContent =
-                datos.mensaje;
+                datos.mensaje || "No se pudo registrar el pago.";
 
-
-        boton.disabled =
-                false;
-
-
+        boton.disabled = false;
         return;
       }
 
+      mensaje.style.color = "green";
+      mensaje.textContent = datos.mensaje;
 
-      mensaje.style.color =
-              "green";
+      mostrarComprobante(datos);
 
+      boton.disabled = true;
 
-      mensaje.textContent =
-              datos.mensaje;
-
-
-      mostrarComprobante(
-              datos
-      );
-
-
-      boton.disabled =
-              true;
-
-
-    }
-
-    catch (error) {
+    } catch (error) {
 
       console.error(error);
 
-
-      mensaje.style.color =
-              "#b02a37";
-
-
+      mensaje.style.color = "#b02a37";
       mensaje.textContent =
               "Error al registrar el pago.";
 
-
-      boton.disabled =
-              false;
+      boton.disabled = false;
     }
   }
 
-
   // =====================================================
-  // MOSTRAR COMPROBANTE
+  // MOSTRAR COMPROBANTE DE CONSULTA
   // =====================================================
 
-  function mostrarComprobante(
-          datos
-  ) {
+  function mostrarComprobante(datos) {
 
-    document
-            .getElementById(
-                    "compPaciente"
-            )
-            .textContent =
-            datosCitaActual.paciente;
+    document.getElementById("compPaciente")
+            .textContent = datosCitaActual.paciente;
 
+    document.getElementById("compCita")
+            .textContent = citaActualId;
 
-    document
-            .getElementById(
-                    "compCita"
-            )
-            .textContent =
-            citaActualId;
+    document.getElementById("compMetodo")
+            .textContent = datos.metodoPago;
 
+    document.getElementById("compMonto")
+            .textContent = Number(datos.monto).toFixed(2);
 
-    document
-            .getElementById(
-                    "compMetodo"
-            )
-            .textContent =
-            datos.metodoPago;
+    document.getElementById("compReferencia")
+            .textContent = datos.referencia || "";
 
+    const esEfectivo = datos.metodoPago === "EFECTIVO";
 
-    document
-            .getElementById(
-                    "compMonto"
-            )
-            .textContent =
-            Number(datos.monto)
-                    .toFixed(2);
+    document.getElementById("filaMontoRecibido")
+            .style.display = esEfectivo ? "block" : "none";
 
+    document.getElementById("filaCambio")
+            .style.display = esEfectivo ? "block" : "none";
 
-    document
-            .getElementById(
-                    "compReferencia"
-            )
-            .textContent =
-            datos.referencia;
+    if (esEfectivo) {
 
+      document.getElementById("compMontoRecibido")
+              .textContent = Number(
+              datos.montoRecibido
+      ).toFixed(2);
 
-    if (
-            datos.metodoPago ===
-            "EFECTIVO"
-    ) {
-
-      document
-              .getElementById(
-                      "filaMontoRecibido"
-              )
-              .style.display =
-              "block";
-
-
-      document
-              .getElementById(
-                      "filaCambio"
-              )
-              .style.display =
-              "block";
-
-
-      document
-              .getElementById(
-                      "compMontoRecibido"
-              )
-              .textContent =
-              Number(
-                      datos.montoRecibido
-              ).toFixed(2);
-
-
-      document
-              .getElementById(
-                      "compCambio"
-              )
-              .textContent =
-              Number(
-                      datos.cambio
-              ).toFixed(2);
-
+      document.getElementById("compCambio")
+              .textContent = Number(
+              datos.cambio
+      ).toFixed(2);
     }
 
-    else {
-
-      document
-              .getElementById(
-                      "filaMontoRecibido"
-              )
-              .style.display =
-              "none";
-
-
-      document
-              .getElementById(
-                      "filaCambio"
-              )
-              .style.display =
-              "none";
-    }
-
-
-    document
-            .getElementById(
-                    "comprobante"
-            )
-            .style.display =
-            "block";
+    document.getElementById("comprobante")
+            .style.display = "block";
   }
 
-
   // =====================================================
-  // LIMPIAR MÉTODO
+  // LIMPIAR MÉTODO DE CONSULTA
   // =====================================================
 
   function limpiarMetodo() {
 
-    metodoSeleccionado =
-            null;
+    metodoSeleccionado = null;
 
+    document.querySelectorAll(
+            "#panelPago .metodo"
+    ).forEach(elemento => {
+      elemento.classList.remove("activo");
+    });
 
-    document
-            .querySelectorAll(
-                    ".metodo"
-            )
-            .forEach(
-                    elemento =>
-                            elemento
-                                    .classList
-                                    .remove(
-                                            "activo"
-                                    )
-            );
+    document.getElementById("campoEfectivo")
+            .style.display = "none";
 
+    document.getElementById("campoTarjeta")
+            .style.display = "none";
 
-    document
-            .getElementById(
-                    "campoEfectivo"
-            )
-            .style.display =
-            "none";
+    document.getElementById("montoRecibido")
+            .value = "";
 
+    document.getElementById("ultimos4")
+            .value = "";
 
-    document
-            .getElementById(
-                    "campoTarjeta"
-            )
-            .style.display =
-            "none";
+    document.getElementById("mensajePago")
+            .textContent = "";
 
-
-    document
-            .getElementById(
-                    "montoRecibido"
-            )
-            .value =
-            "";
-
-
-    document
-            .getElementById(
-                    "ultimos4"
-            )
-            .value =
-            "";
-
-
-    document
-            .getElementById(
-                    "mensajePago"
-            )
-            .textContent =
-            "";
-
-
-    document
-            .getElementById(
-                    "btnRegistrarPago"
-            )
-            .disabled =
-            false;
+    document.getElementById("btnRegistrarPago")
+            .disabled = false;
   }
 
+  // =====================================================
+  // NO PUEDE PAGAR CONSULTA
+  // =====================================================
 
-  // =====================================================
-  // NUEVO COBRO
-  // =====================================================
   async function noPuedePagar() {
 
     if (citaActualId === null) {
       return;
     }
 
-    const mensaje =
-            document.getElementById("mensajePago");
+    const mensaje = document.getElementById(
+            "mensajePago"
+    );
 
-    const confirmar =
-            confirm(
-                    "¿Confirma que el paciente no puede realizar el pago en este momento?"
-            );
+    const confirmar = confirm(
+            "¿Confirma que el paciente no puede realizar el pago en este momento?"
+    );
 
     if (!confirmar) {
       return;
     }
 
     mensaje.style.color = "#666";
-    mensaje.textContent = "Cancelando operación de cobro...";
+    mensaje.textContent =
+            "Cancelando operación de cobro...";
 
     try {
 
-      const respuesta =
-              await fetch(
-                      "/api/caja/no-puede-pagar/" +
-                      citaActualId,
-                      {
-                        method: "POST"
-                      }
-              );
+      const respuesta = await fetch(
+              "/api/caja/no-puede-pagar/" + citaActualId,
+              {
+                method: "POST",
+                headers: obtenerHeadersCSRF()
+              }
+      );
 
-      const datos =
-              await respuesta.json();
+      const datos = await respuesta.json();
 
       if (datos.estado !== "OK") {
 
@@ -1580,11 +1569,9 @@
       mensaje.textContent =
               datos.mensaje +
               " La cita permanece en estado " +
-              datos.estadoCita +
-              ".";
+              datos.estadoCita + ".";
 
-      document
-              .getElementById("btnRegistrarPago")
+      document.getElementById("btnRegistrarPago")
               .disabled = false;
 
     } catch (error) {
@@ -1596,80 +1583,625 @@
               "No fue posible cancelar la operación de cobro.";
     }
   }
+
+  // =====================================================
+  // NUEVO COBRO DE CONSULTA
+  // =====================================================
+
   function nuevoCobro() {
 
-    citaActualId =
-            null;
+    citaActualId = null;
+    datosCitaActual = null;
+    metodoSeleccionado = null;
 
+    document.getElementById("valorBusqueda")
+            .value = "";
 
-    datosCitaActual =
-            null;
+    document.getElementById("mensajeBusqueda")
+            .textContent = "";
 
+    document.getElementById("panelPago")
+            .style.display = "none";
 
-    metodoSeleccionado =
-            null;
-
-
-    document
-            .getElementById(
-                    "valorBusqueda"
-            )
-            .value =
-            "";
-
-
-    document
-            .getElementById(
-                    "mensajeBusqueda"
-            )
-            .textContent =
-            "";
-
-
-    document
-            .getElementById(
-                    "panelPago"
-            )
-            .style.display =
-            "none";
-
-
-    document
-            .getElementById(
-                    "comprobante"
-            )
-            .style.display =
-            "none";
-
+    document.getElementById("comprobante")
+            .style.display = "none";
 
     limpiarMetodo();
   }
 
+  // =====================================================
+  // VARIABLES DE LABORATORIO
+  // =====================================================
+
+  let ordenLaboratorioActual = null;
+  let metodoLaboratorioSeleccionado = null;
+  let procesandoPagoLaboratorio = false;
 
   // =====================================================
-  // ENTER PARA BUSCAR
+  // MOSTRAR MENSAJES DE LABORATORIO
   // =====================================================
 
-  document
-          .getElementById(
-                  "valorBusqueda"
-          )
-          .addEventListener(
-                  "keydown",
-                  function(event) {
+  function mostrarMensajeLaboratorio(id, texto, error = false) {
 
-                    if (
-                            event.key ===
-                            "Enter"
-                    ) {
+    const elemento = document.getElementById(id);
 
-                      buscarCita();
-                    }
-                  }
-          );
+    elemento.style.color = error
+            ? "#b02a37"
+            : "#198754";
+
+    elemento.textContent = texto;
+  }
+
+  // =====================================================
+  // CU-10: BUSCAR POR NÚMERO DE ORDEN O DPI
+  // =====================================================
+
+  let tipoBusquedaLaboratorio = "ORDEN";
+
+  function seleccionarTipoBusquedaLaboratorio(tipo) {
+    tipoBusquedaLaboratorio = tipo;
+    document.getElementById("labTipoOrden").classList.toggle("activo", tipo === "ORDEN");
+    document.getElementById("labTipoDpi").classList.toggle("activo", tipo === "DPI");
+    document.getElementById("labEtiquetaBusqueda").textContent = tipo === "ORDEN"
+            ? "Número de orden de laboratorio" : "DPI del paciente (13 dígitos)";
+    const input = document.getElementById("labNumeroOrden");
+    input.placeholder = tipo === "ORDEN" ? "Ejemplo: 3" : "Ingrese 13 dígitos";
+    input.maxLength = tipo === "DPI" ? 13 : 30;
+    input.value = "";
+    document.getElementById("labDetalleOrden").style.display = "none";
+    document.getElementById("labResultadosDpi").style.display = "none";
+    document.getElementById("comprobanteLaboratorio").style.display = "none";
+    document.getElementById("labMensajeBusqueda").textContent = "";
+    ordenLaboratorioActual = null;
+    document.getElementById("labAccionNoPuedePagar").style.display = "none";
+    document.getElementById("labMensajeNoPuedePagar").textContent = "";
+    limpiarMetodoLaboratorio();
+  }
+
+  async function buscarOrdenLaboratorio() {
+    if (procesandoPagoLaboratorio) return;
+    const valor = document.getElementById("labNumeroOrden").value.trim();
+    document.getElementById("labDetalleOrden").style.display = "none";
+    document.getElementById("labResultadosDpi").style.display = "none";
+    document.getElementById("comprobanteLaboratorio").style.display = "none";
+    ordenLaboratorioActual = null;
+    document.getElementById("labAccionNoPuedePagar").style.display = "none";
+    document.getElementById("labMensajeNoPuedePagar").textContent = "";
+    limpiarMetodoLaboratorio();
+
+    const valido = tipoBusquedaLaboratorio === "DPI"
+            ? /^\d{13}$/.test(valor) : /^[1-9]\d*$/.test(valor);
+    if (!valido) {
+      mostrarMensajeLaboratorio("labMensajeBusqueda", tipoBusquedaLaboratorio === "DPI"
+              ? "El DPI debe contener exactamente 13 dígitos."
+              : "Ingrese un número de orden válido.", true);
+      return;
+    }
+
+    mostrarMensajeLaboratorio("labMensajeBusqueda", "Buscando órdenes de laboratorio...");
+    try {
+      if (tipoBusquedaLaboratorio === "DPI") {
+        const respuesta = await fetch("/api/caja/laboratorio/dpi/" + encodeURIComponent(valor));
+        if (!respuesta.ok) throw new Error("HTTP " + respuesta.status);
+        const datos = await respuesta.json();
+        if (datos.estado !== "OK") {
+          mostrarMensajeLaboratorio("labMensajeBusqueda", datos.mensaje || "Sin órdenes pendientes.", true);
+          return;
+        }
+        const cuerpo = document.getElementById("labCuerpoResultados");
+        cuerpo.replaceChildren();
+        datos.ordenes.forEach(orden => {
+          const fila = document.createElement("tr");
+          ["ordenId", "paciente", "dpi", "cantidadExamenes", "fechaCreacion", "monto"].forEach(clave => {
+            const celda = document.createElement("td");
+            celda.style.padding = "10px";
+            celda.style.borderBottom = "1px solid #ddd";
+            const valorCelda = clave === "monto" ? "Q" + Number(orden[clave]).toFixed(2)
+                    : clave === "fechaCreacion" ? formatearFechaLaboratorio(orden[clave])
+                            : orden[clave];
+            celda.textContent = valorCelda ?? "";
+            fila.appendChild(celda);
+          });
+          const celdaBoton = document.createElement("td");
+          celdaBoton.style.padding = "10px";
+          const boton = document.createElement("button");
+          boton.type = "button";
+          boton.className = "lab-boton";
+          boton.textContent = "Seleccionar";
+          boton.addEventListener("click", () => cargarDetalleLaboratorio(orden.ordenId));
+          celdaBoton.appendChild(boton);
+          fila.appendChild(celdaBoton);
+          cuerpo.appendChild(fila);
+        });
+        document.getElementById("labResultadosDpi").style.display = "block";
+        mostrarMensajeLaboratorio("labMensajeBusqueda",
+                "Se encontraron " + datos.ordenes.length + " órdenes pendientes de pago.");
+      } else {
+        await cargarDetalleLaboratorio(valor);
+      }
+    } catch (error) {
+      console.error(error);
+      mostrarMensajeLaboratorio("labMensajeBusqueda", "No fue posible consultar las órdenes.", true);
+    }
+  }
+
+  function formatearFechaLaboratorio(valor) {
+    if (!valor) return "";
+    const fecha = new Date(valor);
+    return Number.isNaN(fecha.getTime()) ? String(valor) : fecha.toLocaleString("es-GT");
+  }
+
+  async function cargarDetalleLaboratorio(numero) {
+    document.getElementById("labDetalleOrden").style.display = "none";
+    ordenLaboratorioActual = null;
+    document.getElementById("labAccionNoPuedePagar").style.display = "none";
+    document.getElementById("labMensajeNoPuedePagar").textContent = "";
+    limpiarMetodoLaboratorio();
+    try {
+      const respuesta = await fetch("/api/caja/laboratorio/orden/" + encodeURIComponent(numero));
+      if (!respuesta.ok) throw new Error("HTTP " + respuesta.status);
+      const datos = await respuesta.json();
+      if (datos.estado !== "OK") {
+        mostrarMensajeLaboratorio("labMensajeBusqueda", datos.mensaje || "Orden no encontrada.", true);
+        return;
+      }
+      ordenLaboratorioActual = datos;
+      document.getElementById("labOrdenId").textContent = datos.ordenId;
+      document.getElementById("labPaciente").textContent = datos.paciente || "";
+      document.getElementById("labMedico").textContent = datos.medico || "";
+      document.getElementById("labEstadoOrden").textContent = datos.estadoOrden || "";
+      document.getElementById("labEstadoPago").textContent = datos.pagada ? "PAGADA" : "PENDIENTE";
+      document.getElementById("labMontoTotal").textContent = Number(datos.monto || 0).toFixed(2);
+      document.getElementById("labDetalleOrden").style.display = "block";
+      document.getElementById("labAvisoPagada").style.display = datos.pagada ? "block" : "none";
+      const pendiente = datos.estadoOrden === "PENDIENTE";
+      const montoValido = Number(datos.monto) > 0;
+      document.getElementById("labAccionNoPuedePagar").style.display =
+              !datos.pagada && pendiente ? "flex" : "none";
+      document.getElementById("labMensajeNoPuedePagar").textContent = "";
+      document.getElementById("labFormularioPago").style.display =
+              datos.pagada || !pendiente || !montoValido ? "none" : "block";
+      mostrarMensajeLaboratorio("labMensajeBusqueda", datos.pagada
+                      ? "Esta orden ya está pagada."
+                      : !pendiente ? "Esta orden no está pendiente de pago."
+                              : !montoValido ? "La orden no tiene un monto válido para cobrar."
+                                      : "Orden encontrada. Puede continuar con el cobro.",
+              !pendiente || !montoValido);
+      document.getElementById("labDetalleOrden").scrollIntoView({behavior:"smooth",block:"start"});
+    } catch (error) {
+      console.error(error);
+      mostrarMensajeLaboratorio("labMensajeBusqueda", "No fue posible consultar la orden.", true);
+    }
+  }
+
+  // =====================================================
+  // FA02: PACIENTE NO PUEDE REALIZAR EL PAGO
+  // =====================================================
+
+  async function noPuedePagarLaboratorio() {
+    if (procesandoPagoLaboratorio) return;
+    if (!ordenLaboratorioActual || ordenLaboratorioActual.pagada ||
+            ordenLaboratorioActual.estadoOrden !== "PENDIENTE") {
+      mostrarMensajeLaboratorio("labMensajeNoPuedePagar",
+              "Seleccione una orden pendiente y sin pago.", true);
+      return;
+    }
+
+    const ordenId = ordenLaboratorioActual.ordenId;
+    if (!confirm("¿Confirma que el paciente no puede realizar el pago de la orden #" +
+            ordenId + "? No se registrará ningún cobro.")) return;
+
+    const boton = document.getElementById("labBtnNoPuedePagar");
+    boton.disabled = true;
+    mostrarMensajeLaboratorio("labMensajeNoPuedePagar", "Registrando la indicación...");
+
+    try {
+      const respuesta = await fetch(
+              "/api/caja/laboratorio/no-puede-pagar/" + encodeURIComponent(ordenId), {
+                method: "POST",
+                headers: obtenerHeadersCSRF()
+              });
+      if (!respuesta.ok) throw new Error("HTTP " + respuesta.status);
+      const datos = await respuesta.json();
+      if (datos.estado !== "OK") {
+        mostrarMensajeLaboratorio("labMensajeNoPuedePagar",
+                datos.mensaje || "No se pudo completar la operación.", true);
+        return;
+      }
+      mostrarMensajeLaboratorio("labMensajeNoPuedePagar", datos.mensaje);
+      document.getElementById("labEstadoOrden").textContent = datos.estadoOrden;
+      // Se oculta el formulario durante esta atención, pero la orden sigue pendiente.
+      document.getElementById("labFormularioPago").style.display = "none";
+      document.getElementById("labAccionNoPuedePagar").style.display = "none";
+    } catch (error) {
+      console.error(error);
+      mostrarMensajeLaboratorio("labMensajeNoPuedePagar",
+              "No fue posible procesar la solicitud. Consulte de nuevo la orden.", true);
+    } finally {
+      boton.disabled = false;
+    }
+  }
+
+  // =====================================================
+  // SELECCIONAR MÉTODO DE LABORATORIO
+  // =====================================================
+
+  function seleccionarMetodoLaboratorio(metodo) {
+    metodoLaboratorioSeleccionado = metodo;
+    for (const opcion of ["EFECTIVO", "VISA", "MASTERCARD", "DEBITO"]) {
+      const id = "labBtn" + (opcion === "EFECTIVO" ? "Efectivo" :
+              opcion === "VISA" ? "Visa" :
+                      opcion === "MASTERCARD" ? "Mastercard" : "Debito");
+      document.getElementById(id).classList.toggle("activo", metodo === opcion);
+    }
+    document.getElementById("labCampoEfectivo").style.display =
+            metodo === "EFECTIVO" ? "block" : "none";
+    document.getElementById("labCampoTarjeta").style.display =
+            metodo !== "EFECTIVO" ? "block" : "none";
+    document.getElementById("labMensajePago").textContent = "";
+  }
+
+  // =====================================================
+  // FA04: TARJETA RECHAZADA POR TERMINAL EXTERNA
+  // =====================================================
+
+  function tarjetaRechazadaLaboratorio() {
+    if (procesandoPagoLaboratorio) return;
+
+    if (!ordenLaboratorioActual || ordenLaboratorioActual.pagada ||
+            ordenLaboratorioActual.estadoOrden !== "PENDIENTE") {
+      mostrarMensajeLaboratorio("labMensajePago",
+              "Seleccione una orden pendiente y sin pago.", true);
+      return;
+    }
+
+    if (!["VISA", "MASTERCARD", "DEBITO"].includes(metodoLaboratorioSeleccionado)) {
+      mostrarMensajeLaboratorio("labMensajePago",
+              "Seleccione primero Visa, Mastercard o Débito.", true);
+      return;
+    }
+
+    if (!confirm("¿La terminal bancaria rechazó la transacción? " +
+            "No se registrará ningún pago y la orden continuará pendiente.")) {
+      return;
+    }
+
+    // No se llama a /pagar: no hay cobro, ni fecha de pago, ni cambio de estado.
+    document.getElementById("labUltimos4").value = "";
+    document.getElementById("labReferenciaTarjeta").value = "";
+    mostrarMensajeLaboratorio("labMensajePago",
+            "Tarjeta rechazada según la terminal bancaria. No se registró ningún pago. " +
+            "La orden permanece PENDIENTE. Puede intentar con otro método.", true);
+  }
+
+  // =====================================================
+  // LIMPIAR MÉTODO DE LABORATORIO
+  // =====================================================
+
+  function limpiarMetodoLaboratorio() {
+    metodoLaboratorioSeleccionado = null;
+    for (const id of ["labBtnEfectivo", "labBtnVisa", "labBtnMastercard", "labBtnDebito"]) {
+      document.getElementById(id).classList.remove("activo");
+    }
+    document.getElementById("labCampoEfectivo").style.display = "none";
+    document.getElementById("labCampoTarjeta").style.display = "none";
+    document.getElementById("labMontoRecibido").value = "";
+    document.getElementById("labUltimos4").value = "";
+    document.getElementById("labReferenciaTarjeta").value = "";
+    document.getElementById("labMensajePago").textContent = "";
+    document.getElementById("labBtnRegistrarPago").disabled = false;
+  }
+
+  // =====================================================
+  // REGISTRAR PAGO DE LABORATORIO
+  // =====================================================
+
+  async function registrarPagoLaboratorio() {
+
+    if (procesandoPagoLaboratorio) {
+      return;
+    }
+
+    if (!ordenLaboratorioActual) {
+
+      mostrarMensajeLaboratorio(
+              "labMensajePago",
+              "Primero debe buscar una orden.",
+              true
+      );
+
+      return;
+    }
+
+    if (ordenLaboratorioActual.pagada) {
+
+      mostrarMensajeLaboratorio(
+              "labMensajePago",
+              "Esta orden ya está pagada.",
+              true
+      );
+
+      return;
+    }
+
+    if (!metodoLaboratorioSeleccionado) {
+
+      mostrarMensajeLaboratorio(
+              "labMensajePago",
+              "Seleccione un método de pago.",
+              true
+      );
+
+      return;
+    }
+
+    const montoTotal = Number(
+            ordenLaboratorioActual.monto
+    );
+
+    if (
+            !Number.isFinite(montoTotal) ||
+            montoTotal <= 0
+    ) {
+
+      mostrarMensajeLaboratorio(
+              "labMensajePago",
+              "El monto de la orden no es válido.",
+              true
+      );
+
+      return;
+    }
+
+    const datosPago = {
+
+      ordenId: ordenLaboratorioActual.ordenId,
+
+      metodoPago: metodoLaboratorioSeleccionado
+
+    };
+
+    if (metodoLaboratorioSeleccionado === "EFECTIVO") {
+
+      const recibidoTexto = document.getElementById(
+              "labMontoRecibido"
+      ).value.trim();
+
+      const recibido = Number(recibidoTexto);
+
+      if (
+              recibidoTexto === "" ||
+              !Number.isFinite(recibido) ||
+              recibido < montoTotal
+      ) {
+
+        mostrarMensajeLaboratorio(
+                "labMensajePago",
+                "El monto recibido debe ser igual o mayor al total.",
+                true
+        );
+
+        return;
+      }
+
+      datosPago.montoRecibido = recibidoTexto;
+
+    } else {
+      const ultimos4 = document.getElementById("labUltimos4").value.trim();
+      const referencia = document.getElementById("labReferenciaTarjeta").value.trim();
+      if (!/^[0-9]{4}$/.test(ultimos4)) {
+        mostrarMensajeLaboratorio("labMensajePago", "Ingrese exactamente 4 dígitos de la tarjeta.", true);
+        return;
+      }
+      if (!referencia || referencia.includes("|")) {
+        mostrarMensajeLaboratorio("labMensajePago", "Ingrese una referencia válida de autorización externa.", true);
+        return;
+      }
+      datosPago.ultimos4 = ultimos4;
+      datosPago.referencia = referencia;
+    }
+
+    const confirmar = confirm(
+            "¿Confirma el registro del pago de laboratorio por Q" +
+            montoTotal.toFixed(2) + "?"
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    const boton = document.getElementById(
+            "labBtnRegistrarPago"
+    );
+
+    procesandoPagoLaboratorio = true;
+    boton.disabled = true;
+
+    mostrarMensajeLaboratorio(
+            "labMensajePago",
+            "Registrando pago..."
+    );
+
+    try {
+
+      const respuesta = await fetch(
+              "/api/caja/laboratorio/pagar",
+              {
+                method: "POST",
+                headers: obtenerHeadersJSON(),
+                body: JSON.stringify(datosPago)
+              }
+      );
+
+      if (!respuesta.ok) {
+        throw new Error("Error HTTP: " + respuesta.status);
+      }
+
+      const datos = await respuesta.json();
+
+      if (datos.estado !== "OK") {
+
+        mostrarMensajeLaboratorio(
+                "labMensajePago",
+                datos.mensaje || "No se pudo registrar el pago.",
+                true
+        );
+
+        boton.disabled = false;
+        return;
+      }
+
+      ordenLaboratorioActual.pagada = true;
+
+      document.getElementById("labEstadoPago")
+              .textContent = "PAGADA";
+
+      document.getElementById("labAvisoPagada")
+              .style.display = "block";
+
+      document.getElementById("labFormularioPago")
+              .style.display = "none";
+      document.getElementById("labAccionNoPuedePagar").style.display = "none";
+      document.getElementById("labEstadoOrden").textContent = "EN_PROCESO";
+
+      mostrarComprobanteLaboratorio(datos);
+
+      mostrarMensajeLaboratorio(
+              "labMensajeBusqueda",
+              "Pago registrado correctamente."
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+      mostrarMensajeLaboratorio(
+              "labMensajePago",
+              "Ocurrió un error al registrar el pago. Consulte nuevamente la orden antes de reintentar.",
+              true
+      );
+
+      boton.disabled = false;
+
+    } finally {
+
+      procesandoPagoLaboratorio = false;
+    }
+  }
+
+  // =====================================================
+  // MOSTRAR COMPROBANTE DE LABORATORIO
+  // =====================================================
+
+  function mostrarComprobanteLaboratorio(datos) {
+
+    document.getElementById("labCompOrden")
+            .textContent = datos.ordenId;
+
+    document.getElementById("labCompPaciente")
+            .textContent = ordenLaboratorioActual.paciente;
+
+    document.getElementById("labCompMedico")
+            .textContent = ordenLaboratorioActual.medico;
+
+    document.getElementById("labCompMetodo")
+            .textContent = datos.metodoPago;
+
+    document.getElementById("labCompMonto")
+            .textContent = Number(datos.monto).toFixed(2);
+
+    document.getElementById("labCompReferencia")
+            .textContent = ("PAGO-" + datos.pagoId) +
+            (datos.referencia && datos.metodoPago !== "EFECTIVO" ?
+                    " / Autorización: " + datos.referencia : "") +
+            (datos.ultimos4 ? " / Tarjeta ****" + datos.ultimos4 : "");
+
+    const esEfectivo = datos.metodoPago === "EFECTIVO";
+
+    document.getElementById("labFilaCambio")
+            .style.display = esEfectivo
+            ? "block"
+            : "none";
+
+    if (esEfectivo) {
+
+      document.getElementById("labCompCambio")
+              .textContent = Number(datos.cambio).toFixed(2);
+    }
+
+    document.getElementById("comprobanteLaboratorio")
+            .style.display = "block";
+  }
+
+  // =====================================================
+  // LIMPIAR COBRO DE LABORATORIO
+  // =====================================================
+
+  function limpiarCobroLaboratorio() {
+
+    if (procesandoPagoLaboratorio) {
+      return;
+    }
+
+    ordenLaboratorioActual = null;
+    metodoLaboratorioSeleccionado = null;
+    document.getElementById("labAccionNoPuedePagar").style.display = "none";
+    document.getElementById("labMensajeNoPuedePagar").textContent = "";
+
+    document.getElementById("labNumeroOrden")
+            .value = "";
+
+    document.getElementById("labResultadosDpi").style.display = "none";
+
+    document.getElementById("labDetalleOrden")
+            .style.display = "none";
+
+    document.getElementById("comprobanteLaboratorio")
+            .style.display = "none";
+
+    document.getElementById("labMensajeBusqueda")
+            .textContent = "";
+
+    limpiarMetodoLaboratorio();
+  }
+
+  // =====================================================
+  // IMPRIMIR COMPROBANTE DE LABORATORIO
+  // =====================================================
+
+  function imprimirComprobanteLaboratorio() {
+
+    document.body.classList.add("imprimir-lab");
+
+    window.print();
+  }
+
+  window.addEventListener("afterprint", function() {
+
+    document.body.classList.remove("imprimir-lab");
+  });
+
+  // =====================================================
+  // BUSCAR CON ENTER
+  // =====================================================
+
+  document.getElementById("valorBusqueda")
+          .addEventListener("keydown", function(event) {
+
+            if (event.key === "Enter") {
+              buscarCita();
+            }
+          });
+
+  document.getElementById("labNumeroOrden")
+          .addEventListener("keydown", function(event) {
+
+            if (event.key === "Enter") {
+              buscarOrdenLaboratorio();
+            }
+          });
 
 </script>
-
 
 </body>
 </html>

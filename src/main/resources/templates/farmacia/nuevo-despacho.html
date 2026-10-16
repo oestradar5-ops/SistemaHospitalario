@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="_csrf"
+          th:if="${_csrf != null}"
+          th:content="${_csrf.token}">
+
+    <meta name="_csrf_header"
+          th:if="${_csrf != null}"
+          th:content="${_csrf.headerName}">
+
+    <title>Nuevo Despacho | Farmacia HIS</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .contenedor {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* MENÚ LATERAL */
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #134e4a, #0f766e);
+            color: white;
+            padding: 25px 18px;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            text-align: center;
+            padding: 20px 0 30px;
+            border-bottom: 1px solid rgba(255,255,255,.2);
+            margin-bottom: 25px;
+        }
+
+        .logo-icono {
+            font-size: 45px;
+        }
+
+        .logo h2 {
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            font-size: 12px;
+            color: #ccfbf1;
+        }
+
+        .menu a {
+            display: block;
+            text-decoration: none;
+            color: white;
+            padding: 14px;
+            margin-bottom: 8px;
+            border-radius: 9px;
+        }
+
+        .menu a:hover,
+        .menu .activo {
+            background: rgba(255,255,255,.18);
+        }
+
+        /* CONTENIDO */
+
+        .contenido {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            padding: 30px;
+        }
+
+        .encabezado {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.05);
+        }
+
+        .encabezado h1 {
+            color: #134e4a;
+            margin: 0 0 10px;
+        }
+
+        .encabezado p {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .seccion {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.05);
+        }
+
+        .seccion h2 {
+            margin-top: 0;
+            color: #134e4a;
+            font-size: 21px;
+        }
+
+        /* FORMULARIOS */
+
+        .busqueda {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #0d9488;
+        }
+
+        .boton {
+            display: inline-block;
+            background: #0f766e;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .boton:hover {
+            background: #115e59;
+        }
+
+        .boton:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .boton-secundario {
+            background: #334155;
+        }
+
+        .boton-secundario:hover {
+            background: #1e293b;
+        }
+
+        /* TABLAS */
+
+        .tabla-contenedor {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #f1f5f9;
+            padding: 13px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        .cantidad {
+            width: 90px;
+        }
+
+        /* ESTADOS */
+
+        .etiqueta {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .pendiente {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .parcial {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .completa {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .vencida {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* MENSAJES */
+
+        .mensaje {
+            display: none;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .exito {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .advertencia {
+            background: #fff7ed;
+            color: #9a3412;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        /* RESUMEN */
+
+        .resumen {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 25px;
+            padding: 20px;
+            background: #f0fdfa;
+            border-radius: 12px;
+        }
+
+        .total {
+            font-size: 26px;
+            font-weight: bold;
+            color: #0f766e;
+        }
+
+        .informacion {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .dato {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 9px;
+        }
+
+        .dato strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #475569;
+        }
+
+        .oculto {
+            display: none;
+        }
+
+        /* SOLICITUDES DE SUSTITUCIÓN */
+        .panel-sustitucion { border: 1px solid #99f6e4; background: #f0fdfa; border-radius: 12px; padding: 20px; }
+        .campos-sustitucion { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .campos-sustitucion .ancho-completo { grid-column: 1 / -1; }
+        .panel-sustitucion textarea { width: 100%; min-height: 90px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; resize: vertical; }
+        .solicitud-item { border-bottom: 1px solid #cbd5e1; padding: 12px 0; line-height: 1.7; }
+        .solicitud-item:last-child { border-bottom: none; }
+        .nota-sustitucion { color: #475569; font-size: 13px; line-height: 1.6; }
+
+        @media (max-width: 900px) {
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+
+            .contenedor {
+                display: block;
+            }
+
+            .contenido {
+                margin-left: 0;
+                width: 100%;
+                padding: 15px;
+            }
+
+            .busqueda,
+            .informacion,
+            .campos-sustitucion {
+                grid-template-columns: 1fr;
+            }
+            .campos-sustitucion .ancho-completo { grid-column: auto; }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+    <!-- MENÚ -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <div class="logo-icono">💊</div>
+
+            <h2>Farmacia HIS</h2>
+
+            <p>Sistema Médico Hospitalario</p>
+
+        </div>
+
+        <nav class="menu">
+
+            <a href="/farmacia">
+                🏠 Panel principal
+            </a>
+
+            <a href="/farmacia/despacho/nuevo" class="activo">
+                ➕ Nuevo despacho
+            </a>
+
+            <a href="/farmacia#inventario">
+                📦 Inventario
+            </a>
+
+            <a href="/farmacia#historial">
+                📋 Historial
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <!-- CONTENIDO -->
+
+    <main class="contenido">
+
+        <div class="encabezado">
+
+            <h1>💊 Nuevo despacho de medicamentos</h1>
+
+            <p>
+                Busque una receta médica y seleccione los medicamentos
+                que serán entregados al paciente.
+            </p>
+
+        </div>
+
+        <!-- MENSAJES -->
+
+        <div id="mensaje" class="mensaje"></div>
+
+        <div th:if="${error != null}"
+             class="advertencia"
+             th:text="${error}">
+        </div>
+
+        <!-- BÚSQUEDA -->
+
+        <section class="seccion">
+
+            <h2>🔎 Buscar receta médica</h2>
+
+            <div class="busqueda">
+
+                <div>
+
+                    <label for="recetaId">
+                        Número de receta
+                    </label>
+
+                    <input
+                            type="number"
+                            id="recetaId"
+                            min="1"
+                            placeholder="Ejemplo: 12"
+                    >
+
+                    <button
+                            type="button"
+                            class="boton"
+                            onclick="buscarReceta()">
+
+                        Buscar receta
+
+                    </button>
+
+                </div>
+
+                <div>
+
+                    <label for="consultaId">
+                        Número de consulta
+                    </label>
+
+                    <input
+                            type="number"
+                            id="consultaId"
+                            min="1"
+                            placeholder="Ejemplo: 8"
+                    >
+
+                    <button
+                            type="button"
+                            class="boton boton-secundario"
+                            onclick="buscarPorConsulta()">
+
+                        Buscar por consulta
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div id="resultadosConsulta"
+                 class="oculto">
+
+                <h3>Recetas encontradas</h3>
+
+                <div id="listaRecetas"></div>
+
+            </div>
+
+        </section>
+
+        <!-- INFORMACIÓN DE RECETA -->
+
+        <section class="seccion oculto"
+                 id="seccionReceta">
+
+            <h2>📄 Información de la receta</h2>
+
+            <div class="informacion">
+
+                <div class="dato">
+
+                    <strong>Número de receta</strong>
+
+                    <span id="infoRecetaId">-</span>
+
+                </div>
+
+                <div class="dato">
+
+                    <strong>Estado</strong>
+
+                    <span id="infoEstado">-</span>
+
+                </div>
+
+                <div class="dato">
+
+                    <strong>Sucursal</strong>
+
+                    <span id="infoSucursal">-</span>
+
+                </div>
+
+                <div class="dato">
+
+                    <strong>Fecha de creación</strong>
+
+                    <span id="infoFecha">-</span>
+
+                </div>
+
+                <div class="dato">
+
+                    <strong>Fecha de vencimiento</strong>
+
+                    <span id="infoVencimiento">-</span>
+
+                </div>
+
+                <div class="dato">
+
+                    <strong>Vigencia</strong>
+
+                    <span id="infoVigencia">-</span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- MEDICAMENTOS -->
+
+        <section class="seccion oculto"
+                 id="seccionMedicamentos">
+
+            <h2>💊 Medicamentos recetados</h2>
+
+            <div class="tabla-contenedor">
+
+                <table>
+
+                    <thead>
+
+                    <tr>
+                        <th>Medicamento</th>
+                        <th>Dosis</th>
+                        <th>Frecuencia</th>
+                        <th>Recetado</th>
+                        <th>Entregado</th>
+                        <th>Pendiente</th>
+                        <th>Stock</th>
+                        <th>Precio</th>
+                        <th>Entregar</th>
+                    </tr>
+
+                    </thead>
+
+                    <tbody id="tablaMedicamentos"></tbody>
+
+                </table>
+
+            </div>
+
+            <div class="advertencia">
+                El pago se realiza físicamente en Farmacia.
+                Este formulario registra la entrega de medicamentos,
+                pero no genera un pago electrónico.
+            </div>
+
+            <div class="resumen">
+
+                <div>
+
+                    <strong>Total estimado</strong>
+
+                    <div class="total" id="totalEstimado">
+                        Q 0.00
+                    </div>
+
+                </div>
+
+                <div>
+
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+
+                        <button
+                                type="button"
+                                class="boton"
+                                id="btnConfirmar"
+                                onclick="confirmarDespacho()"
+                                disabled>
+
+                            💊 Confirmar despacho
+
+                        </button>
+
+                        <button type="button" class="boton" id="btnSustitucion"
+                                onclick="alternarSustitucion()" disabled
+                                style="background:#2563eb;">
+                            🔄 Solicitar sustitución
+                        </button>
+
+                        <button
+                                type="button"
+                                class="boton"
+                                id="btnRechazar"
+                                onclick="registrarRechazo()"
+                                style="background: #dc2626;"
+                                disabled>
+
+                            ❌ Registrar rechazo
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- SOLICITUD DE SUSTITUCIÓN: NO REALIZA DESPACHOS -->
+        <section class="seccion oculto" id="seccionSustitucion">
+            <h2>🔄 Solicitud de sustitución de medicamento</h2>
+            <div class="panel-sustitucion">
+                <p class="nota-sustitucion">Seleccione el medicamento pendiente de la receta y proponga una alternativa
+                    disponible. La solicitud debe ser evaluada por el médico responsable. No se entregará
+                    ni descontará inventario desde este formulario.</p>
+                <div class="campos-sustitucion">
+                    <div>
+                        <label for="medicamentoOriginal">Medicamento recetado pendiente</label>
+                        <select id="medicamentoOriginal"><option value="">Seleccione un medicamento</option></select>
+                    </div>
+                    <div>
+                        <label for="medicamentoSustituto">Medicamento sustituto disponible</label>
+                        <select id="medicamentoSustituto"><option value="">Seleccione una alternativa</option></select>
+                    </div>
+                    <div class="ancho-completo">
+                        <label for="motivoSustitucion">Motivo de la solicitud</label>
+                        <textarea id="motivoSustitucion" maxlength="1000"
+                                  placeholder="Explique por qué se propone la sustitución (máximo 1000 caracteres)."></textarea>
+                    </div>
+                </div>
+                <button type="button" class="boton" id="btnEnviarSustitucion"
+                        onclick="enviarSustitucion()">📨 Enviar solicitud al médico</button>
+                <button type="button" class="boton boton-secundario"
+                        onclick="consultarSustituciones()">🔃 Actualizar estados</button>
+                <p id="avisoSustitucion" class="nota-sustitucion" role="status"></p>
+            </div>
+            <h3>Solicitudes de esta receta</h3>
+            <div id="listaSustituciones" aria-live="polite">No se han consultado solicitudes.</div>
+        </section>
+
+    </main>
+
+</div>
+
+<script>
+
+    // ==========================================
+    // VARIABLES
+    // ==========================================
+
+    let autorizacionesVigentes = [];
+    let inventarioSustitutos = [];
+    let recetaActual = null;
+    let operacionEnCurso = false;
+    let solicitudReceta = 0;
+
+    const csrfToken =
+        document.querySelector('meta[name="_csrf"]')?.content;
+
+    const csrfHeader =
+        document.querySelector('meta[name="_csrf_header"]')?.content;
+
+
+    // ==========================================
+    // MOSTRAR MENSAJES
+    // ==========================================
+
+    function mostrarMensaje(texto, tipo = "error") {
+
+        const elemento = document.getElementById("mensaje");
+
+        elemento.textContent = texto;
+        elemento.className = "mensaje " + tipo;
+        elemento.style.display = "block";
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
+
+    function limpiarMensaje() {
+
+        document.getElementById("mensaje").style.display = "none";
+    }
+
+
+    // ==========================================
+    // OCULTAR RESULTADOS ANTERIORES
+    // ==========================================
+
+    function limpiarReceta() {
+
+        recetaActual = null;
+        autorizacionesVigentes = [];
+        inventarioSustitutos = [];
+
+        document.getElementById("seccionReceta")
+            .classList.add("oculto");
+
+        document.getElementById("seccionMedicamentos")
+            .classList.add("oculto");
+
+        document.getElementById("btnConfirmar").disabled = true;
+        document.getElementById("btnRechazar").disabled = true;
+        document.getElementById("btnSustitucion").disabled = true;
+        document.getElementById("seccionSustitucion").classList.add("oculto");
+        document.getElementById("medicamentoOriginal").replaceChildren(new Option("Seleccione un medicamento", ""));
+        document.getElementById("medicamentoSustituto").replaceChildren(new Option("Seleccione una alternativa", ""));
+        document.getElementById("motivoSustitucion").value = "";
+        document.getElementById("listaSustituciones").textContent = "No se han consultado solicitudes.";
+
+        document.getElementById("tablaMedicamentos")
+            .replaceChildren();
+
+        document.getElementById("totalEstimado")
+            .textContent = "Q 0.00";
+    }
+
+
+    // ==========================================
+    // FORMATO DE FECHA
+    // ==========================================
+
+    function formatearFecha(fecha) {
+
+        if (!fecha) {
+            return "-";
+        }
+
+        return new Date(fecha).toLocaleString("es-GT");
+    }
+
+
+    // ==========================================
+    // BUSCAR RECETA
+    // ==========================================
+
+    async function buscarReceta(idSeleccionado = null) {
+
+        limpiarMensaje();
+        limpiarReceta();
+        const numeroSolicitud = ++solicitudReceta;
+
+        const id = idSeleccionado ??
+            document.getElementById("recetaId").value;
+
+        if (!id || Number(id) <= 0) {
+
+            mostrarMensaje(
+                "Ingrese un número de receta válido."
+            );
+
+            return;
+        }
+
+        try {
+
+            const respuesta = await fetch(
+                "/farmacia/api/recetas/" + encodeURIComponent(id),
+                {
+                    credentials: "same-origin"
+                }
+            );
+
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok) {
+
+                throw new Error(
+                    datos.error || "No se encontró la receta."
+                );
+            }
+
+            if (numeroSolicitud !== solicitudReceta) return;
+            recetaActual = datos;
+
+            mostrarInformacionReceta(datos);
+
+            mostrarMedicamentos(datos);
+            await consultarSustituciones();
+
+        } catch (error) {
+            if (numeroSolicitud === solicitudReceta) mostrarMensaje(error.message);
+        }
+    }
+
+
+    // ==========================================
+    // BUSCAR POR CONSULTA
+    // ==========================================
+
+    async function buscarPorConsulta() {
+
+        limpiarMensaje();
+        limpiarReceta();
+
+        const consultaId =
+            document.getElementById("consultaId").value;
+
+        const contenedor =
+            document.getElementById("resultadosConsulta");
+
+        const lista =
+            document.getElementById("listaRecetas");
+
+        contenedor.classList.add("oculto");
+        lista.replaceChildren();
+
+        if (!consultaId || Number(consultaId) <= 0) {
+
+            mostrarMensaje(
+                "Ingrese un número de consulta válido."
+            );
+
+            return;
+        }
+
+        try {
+
+            const respuesta = await fetch(
+                "/farmacia/api/consultas/"
+                + encodeURIComponent(consultaId)
+                + "/recetas",
+                {
+                    credentials: "same-origin"
+                }
+            );
+
+            const recetas = await respuesta.json();
+
+            if (!respuesta.ok) {
+
+                throw new Error(
+                    recetas.error ||
+                    "No fue posible consultar las recetas."
+                );
+            }
+
+            if (recetas.length === 0) {
+
+                mostrarMensaje(
+                    "No se encontraron recetas para esta consulta."
+                );
+
+                return;
+            }
+
+            contenedor.classList.remove("oculto");
+
+            recetas.forEach(receta => {
+
+                const boton = document.createElement("button");
+
+                boton.type = "button";
+                boton.className = "boton";
+
+                boton.style.marginRight = "10px";
+
+                boton.textContent =
+                    "Receta #" + receta.recetaId
+                    + " - " + receta.estado;
+
+                boton.addEventListener("click", function () {
+
+                    document.getElementById("recetaId").value =
+                        receta.recetaId;
+
+                    buscarReceta(receta.recetaId);
+                });
+
+                lista.appendChild(boton);
+            });
+
+        } catch (error) {
+
+            mostrarMensaje(error.message);
+        }
+    }
+
+
+    // ==========================================
+    // MOSTRAR INFORMACIÓN DE RECETA
+    // ==========================================
+
+    function mostrarInformacionReceta(receta) {
+
+        document.getElementById("seccionReceta")
+            .classList.remove("oculto");
+
+        document.getElementById("infoRecetaId")
+            .textContent = receta.recetaId;
+
+        document.getElementById("infoEstado")
+            .textContent = receta.estado;
+
+        document.getElementById("infoSucursal")
+            .textContent = receta.sucursal;
+
+        document.getElementById("infoFecha")
+            .textContent = formatearFecha(receta.fechaCreacion);
+
+        document.getElementById("infoVencimiento")
+            .textContent = formatearFecha(receta.fechaVencimiento);
+
+        document.getElementById("infoVigencia")
+            .textContent = receta.vigente
+            ? "Vigente"
+            : "Vencida";
+    }
+
+
+    // ==========================================
+    // MOSTRAR MEDICAMENTOS
+    // ==========================================
+
+    function mostrarMedicamentos(receta) {
+
+        document.getElementById("seccionMedicamentos")
+            .classList.remove("oculto");
+
+        const tabla =
+            document.getElementById("tablaMedicamentos");
+
+        tabla.replaceChildren();
+
+        const puedeDespachar =
+            receta.vigente &&
+            (
+                receta.estado === "PENDIENTE" ||
+                receta.estado === "PARCIALMENTE_DESPACHADA"
+            );
+
+        document.getElementById("btnRechazar").disabled = !puedeDespachar;
+        document.getElementById("btnSustitucion").disabled = !puedeDespachar ||
+            !receta.medicamentos.some(m => Number(m.cantidadPendiente) > 0);
+
+        receta.medicamentos.forEach(medicamento => {
+
+            const fila = tabla.insertRow();
+
+            const datos = [
+                medicamento.nombre,
+                medicamento.dosis,
+                medicamento.frecuencia,
+                medicamento.cantidadRecetada,
+                medicamento.cantidadDespachada,
+                medicamento.cantidadPendiente,
+                medicamento.stockDisponible ?? 0,
+                "Q " + Number(
+                    medicamento.precioUnitario ?? 0
+                ).toFixed(2)
+            ];
+
+            datos.forEach(valor => {
+
+                const celda = fila.insertCell();
+                celda.textContent = valor ?? "-";
+            });
+
+            const celdaCantidad = fila.insertCell();
+
+            const input = document.createElement("input");
+
+            input.type = "number";
+            input.min = "0";
+            input.step = "1";
+            input.value = "0";
+            input.className = "cantidad";
+
+            input.dataset.recetaMedicamentoId =
+                medicamento.recetaMedicamentoId;
+
+            input.dataset.medicamentoId =
+                medicamento.medicamentoId;
+
+            input.dataset.precio =
+                medicamento.precioUnitario ?? 0;
+
+            const maximo = Math.min(
+                Number(medicamento.cantidadPendiente),
+                Number(medicamento.stockDisponible ?? 0)
+            );
+
+            input.max = Math.max(0, maximo);
+
+            input.disabled = !puedeDespachar || maximo <= 0;
+
+            input.addEventListener(
+                "input",
+                calcularTotal
+            );
+
+            celdaCantidad.appendChild(input);
+        });
+
+        // Las filas de sustitutos autorizados se incorporan después
+        // de consultar las autorizaciones y el inventario de la sucursal.
+        mostrarFilasSustitutos();
+
+        if (!puedeDespachar) {
+
+            mostrarMensaje(
+                "Esta receta no está disponible para despacho."
+            );
+        }
+
+        calcularTotal();
+    }
+
+
+    // ==========================================
+    // SUSTITUCIONES: SOLICITAR Y CONSULTAR
+    // ==========================================
+
+    function recetaPermiteSustitucion() {
+        return recetaActual && recetaActual.vigente &&
+            ["PENDIENTE", "PARCIALMENTE_DESPACHADA"].includes(recetaActual.estado);
+    }
+
+    async function leerJson(respuesta) {
+        const tipo = respuesta.headers.get("content-type") || "";
+        if (!tipo.includes("application/json")) {
+            throw new Error("Respuesta inesperada del servidor (HTTP " + respuesta.status + ").");
+        }
+        const datos = await respuesta.json();
+        if (!respuesta.ok) throw new Error(datos.error || "Error HTTP " + respuesta.status);
+        return datos;
+    }
+
+    async function alternarSustitucion() {
+        if (!recetaPermiteSustitucion() || operacionEnCurso) {
+            mostrarMensaje("Seleccione una receta vigente con medicamentos pendientes.");
+            return;
+        }
+        const panel = document.getElementById("seccionSustitucion");
+        if (!panel.classList.contains("oculto")) {
+            panel.classList.add("oculto");
+            return;
+        }
+        panel.classList.remove("oculto");
+        panel.scrollIntoView({behavior: "smooth", block: "start"});
+        const recetaIdAlAbrir = recetaActual.recetaId;
+        const original = document.getElementById("medicamentoOriginal");
+        original.replaceChildren(new Option("Seleccione un medicamento", ""));
+        recetaActual.medicamentos.filter(m => Number(m.cantidadPendiente) > 0)
+            .forEach(m => original.add(new Option(
+                m.nombre + " (pendientes: " + m.cantidadPendiente + ")",
+                String(m.recetaMedicamentoId)
+            )));
+        const sustituto = document.getElementById("medicamentoSustituto");
+        sustituto.replaceChildren(new Option("Cargando medicamentos...", ""));
+        document.getElementById("avisoSustitucion").textContent = "Consultando inventario...";
+        try {
+            const respuesta = await fetch("/farmacia/api/medicamentos-disponibles", {credentials: "same-origin"});
+            const medicamentos = await leerJson(respuesta);
+            if (!recetaActual || recetaActual.recetaId !== recetaIdAlAbrir) return;
+            sustituto.replaceChildren(new Option("Seleccione una alternativa", ""));
+            medicamentos.forEach(m => sustituto.add(new Option(
+                m.nombre + " · " + (m.concentracion || "") + " · " +
+                (m.presentacion || "") + " · Stock: " + m.stockDisponible,
+                String(m.medicamentoId)
+            )));
+            document.getElementById("avisoSustitucion").textContent =
+                "La disponibilidad no implica equivalencia terapéutica. El médico debe aprobar la propuesta.";
+        } catch (error) {
+            sustituto.replaceChildren(new Option("No se pudo cargar el inventario", ""));
+            document.getElementById("avisoSustitucion").textContent = error.message;
+            mostrarMensaje(error.message);
+        }
+    }
+
+    async function consultarSustituciones() {
+        if (!recetaActual) return;
+        const recetaIdConsultada = recetaActual.recetaId;
+        const lista = document.getElementById("listaSustituciones");
+        try {
+            const respuesta = await fetch("/farmacia/api/sustituciones", {credentials: "same-origin"});
+            const solicitudes = await leerJson(respuesta);
+            if (!recetaActual || recetaActual.recetaId !== recetaIdConsultada) return;
+            const idsReceta = new Set(recetaActual.medicamentos.map(m => Number(m.recetaMedicamentoId)));
+            const propias = solicitudes.filter(s => idsReceta.has(Number(s.recetaMedicamentoId)));
+            lista.replaceChildren();
+            autorizacionesVigentes = propias;
+            try {
+                const inventarioRespuesta = await fetch("/farmacia/api/medicamentos-disponibles", {credentials: "same-origin"});
+                inventarioSustitutos = await leerJson(inventarioRespuesta);
+            } catch (errorInventario) {
+                inventarioSustitutos = [];
+                lista.textContent = "No se pudo consultar el inventario: " + errorInventario.message;
+            }
+            mostrarMedicamentos(recetaActual);
+            if (!propias.length) {
+                lista.textContent = "No hay solicitudes registradas para esta receta en esta sucursal.";
+                return;
+            }
+            propias.forEach(s => {
+                const item = document.createElement("div");
+                item.className = "solicitud-item";
+                const original = recetaActual.medicamentos.find(m =>
+                    Number(m.recetaMedicamentoId) === Number(s.recetaMedicamentoId));
+                const nombre = original ? original.nombre : "ID " + s.recetaMedicamentoId;
+                const titulo = document.createElement("strong");
+                titulo.textContent = "Solicitud #" + s.autorizacionId + " · " + nombre + " · " + s.estado;
+                const detalle = document.createElement("div");
+                detalle.textContent = "Medicamento alternativo (ID): " + s.medicamentoSustitutoId +
+                    " | Motivo: " + (s.motivo || "-");
+                item.append(titulo, detalle);
+                lista.appendChild(item);
+            });
+        } catch (error) {
+            if (recetaActual && recetaActual.recetaId === recetaIdConsultada) {
+                lista.textContent = "No fue posible consultar las solicitudes: " + error.message;
+            }
+        }
+    }
+
+    async function enviarSustitucion() {
+        if (operacionEnCurso || !recetaPermiteSustitucion()) {
+            mostrarMensaje("La receta no está disponible para solicitar sustituciones.");
+            return;
+        }
+        const originalId = Number(document.getElementById("medicamentoOriginal").value);
+        const sustitutoId = Number(document.getElementById("medicamentoSustituto").value);
+        const motivo = document.getElementById("motivoSustitucion").value.trim();
+        const original = recetaActual.medicamentos.find(m => Number(m.recetaMedicamentoId) === originalId);
+        if (!original || Number(original.cantidadPendiente) <= 0 || !sustitutoId) {
+            mostrarMensaje("Seleccione un medicamento pendiente y un sustituto disponible.");
+            return;
+        }
+        if (Number(original.medicamentoId) === sustitutoId) {
+            mostrarMensaje("El medicamento sustituto debe ser diferente al recetado.");
+            return;
+        }
+        if (!motivo || motivo.length > 1000) {
+            mostrarMensaje("Escriba un motivo de hasta 1000 caracteres.");
+            return;
+        }
+        if (!confirm("¿Enviar esta propuesta al médico responsable? No se realizará ningún despacho.")) return;
+        const boton = document.getElementById("btnEnviarSustitucion");
+        operacionEnCurso = true;
+        boton.disabled = true;
+        boton.textContent = "Enviando...";
+        calcularTotal();
+        try {
+            const headers = {"Content-Type": "application/json"};
+            if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+            const respuesta = await fetch("/farmacia/api/sustituciones", {
+                method: "POST", headers, credentials: "same-origin",
+                body: JSON.stringify({
+                    recetaMedicamentoId: originalId,
+                    medicamentoSustitutoId: sustitutoId,
+                    motivo
+                })
+            });
+            const resultado = await leerJson(respuesta);
+            document.getElementById("motivoSustitucion").value = "";
+            mostrarMensaje("Solicitud #" + resultado.autorizacionId +
+                " enviada al médico. Estado: " + resultado.estado +
+                ". No se descontaron existencias.", "exito");
+            await consultarSustituciones();
+        } catch (error) {
+            mostrarMensaje(error.message);
+        } finally {
+            operacionEnCurso = false;
+            boton.disabled = false;
+            boton.textContent = "📨 Enviar solicitud al médico";
+            calcularTotal();
+        }
+    }
+
+    // ==========================================
+    // DESPACHO DE SUSTITUTOS AUTORIZADOS
+    // ==========================================
+
+    function mostrarFilasSustitutos() {
+        if (!recetaActual || !recetaPermiteSustitucion()) return;
+        const tabla = document.getElementById("tablaMedicamentos");
+        // Considerar únicamente la última decisión registrada por detalle de receta.
+        const ultimasPorDetalle = new Map();
+        for (const solicitud of [...autorizacionesVigentes].sort((a, b) =>
+            Number(b.autorizacionId) - Number(a.autorizacionId))) {
+            const idDetalle = Number(solicitud.recetaMedicamentoId);
+            if (!ultimasPorDetalle.has(idDetalle)) ultimasPorDetalle.set(idDetalle, solicitud);
+        }
+        const aprobadas = [...ultimasPorDetalle.values()].filter(s =>
+            String(s.estado).toUpperCase() === "AUTORIZADA");
+        for (const solicitud of aprobadas) {
+            const original = recetaActual.medicamentos.find(m =>
+                Number(m.recetaMedicamentoId) === Number(solicitud.recetaMedicamentoId));
+            if (!original || Number(original.cantidadPendiente) <= 0) continue;
+            // No mostrar dos veces el mismo medicamento sustituto para un mismo detalle.
+            const clave = String(solicitud.recetaMedicamentoId) + ":" + String(solicitud.medicamentoSustitutoId);
+            if (tabla.querySelector('[data-clave-sustitucion="' + clave + '"]')) continue;
+            const disponible = inventarioSustitutos.find(m =>
+                Number(m.medicamentoId) === Number(solicitud.medicamentoSustitutoId));
+            if (!disponible || Number(disponible.stockDisponible) <= 0) continue;
+            // No habilitar la entrega si el inventario no informa un precio válido.
+            const precioDisponible = disponible.precioUnitario !== null &&
+                disponible.precioUnitario !== undefined &&
+                disponible.precioUnitario !== "" &&
+                Number.isFinite(Number(disponible.precioUnitario)) &&
+                Number(disponible.precioUnitario) >= 0;
+            const precioUnitario = precioDisponible ? Number(disponible.precioUnitario) : 0;
+            const fila = tabla.insertRow();
+            fila.dataset.claveSustitucion = clave;
+            fila.style.background = "#f0fdfa";
+            const valores = [
+                "🔄 " + original.nombre + " → " + disponible.nombre + " (AUTORIZADA #" + solicitud.autorizacionId + ")",
+                original.dosis, original.frecuencia, original.cantidadRecetada,
+                original.cantidadDespachada, original.cantidadPendiente,
+                disponible.stockDisponible,
+                precioDisponible ? "Q " + precioUnitario.toFixed(2) : "Precio no disponible"
+            ];
+            valores.forEach(v => { const celda = fila.insertCell(); celda.textContent = v ?? "-"; });
+            const celdaCantidad = fila.insertCell();
+            const input = document.createElement("input");
+            input.type = "number";
+            input.min = "0";
+            input.step = "1";
+            input.value = "0";
+            input.className = "cantidad cantidad-sustituta";
+            input.dataset.recetaMedicamentoId = original.recetaMedicamentoId;
+            input.dataset.medicamentoId = disponible.medicamentoId;
+            input.dataset.originalId = original.medicamentoId;
+            input.dataset.precio = String(precioUnitario);
+            input.dataset.motivo = solicitud.motivo || "Sustitución autorizada por médico";
+            input.max = String(Math.min(Number(original.cantidadPendiente), Number(disponible.stockDisponible)));
+            input.disabled = !precioDisponible;
+            input.title = precioDisponible
+                ? "Sustitución autorizada. Verifique el medicamento y la cantidad antes de entregar."
+                : "El inventario no devuelve un precio unitario válido.";
+            input.addEventListener("input", calcularTotal);
+            celdaCantidad.appendChild(input);
+        }
+        calcularTotal();
+    }
+
+    // ==========================================
+    // CALCULAR TOTAL
+    // ==========================================
+
+    function calcularTotal() {
+
+        let total = 0;
+        let seleccionados = 0;
+        let cantidadesValidas = true;
+        const detallesConCantidad = [];
+
+        document.querySelectorAll(
+            "#tablaMedicamentos input.cantidad"
+        ).forEach(input => {
+
+            const cantidad = Number(input.value);
+            const maximo = Number(input.max);
+            const precio = Number(input.dataset.precio);
+
+            if (!Number.isInteger(cantidad)
+                || cantidad < 0
+                || cantidad > maximo) {
+
+                cantidadesValidas = false;
+                return;
+            }
+
+            if (cantidad > 0) {
+
+                seleccionados++;
+                detallesConCantidad.push(input.dataset.recetaMedicamentoId);
+                total += cantidad * precio;
+            }
+        });
+
+        document.getElementById("totalEstimado")
+            .textContent = "Q " + total.toFixed(2);
+
+        document.getElementById("btnConfirmar").disabled =
+            operacionEnCurso || !recetaActual || !recetaActual.vigente ||
+            !["PENDIENTE", "PARCIALMENTE_DESPACHADA"].includes(recetaActual.estado) ||
+            !cantidadesValidas || seleccionados === 0 ||
+            new Set(detallesConCantidad).size !== detallesConCantidad.length;
+    }
+
+
+    // ==========================================
+    // CONFIRMAR DESPACHO
+    // ==========================================
+
+    async function confirmarDespacho() {
+
+        limpiarMensaje();
+
+        if (!recetaActual) {
+
+            mostrarMensaje(
+                "Primero debe seleccionar una receta."
+            );
+
+            return;
+        }
+
+        calcularTotal();
+
+        const boton =
+            document.getElementById("btnConfirmar");
+
+        if (boton.disabled || operacionEnCurso) {
+
+            mostrarMensaje(
+                "Seleccione cantidades válidas para el despacho."
+            );
+
+            return;
+        }
+
+        const detalles = [];
+
+        document.querySelectorAll(
+            "#tablaMedicamentos input.cantidad"
+        ).forEach(input => {
+
+            const cantidad = Number(input.value);
+
+            if (cantidad > 0) {
+
+                detalles.push({
+
+                    recetaMedicamentoId:
+                        Number(input.dataset.recetaMedicamentoId),
+
+                    medicamentoEntregadoId:
+                        Number(input.dataset.medicamentoId),
+
+                    cantidad: cantidad,
+
+                    sustituido: input.classList.contains("cantidad-sustituta"),
+
+                    razonSustitucion: input.classList.contains("cantidad-sustituta")
+                        ? input.dataset.motivo : null
+                });
+            }
+        });
+
+        if (detalles.length === 0) {
+
+            mostrarMensaje(
+                "Debe seleccionar al menos un medicamento."
+            );
+
+            return;
+        }
+
+        if (!confirm(
+            "¿Confirma la entrega de los medicamentos seleccionados?"
+        )) {
+            return;
+        }
+
+        operacionEnCurso = true;
+        boton.disabled = true;
+        document.getElementById("btnRechazar").disabled = true;
+        boton.textContent = "Registrando...";
+
+        try {
+
+            const headers = {
+                "Content-Type": "application/json"
+            };
+
+            if (csrfToken && csrfHeader) {
+                headers[csrfHeader] = csrfToken;
+            }
+
+            const respuesta = await fetch(
+                "/farmacia/api/despachos",
+                {
+                    method: "POST",
+                    headers: headers,
+                    credentials: "same-origin",
+                    body: JSON.stringify({
+
+                        recetaId: recetaActual.recetaId,
+
+                        detalles: detalles
+                    })
+                }
+            );
+
+            const resultado = await respuesta.json();
+
+            if (!respuesta.ok) {
+
+                throw new Error(
+                    resultado.error ||
+                    "No fue posible registrar el despacho."
+                );
+            }
+
+            mostrarMensaje(
+                "Despacho #" + resultado.despachoId
+                + " registrado correctamente. "
+                + "Monto total: Q " + resultado.montoTotal,
+                "exito"
+            );
+
+            const recetaId = recetaActual.recetaId;
+
+            // Actualizar datos y conservar el mensaje de éxito.
+            await buscarReceta(recetaId);
+            mostrarMensaje(
+                "Despacho #" + resultado.despachoId +
+                " registrado correctamente. Monto total: Q " + resultado.montoTotal,
+                "exito"
+            );
+
+        } catch (error) {
+
+            mostrarMensaje(error.message);
+
+        } finally {
+
+            operacionEnCurso = false;
+            boton.textContent = "💊 Confirmar despacho";
+            calcularTotal();
+            if (recetaActual) {
+                document.getElementById("btnRechazar").disabled =
+                    !recetaActual.vigente ||
+                    !["PENDIENTE", "PARCIALMENTE_DESPACHADA"].includes(recetaActual.estado);
+            }
+        }
+    }
+
+    // ==========================================
+    // REGISTRAR RECHAZO DEL PACIENTE
+    // ==========================================
+
+    async function registrarRechazo() {
+        limpiarMensaje();
+
+        if (operacionEnCurso || !recetaActual || !recetaActual.vigente ||
+            !["PENDIENTE", "PARCIALMENTE_DESPACHADA"].includes(recetaActual.estado)) {
+            mostrarMensaje("Seleccione una receta vigente y pendiente de despacho.");
+            return;
+        }
+
+        const motivo = prompt("Indique el motivo del rechazo de medicamentos:");
+        if (motivo === null) return;
+        const motivoLimpio = motivo.trim();
+        if (!motivoLimpio || motivoLimpio.length > 2000) {
+            mostrarMensaje("El motivo es obligatorio y no debe superar 2000 caracteres.");
+            return;
+        }
+
+        if (!confirm("¿Confirma que el paciente rechazó los medicamentos?")) return;
+
+        const boton = document.getElementById("btnRechazar");
+        operacionEnCurso = true;
+        boton.disabled = true;
+        document.getElementById("btnConfirmar").disabled = true;
+        boton.textContent = "Registrando...";
+
+        try {
+            const headers = {"Content-Type": "application/json"};
+            if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+
+            const respuesta = await fetch("/farmacia/api/rechazos", {
+                method: "POST",
+                headers,
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    recetaId: recetaActual.recetaId,
+                    motivo: motivoLimpio
+                })
+            });
+
+            const tipo = respuesta.headers.get("content-type") || "";
+            const resultado = tipo.includes("application/json")
+                ? await respuesta.json() : {};
+
+            if (!respuesta.ok) {
+                throw new Error(resultado.error ||
+                    "No fue posible registrar el rechazo (HTTP " + respuesta.status + ").");
+            }
+
+            mostrarMensaje(
+                "Rechazo #" + resultado.rechazoId +
+                " registrado para la receta #" + resultado.recetaId +
+                ". No se descontaron existencias.", "exito"
+            );
+        } catch (error) {
+            mostrarMensaje(error.message);
+        } finally {
+            operacionEnCurso = false;
+            boton.textContent = "❌ Registrar rechazo";
+            boton.disabled = !recetaActual || !recetaActual.vigente ||
+                !["PENDIENTE", "PARCIALMENTE_DESPACHADA"].includes(recetaActual.estado);
+            calcularTotal();
+        }
+    }
+
+</script>
+
+</body>
+</html>
+
+

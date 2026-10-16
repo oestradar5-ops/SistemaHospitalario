@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -107,13 +108,17 @@ public class LaboratorioController {
             Model model,
             RedirectAttributes redirectAttributes) {
 
+        // ======================================
         // VALIDAR SESIÓN
+        // ======================================
 
         if (!esMedico(session)) {
             return "redirect:/medico/login";
         }
 
+        // ======================================
         // BUSCAR CITA
+        // ======================================
 
         Optional<Cita> citaOptional =
                 citaRepository.findById(id);
@@ -130,7 +135,9 @@ public class LaboratorioController {
 
         Cita cita = citaOptional.get();
 
+        // ======================================
         // VALIDAR MÉDICO
+        // ======================================
 
         String nombreUsuario =
                 (String) session.getAttribute("usuario");
@@ -145,7 +152,9 @@ public class LaboratorioController {
             return "redirect:/medico";
         }
 
+        // ======================================
         // VALIDAR ESTADO
+        // ======================================
 
         if (!"EVALUADO".equalsIgnoreCase(cita.getEstado())) {
 
@@ -157,7 +166,9 @@ public class LaboratorioController {
             return "redirect:/medico";
         }
 
+        // ======================================
         // ENVIAR INFORMACIÓN AL FORMULARIO
+        // ======================================
 
         model.addAttribute("cita", cita);
 
@@ -179,6 +190,7 @@ public class LaboratorioController {
     // ==========================================
     // GUARDAR ORDEN DE LABORATORIO
     // CU-08 FA01
+    // CU-09 PRECIOS Y MONTO TOTAL
     // ==========================================
 
     @PostMapping("/medico/laboratorio/{id}/guardar")
@@ -204,7 +216,7 @@ public class LaboratorioController {
             RedirectAttributes redirectAttributes) {
 
         // ======================================
-        // VALIDAR SESIÓN
+        // 1. VALIDAR SESIÓN
         // ======================================
 
         if (!esMedico(session)) {
@@ -212,7 +224,7 @@ public class LaboratorioController {
         }
 
         // ======================================
-        // BUSCAR CITA
+        // 2. BUSCAR CITA
         // ======================================
 
         Optional<Cita> citaOptional =
@@ -231,7 +243,7 @@ public class LaboratorioController {
         Cita cita = citaOptional.get();
 
         // ======================================
-        // VALIDAR MÉDICO
+        // 3. VALIDAR MÉDICO
         // ======================================
 
         String nombreUsuario =
@@ -248,7 +260,7 @@ public class LaboratorioController {
         }
 
         // ======================================
-        // VALIDAR ESTADO DE LA CITA
+        // 4. VALIDAR ESTADO DE LA CITA
         // ======================================
 
         if (!"EVALUADO".equalsIgnoreCase(cita.getEstado())) {
@@ -262,7 +274,7 @@ public class LaboratorioController {
         }
 
         // ======================================
-        // VALIDAR EXÁMENES SELECCIONADOS
+        // 5. VALIDAR EXÁMENES SELECCIONADOS
         // ======================================
 
         if (examenesIds == null || examenesIds.isEmpty()) {
@@ -275,18 +287,18 @@ public class LaboratorioController {
             return "redirect:/medico/laboratorio/" + id;
         }
 
-        // Eliminar identificadores repetidos.
+        // Eliminar identificadores repetidos
 
         Set<Long> idsUnicos =
                 new LinkedHashSet<>(examenesIds);
 
-        // Consultar los exámenes en PostgreSQL.
+        // Consultar exámenes en PostgreSQL
 
         List<CatalogoExamen> examenes =
                 catalogoExamenRepository.findAllById(idsUnicos);
 
         // ======================================
-        // VALIDAR QUE EXISTAN Y ESTÉN ACTIVOS
+        // 6. VALIDAR QUE EXISTAN Y ESTÉN ACTIVOS
         // ======================================
 
         if (examenes.size() != idsUnicos.size()
@@ -305,7 +317,28 @@ public class LaboratorioController {
         }
 
         // ======================================
-        // CREAR ORDEN DE LABORATORIO
+        // 7. VALIDAR PRECIOS DEL CATÁLOGO
+        // ======================================
+
+        boolean preciosInvalidos = examenes.stream()
+                .anyMatch(examen ->
+                        examen.getPrecio() == null
+                                || examen.getPrecio()
+                                .compareTo(BigDecimal.ZERO) < 0
+                );
+
+        if (preciosInvalidos) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Uno o varios exámenes no tienen un precio válido. Consulte con administración."
+            );
+
+            return "redirect:/medico/laboratorio/" + id;
+        }
+
+        // ======================================
+        // 8. CREAR ORDEN DE LABORATORIO
         // ======================================
 
         OrdenLaboratorio orden =
@@ -319,38 +352,89 @@ public class LaboratorioController {
                         : observaciones.trim()
         );
 
+        // Estado inicial de la orden
         orden.setEstado("PENDIENTE");
 
+        // Orden interna por defecto
+        orden.setOrdenExterna(false);
+
+        // Sin pago registrado
+        orden.setFechaPago(null);
+
+        // Sin fecha de finalización
+        orden.setFechaCompletada(null);
+
         // ======================================
-        // AGREGAR EXÁMENES A LA ORDEN
+        // 9. AGREGAR EXÁMENES Y CALCULAR PRECIOS
         // ======================================
 
         List<OrdenExamen> detalles =
                 new ArrayList<>();
 
+        BigDecimal montoTotal = BigDecimal.ZERO;
+
         for (CatalogoExamen examen : examenes) {
 
+            // Crear detalle
             OrdenExamen detalle =
                     new OrdenExamen();
 
+            // Asociar con la orden
             detalle.setOrden(orden);
 
+            // Asociar con el catálogo
             detalle.setExamen(examen);
 
+            // Obtener precio del catálogo
+            BigDecimal precio =
+                    examen.getPrecio();
+
+            // Guardar precio individual
+            detalle.setPrecio(precio);
+
+            // Acumular monto total
+            montoTotal = montoTotal.add(precio);
+
+            // Inicializar resultado pendiente
+            detalle.setValorResultado(null);
+
+            detalle.setUnidad(null);
+
+            detalle.setFechaResultado(null);
+
+            detalle.setFueraRango(false);
+
+            detalle.setNotasResultado(null);
+
+            detalle.setPublicado(false);
+
+            detalle.setFechaPublicacion(null);
+
+            // Agregar a la lista
             detalles.add(detalle);
         }
+
+        // ======================================
+        // 10. ASOCIAR EXÁMENES A LA ORDEN
+        // ======================================
 
         orden.setExamenes(detalles);
 
         // ======================================
-        // GUARDAR ORDEN Y EXÁMENES
+        // 11. GUARDAR MONTO TOTAL
+        // ======================================
+
+        orden.setMontoTotal(montoTotal);
+
+        // ======================================
+        // 12. GUARDAR ORDEN Y EXÁMENES
         // ======================================
 
         OrdenLaboratorio ordenGuardada =
                 ordenLaboratorioRepository.saveAndFlush(orden);
 
         // ======================================
-        // PREPARAR MENSAJE DE CONFIRMACIÓN
+        // 13. PREPARAR MENSAJE DE CONFIRMACIÓN
         // ======================================
 
         String nombresExamenes =
@@ -364,10 +448,13 @@ public class LaboratorioController {
                         + ordenGuardada.getId()
                         + " registrada correctamente. Exámenes: "
                         + nombresExamenes
+                        + ". Total: Q"
+                        + montoTotal.toPlainString()
+                        + ". Pago pendiente."
         );
 
         // ======================================
-        // REGRESAR AL PANEL MÉDICO
+        // 14. REGRESAR AL PANEL MÉDICO
         // ======================================
 
         return "redirect:/medico";

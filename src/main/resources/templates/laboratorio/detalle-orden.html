@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Detalle de Orden | Laboratorio</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    header {
+      background: #0f766e;
+      color: white;
+      padding: 22px 35px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .contenedor {
+      max-width: 1200px;
+      margin: 35px auto;
+      padding: 0 20px;
+    }
+
+    .seccion {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      color: #134e4a;
+    }
+
+    h3 {
+      color: #115e59;
+    }
+
+    .datos {
+      display: grid;
+      grid-template-columns:
+                    repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .dato {
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 6px;
+    }
+
+    .dato strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .tabla-contenedor {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 750px;
+    }
+
+    th {
+      background: #0f766e;
+      color: white;
+      padding: 14px;
+      text-align: left;
+    }
+
+    td {
+      padding: 14px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .fuera-rango {
+      color: #dc2626;
+      font-weight: bold;
+    }
+
+    .boton {
+      display: inline-block;
+      background: #0f766e;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .boton:hover {
+      background: #115e59;
+    }
+
+    .boton:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .boton-completar {
+      background: #16a34a;
+      font-size: 16px;
+      padding: 14px 25px;
+      font-weight: bold;
+    }
+
+    .boton-completar:hover {
+      background: #15803d;
+    }
+
+    .aviso {
+      background: #ecfeff;
+      padding: 15px;
+      border-left: 4px solid #0f766e;
+      border-radius: 5px;
+      line-height: 1.6;
+    }
+
+    .aviso-error {
+      background: #fef2f2;
+      border-left: 4px solid #dc2626;
+      color: #991b1b;
+    }
+
+    .aviso-exito {
+      background: #f0fdf4;
+      border-left: 4px solid #16a34a;
+      color: #166534;
+    }
+
+    .mensaje {
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+
+    .mensaje-exito {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .mensaje-error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .formulario-resultado {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+      background: #f8fafc;
+    }
+
+    .formulario-resultado h3 {
+      margin-top: 0;
+    }
+
+    .campos {
+      display: grid;
+      grid-template-columns:
+                    repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    .campo {
+      margin-bottom: 15px;
+    }
+
+    .campo label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .campo input,
+    .campo textarea {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+    }
+
+    .campo textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .checkbox {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .checkbox input {
+      width: 18px;
+      height: 18px;
+    }
+
+    .estado-publicado {
+      color: #166534;
+      font-weight: bold;
+    }
+
+    .estado-pendiente {
+      color: #b45309;
+      font-weight: bold;
+    }
+
+    .texto-secundario {
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .acciones {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    /* ==========================================
+   CU-09: PUBLICACIÓN DE RESULTADOS
+   ========================================== */
+
+    .boton-publicar {
+      background: #2563eb;
+      color: white;
+      padding: 14px 25px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .boton-publicar:hover {
+      background: #1d4ed8;
+    }
+
+    .boton-publicar:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🔬 Detalle de Orden de Laboratorio</h1>
+</header>
+
+<div class="contenedor">
+
+  <!-- REGRESAR AL PANEL -->
+
+  <a class="boton"
+     th:href="@{/laboratorio/panel}">
+    ← Regresar al panel
+  </a>
+
+  <!-- MENSAJES -->
+
+  <div th:if="${mensaje != null}"
+       class="mensaje mensaje-exito"
+       style="margin-top: 20px;"
+       th:text="${mensaje}">
+  </div>
+
+  <div th:if="${error != null}"
+       class="mensaje mensaje-error"
+       style="margin-top: 20px;"
+       th:text="${error}">
+  </div>
+
+  <div th:if="${mensajeExito != null}"
+       class="mensaje mensaje-exito"
+       style="margin-top: 20px;"
+       th:text="${mensajeExito}">
+  </div>
+
+  <div th:if="${mensajeError != null}"
+       class="mensaje mensaje-error"
+       style="margin-top: 20px;"
+       th:text="${mensajeError}">
+  </div>
+
+  <!-- INFORMACIÓN GENERAL -->
+
+  <div class="seccion" style="margin-top: 25px;">
+
+    <h2>
+      Orden de Laboratorio #
+      <span th:text="${orden.id}">1</span>
+    </h2>
+
+    <div class="datos">
+
+      <div class="dato">
+        <strong>Paciente</strong>
+        <span th:text="${orden.paciente}">
+                    Paciente
+                </span>
+      </div>
+
+      <div class="dato">
+        <strong>Médico solicitante</strong>
+        <span th:text="${orden.medico}">
+                    Médico
+                </span>
+      </div>
+
+      <div class="dato">
+        <strong>Fecha de solicitud</strong>
+
+        <span th:text="${orden.fecha != null
+                        ? #temporals.format(orden.fecha, 'dd/MM/yyyy HH:mm')
+                        : '-'}">
+                </span>
+      </div>
+
+      <div class="dato">
+        <strong>Estado de la orden</strong>
+
+        <span th:text="${orden.estado}">
+                    PENDIENTE
+                </span>
+      </div>
+
+      <div class="dato">
+        <strong>Tipo de orden</strong>
+
+        <span th:text="${orden.externa ? 'Externa' : 'Interna'}">
+                    Interna
+                </span>
+      </div>
+
+      <div class="dato">
+        <strong>Estado de pago</strong>
+
+        <span th:text="${orden.externa
+                        ? 'Gestión externa'
+                        : (orden.pagada
+                            ? 'Pago registrado'
+                            : 'Pago pendiente')}">
+                </span>
+      </div>
+
+    </div>
+
+    <h3>Observaciones médicas</h3>
+
+    <p th:text="${orden.observaciones != null
+                && !#strings.isEmpty(orden.observaciones)
+                ? orden.observaciones
+                : 'Sin observaciones'}">
+    </p>
+
+  </div>
+
+  <!-- EXÁMENES SOLICITADOS -->
+
+  <div class="seccion">
+
+    <h2>Exámenes solicitados</h2>
+
+    <div class="tabla-contenedor">
+
+      <table>
+
+        <thead>
+        <tr>
+          <th>Examen</th>
+          <th>Precio</th>
+          <th>Rango de referencia</th>
+          <th>Resultado</th>
+          <th>Estado</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        <tr th:if="${#lists.isEmpty(orden.examenes)}">
+          <td colspan="5">
+            No existen exámenes asociados a esta orden.
+          </td>
+        </tr>
+
+        <tr th:each="examen : ${orden.examenes}">
+
+          <td th:text="${examen.nombre}">
+            Nombre del examen
+          </td>
+
+          <td th:text="${'Q ' +
+                            #numbers.formatDecimal(examen.precio, 1, 2)}">
+            Q 0.00
+          </td>
+
+          <td>
+                        <span th:text="${examen.rangoReferencia != null
+                                ? examen.rangoReferencia
+                                : 'No definido'}">
+                        </span>
+
+            <span th:text="${examen.unidadReferencia != null
+                                ? examen.unidadReferencia
+                                : ''}">
+                        </span>
+          </td>
+
+          <td th:classappend="${examen.fueraRango
+                            ? 'fuera-rango'
+                            : ''}">
+
+                        <span th:text="${examen.valorResultado != null
+                                ? examen.valorResultado
+                                : 'Sin registrar'}">
+                        </span>
+
+            <span th:text="${examen.unidad != null
+                                ? examen.unidad
+                                : ''}">
+                        </span>
+          </td>
+
+          <td>
+
+                        <span th:if="${examen.publicado}"
+                              class="estado-publicado">
+                            Publicado
+                        </span>
+
+            <span th:unless="${examen.publicado}"
+                  class="estado-pendiente">
+                            Pendiente
+                        </span>
+
+          </td>
+
+        </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <h3>
+      Total:
+      Q <span th:text="${#numbers.formatDecimal(
+                    orden.montoTotal, 1, 2)}">
+                0.00
+            </span>
+    </h3>
+
+  </div>
+
+  <!-- VALIDACIÓN DEL PAGO -->
+
+  <div class="seccion">
+
+    <!-- ORDEN COMPLETADA -->
+
+    <div th:if="${orden.estado == 'COMPLETADA'}"
+         class="aviso aviso-exito">
+
+      <strong>✅ Orden completada</strong>
+
+      <p>
+        Todos los resultados fueron registrados
+        y la orden se encuentra finalizada.
+      </p>
+
+      <p>
+        Los resultados ya no pueden modificarse
+        desde esta pantalla.
+      </p>
+
+    </div>
+
+    <!-- ORDEN INTERNA SIN PAGO -->
+
+    <div th:if="${orden.estado != 'COMPLETADA'
+                && !orden.externa
+                && !orden.pagada}"
+         class="aviso aviso-error">
+
+      <strong>⚠️ Pago pendiente</strong>
+
+      <p>
+        Esta orden de laboratorio todavía no tiene
+        el pago confirmado.
+      </p>
+
+      <p>
+        No se permite registrar resultados hasta
+        que el módulo de Caja confirme el pago.
+      </p>
+
+    </div>
+
+    <!-- ORDEN HABILITADA -->
+
+    <div th:if="${orden.estado != 'COMPLETADA'
+                && (orden.externa || orden.pagada)}"
+         class="aviso aviso-exito">
+
+      <strong>✅ Orden habilitada</strong>
+
+      <p>
+        La orden cumple la condición de pago
+        para registrar resultados de laboratorio.
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- REGISTRO DE RESULTADOS -->
+
+  <div class="seccion">
+
+    <h2>Resultados de laboratorio</h2>
+
+    <p th:if="${orden.estado != 'COMPLETADA'}"
+       class="texto-secundario">
+
+      Complete los resultados de los exámenes
+      solicitados y guarde cada uno individualmente.
+
+    </p>
+
+    <p th:if="${orden.estado == 'COMPLETADA'}"
+       class="texto-secundario">
+
+      Esta orden está completada.
+      Los resultados se muestran únicamente
+      para consulta.
+
+    </p>
+
+    <!-- FORMULARIOS POR EXAMEN -->
+
+    <div th:each="examen : ${orden.examenes}"
+         class="formulario-resultado">
+
+      <h3 th:text="${examen.nombre}">
+        Nombre del examen
+      </h3>
+
+      <p>
+        <strong>Rango de referencia:</strong>
+
+        <span th:text="${examen.rangoReferencia != null
+                        ? examen.rangoReferencia
+                        : 'No definido'}">
+                </span>
+
+        <span th:text="${examen.unidadReferencia != null
+                        ? examen.unidadReferencia
+                        : ''}">
+                </span>
+      </p>
+
+      <!-- RESULTADO PUBLICADO -->
+
+      <div th:if="${examen.publicado}"
+           class="aviso aviso-exito">
+
+        <strong>Resultado publicado</strong>
+
+        <p>
+          Este resultado ya fue publicado
+          y no puede modificarse.
+        </p>
+
+        <p>
+          <strong>Resultado:</strong>
+
+          <span th:text="${examen.valorResultado}">
+                    </span>
+
+          <span th:text="${examen.unidad}">
+                    </span>
+        </p>
+
+      </div>
+
+      <!-- RESULTADO DE ORDEN COMPLETADA -->
+
+      <div th:if="${orden.estado == 'COMPLETADA'
+                    && !examen.publicado}"
+           class="aviso">
+
+        <strong>Resultado registrado</strong>
+
+        <p>
+          <strong>Resultado:</strong>
+
+          <span th:text="${examen.valorResultado}">
+                    </span>
+
+          <span th:text="${examen.unidad}">
+                    </span>
+        </p>
+
+        <p class="texto-secundario">
+          Pendiente de publicación.
+        </p>
+
+      </div>
+
+      <!-- FORMULARIO EDITABLE -->
+
+      <form th:if="${orden.estado != 'COMPLETADA'
+                    && !examen.publicado}"
+
+            th:action="@{/laboratorio/orden/{ordenId}/resultado/{examenId}(
+                          ordenId=${orden.id},
+                          examenId=${examen.id}
+                  )}"
+
+            method="post">
+
+        <!-- TOKEN CSRF -->
+
+        <input th:if="${_csrf != null}"
+               type="hidden"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}">
+
+        <!-- RESULTADO Y UNIDAD -->
+
+        <div class="campos">
+
+          <div class="campo">
+
+            <label>Resultado *</label>
+
+            <input type="text"
+                   name="valorResultado"
+                   th:value="${examen.valorResultado}"
+                   placeholder="Ingrese el resultado"
+                   maxlength="500"
+                   required
+                   th:disabled="${!orden.externa && !orden.pagada}">
+
+          </div>
+
+          <div class="campo">
+
+            <label>Unidad de medida</label>
+
+            <input type="text"
+                   name="unidad"
+                   th:value="${examen.unidad}"
+                   placeholder="Ejemplo: mg/dL"
+                   maxlength="100"
+                   th:disabled="${!orden.externa && !orden.pagada}">
+
+          </div>
+
+        </div>
+
+        <!-- OBSERVACIONES -->
+
+        <div class="campo">
+
+          <label>Observaciones del resultado</label>
+
+          <textarea name="notasResultado"
+                    placeholder="Ingrese observaciones adicionales"
+                    maxlength="2000"
+                    th:disabled="${!orden.externa && !orden.pagada}"></textarea>
+
+        </div>
+
+        <!-- FUERA DE RANGO -->
+
+        <div class="checkbox">
+
+          <input type="checkbox"
+                 name="fueraRango"
+                 value="true"
+                 th:checked="${examen.fueraRango}"
+                 th:disabled="${!orden.externa && !orden.pagada}">
+
+          <label>
+            Marcar como fuera del rango de referencia
+          </label>
+
+        </div>
+
+        <!-- GUARDAR -->
+
+        <button type="submit"
+                class="boton"
+                th:disabled="${!orden.externa && !orden.pagada}">
+
+          Guardar resultado
+
+        </button>
+
+      </form>
+
+    </div>
+
+    <!-- SIN EXÁMENES -->
+
+    <div th:if="${#lists.isEmpty(orden.examenes)}"
+         class="aviso">
+
+      No existen exámenes disponibles
+      para registrar resultados.
+
+    </div>
+
+  </div>
+
+  <!-- COMPLETAR ORDEN -->
+
+  <div class="seccion">
+
+    <h2>Finalización de la orden</h2>
+
+    <!-- ORDEN YA COMPLETADA -->
+
+    <div th:if="${orden.estado == 'COMPLETADA'}"
+         class="aviso aviso-exito">
+
+      <strong>✅ Orden finalizada correctamente</strong>
+
+      <p>
+        Esta orden ya se encuentra completada.
+        Los resultados están bloqueados
+        para evitar modificaciones.
+      </p>
+
+      <p>
+        La publicación de resultados
+        se realizará en el siguiente proceso.
+      </p>
+
+    </div>
+
+    <!-- ORDEN PENDIENTE DE PAGO -->
+
+    <div th:if="${orden.estado != 'COMPLETADA'
+                && !orden.externa
+                && !orden.pagada}"
+         class="aviso aviso-error">
+
+      <strong>No se puede completar la orden</strong>
+
+      <p>
+        Primero debe registrarse el pago
+        correspondiente en el módulo de Caja.
+      </p>
+
+    </div>
+
+    <!-- BOTÓN COMPLETAR ORDEN -->
+
+    <div th:if="${orden.estado != 'COMPLETADA'
+                && (orden.externa || orden.pagada)}">
+
+      <p>
+        Cuando todos los exámenes tengan
+        sus resultados registrados,
+        podrá completar la orden.
+      </p>
+
+      <p class="texto-secundario">
+        Una vez completada, no será posible
+        modificar los resultados desde
+        el módulo de Laboratorio.
+      </p>
+
+      <form th:action="@{/laboratorio/orden/{ordenId}/completar(
+                    ordenId=${orden.id}
+                  )}"
+            method="post"
+
+            onsubmit="return confirm(
+                    '¿Está seguro de completar esta orden? ' +
+                    'Después no podrá modificar los resultados.'
+                  );">
+
+        <!-- TOKEN CSRF -->
+
+        <input th:if="${_csrf != null}"
+               type="hidden"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}">
+
+        <div class="acciones">
+
+          <button type="submit"
+                  class="boton boton-completar"
+
+                  th:disabled="${#lists.isEmpty(orden.examenes)
+                                || !#lists.isEmpty(orden.examenes.?[
+                                    valorResultado == null
+                                    || #strings.isEmpty(#strings.trim(valorResultado))
+                                ])}">
+
+            ✅ Completar orden
+
+          </button>
+
+        </div>
+
+      </form>
+
+      <p class="texto-secundario">
+        Si el botón está deshabilitado,
+        verifique que todos los exámenes
+        tengan resultados registrados.
+      </p>
+
+    </div>
+
+  </div>
+  <!-- ==========================================
+       CU-09: PUBLICACIÓN DE RESULTADOS
+       ========================================== -->
+
+  <div class="seccion">
+
+    <h2>Publicación de resultados</h2>
+
+    <!-- ORDEN TODAVÍA NO COMPLETADA -->
+
+    <div th:if="${orden.estado != 'COMPLETADA'}"
+         class="aviso aviso-error">
+
+      <strong>⚠️ Publicación no disponible</strong>
+
+      <p>
+        Para publicar los resultados de laboratorio,
+        primero debe completar la orden.
+      </p>
+
+    </div>
+
+    <!-- ORDEN COMPLETADA -->
+
+    <div th:if="${orden.estado == 'COMPLETADA'}">
+
+      <!-- TODOS LOS RESULTADOS PUBLICADOS -->
+
+      <div th:if="${!#lists.isEmpty(orden.examenes)
+                && #lists.isEmpty(orden.examenes.?[
+                    publicado != true
+                ])}"
+           class="aviso aviso-exito">
+
+        <strong>✅ Resultados publicados</strong>
+
+        <p>
+          Todos los resultados de esta orden
+          fueron publicados correctamente.
+        </p>
+
+        <p>
+          Los resultados ya no pueden modificarse.
+        </p>
+
+      </div>
+
+      <!-- RESULTADOS PENDIENTES DE PUBLICACIÓN -->
+
+      <div th:if="${!#lists.isEmpty(orden.examenes)
+                && !#lists.isEmpty(orden.examenes.?[
+                    publicado != true
+                ])}">
+
+        <div class="aviso">
+
+          <strong>Orden lista para publicación</strong>
+
+          <p>
+            Esta orden se encuentra completada
+            y tiene resultados pendientes de publicación.
+          </p>
+
+          <p>
+            Al publicar, los resultados quedarán
+            disponibles para los módulos autorizados
+            que implementemos para su consulta.
+          </p>
+
+        </div>
+
+        <form th:action="@{/laboratorio/orden/{ordenId}/publicar(
+                    ordenId=${orden.id}
+                  )}"
+              method="post"
+              style="margin-top: 20px;"
+
+              onsubmit="return confirm(
+                    '¿Está seguro de publicar los resultados? ' +
+                    'Esta acción no podrá deshacerse desde esta pantalla.'
+                  );">
+
+          <!-- TOKEN CSRF -->
+
+          <input th:if="${_csrf != null}"
+                 type="hidden"
+                 th:name="${_csrf.parameterName}"
+                 th:value="${_csrf.token}">
+
+          <button type="submit"
+                  class="boton-publicar">
+
+            📢 Publicar resultados
+
+          </button>
+
+        </form>
+
+      </div>
+
+      <!-- ORDEN SIN EXÁMENES -->
+
+      <div th:if="${#lists.isEmpty(orden.examenes)}"
+           class="aviso aviso-error">
+
+        <strong>No hay resultados disponibles</strong>
+
+        <p>
+          Esta orden no contiene exámenes
+          para publicar.
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+  <!-- AVISO FINAL -->
+
+  <div class="seccion">
+
+    <div class="aviso">
+
+      <strong>Información importante</strong>
+
+      <p>
+        Los resultados registrados se guardarán
+        inicialmente sin publicar.
+      </p>
+
+      <p>
+        Las órdenes internas requieren
+        confirmación del pago por Caja.
+      </p>
+
+      <p>
+        Las órdenes completadas no permiten
+        modificar los resultados.
+      </p>
+
+      <p>
+        Los resultados publicados no podrán
+        modificarse desde este formulario.
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

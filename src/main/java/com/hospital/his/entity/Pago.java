@@ -13,15 +13,31 @@ public class Pago {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ==========================================
+    // RELACIÓN CON CITA MÉDICA
+    // ==========================================
 
     @OneToOne
     @JoinColumn(
             name = "cita_id",
-            nullable = false,
             unique = true
     )
     private Cita cita;
 
+    // ==========================================
+    // RELACIÓN CON ORDEN DE LABORATORIO
+    // ==========================================
+
+    @OneToOne
+    @JoinColumn(
+            name = "orden_laboratorio_id",
+            unique = true
+    )
+    private OrdenLaboratorio ordenLaboratorio;
+
+    // ==========================================
+    // INFORMACIÓN DEL PAGO
+    // ==========================================
 
     @Column(
             name = "monto",
@@ -31,14 +47,12 @@ public class Pago {
     )
     private BigDecimal monto;
 
-
     @Column(
             name = "metodo_pago",
             nullable = false,
             length = 30
     )
     private String metodoPago;
-
 
     @Column(
             name = "estado",
@@ -47,13 +61,11 @@ public class Pago {
     )
     private String estado;
 
-
     @Column(
             name = "referencia",
             length = 100
     )
     private String referencia;
-
 
     @Column(
             name = "monto_recibido",
@@ -62,7 +74,6 @@ public class Pago {
     )
     private BigDecimal montoRecibido;
 
-
     @Column(
             name = "cambio",
             precision = 10,
@@ -70,17 +81,22 @@ public class Pago {
     )
     private BigDecimal cambio;
 
-
     @Column(
             name = "fecha_pago",
             nullable = false
     )
     private LocalDateTime fechaPago;
 
+    // ==========================================
+    // CONSTRUCTOR
+    // ==========================================
 
     public Pago() {
     }
 
+    // ==========================================
+    // VALORES AUTOMÁTICOS
+    // ==========================================
 
     @PrePersist
     public void prePersist() {
@@ -94,6 +110,9 @@ public class Pago {
         }
     }
 
+    // ==========================================
+    // GETTERS Y SETTERS
+    // ==========================================
 
     public Long getId() {
         return id;
@@ -103,7 +122,6 @@ public class Pago {
         this.id = id;
     }
 
-
     public Cita getCita() {
         return cita;
     }
@@ -112,6 +130,15 @@ public class Pago {
         this.cita = cita;
     }
 
+    public OrdenLaboratorio getOrdenLaboratorio() {
+        return ordenLaboratorio;
+    }
+
+    public void setOrdenLaboratorio(
+            OrdenLaboratorio ordenLaboratorio) {
+
+        this.ordenLaboratorio = ordenLaboratorio;
+    }
 
     public BigDecimal getMonto() {
         return monto;
@@ -121,7 +148,6 @@ public class Pago {
         this.monto = monto;
     }
 
-
     public String getMetodoPago() {
         return metodoPago;
     }
@@ -129,7 +155,6 @@ public class Pago {
     public void setMetodoPago(String metodoPago) {
         this.metodoPago = metodoPago;
     }
-
 
     public String getEstado() {
         return estado;
@@ -139,7 +164,6 @@ public class Pago {
         this.estado = estado;
     }
 
-
     public String getReferencia() {
         return referencia;
     }
@@ -147,7 +171,6 @@ public class Pago {
     public void setReferencia(String referencia) {
         this.referencia = referencia;
     }
-
 
     public BigDecimal getMontoRecibido() {
         return montoRecibido;
@@ -159,25 +182,19 @@ public class Pago {
         this.montoRecibido = montoRecibido;
     }
 
-
     public BigDecimal getCambio() {
         return cambio;
     }
 
-    public void setCambio(
-            BigDecimal cambio) {
-
+    public void setCambio(BigDecimal cambio) {
         this.cambio = cambio;
     }
-
 
     public LocalDateTime getFechaPago() {
         return fechaPago;
     }
 
-    public void setFechaPago(
-            LocalDateTime fechaPago) {
-
+    public void setFechaPago(LocalDateTime fechaPago) {
         this.fechaPago = fechaPago;
     }
 }

@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Agendar Cita de Seguimiento - HIS</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 0;
+      color: #263238;
+    }
+
+    .contenedor {
+      max-width: 1050px;
+      margin: 35px auto;
+      padding: 20px;
+    }
+
+    .encabezado {
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+    }
+
+    .encabezado h1 {
+      color: #1565c0;
+      margin: 0 0 10px;
+    }
+
+    .encabezado p {
+      color: #607d8b;
+      margin: 0;
+    }
+
+    .informacion {
+      background: #e8f5e9;
+      border-left: 5px solid #2e7d32;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .informacion h3 {
+      margin-top: 0;
+      color: #1b5e20;
+    }
+
+    .datos {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .dato {
+      background: rgba(255,255,255,0.65);
+      padding: 12px;
+      border-radius: 6px;
+    }
+
+    .dato strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .tarjeta {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+    }
+
+    .tarjeta h2 {
+      margin-top: 0;
+      color: #1565c0;
+      font-size: 21px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cfd8dc;
+      border-radius: 7px;
+      font-size: 15px;
+      margin-bottom: 18px;
+      background: white;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #1976d2;
+    }
+
+    .horarios {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .horario {
+      border: 1px solid #90caf9;
+      background: #e3f2fd;
+      padding: 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: 0.2s;
+    }
+
+    .horario:hover {
+      background: #bbdefb;
+    }
+
+    .horario:focus-visible {
+      outline: 3px solid #0d47a1;
+      outline-offset: 2px;
+    }
+
+    .horario.seleccionado {
+      background: #1565c0;
+      color: white;
+      border-color: #0d47a1;
+    }
+
+    .horario strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .acciones {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    button,
+    .boton {
+      padding: 13px 22px;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 15px;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-confirmar {
+      background: #2e7d32;
+      color: white;
+    }
+
+    .btn-confirmar:hover {
+      background: #1b5e20;
+    }
+
+    .btn-confirmar:disabled {
+      background: #a5d6a7;
+      cursor: not-allowed;
+    }
+
+    .btn-cancelar {
+      background: #eceff1;
+      color: #37474f;
+    }
+
+    .mensaje {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .mensaje.error {
+      background: #ffebee;
+      color: #b71c1c;
+      display: block;
+    }
+
+    .mensaje.exito {
+      background: #e8f5e9;
+      color: #1b5e20;
+      display: block;
+    }
+
+    .vacio {
+      color: #78909c;
+      text-align: center;
+      padding: 20px;
+    }
+
+    @media (max-width: 700px) {
+
+      .datos {
+        grid-template-columns: 1fr;
+      }
+
+      .horarios {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .acciones {
+        flex-direction: column;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<div class="contenedor">
+
+  <!-- ===================================== -->
+  <!-- ENCABEZADO -->
+  <!-- ===================================== -->
+
+  <div class="encabezado">
+
+    <h1>Agendar Cita de Seguimiento</h1>
+
+    <p>
+      CU-12 | Sistema Informático Hospitalario
+    </p>
+
+  </div>
+
+
+  <!-- ===================================== -->
+  <!-- DATOS DE LA CONSULTA ORIGINAL -->
+  <!-- ===================================== -->
+
+  <div class="informacion">
+
+    <h3>Información de la consulta original</h3>
+
+    <div class="datos">
+
+      <div class="dato">
+        <strong>Paciente</strong>
+
+        <span th:text="${citaOriginal.paciente.nombreCompleto}">
+                    Paciente
+                </span>
+      </div>
+
+      <div class="dato">
+        <strong>Médico</strong>
+
+        <span th:text="${citaOriginal.medico.usuario.nombreCompleto}">
+                    Médico
+                </span>
+      </div>
+
+      <div class="dato">
+        <strong>Especialidad</strong>
+
+        <span th:text="${citaOriginal.especialidad.nombre}">
+                    Especialidad
+                </span>
+      </div>
+
+      <div class="dato">
+        <strong>Sucursal</strong>
+
+        <span th:text="${citaOriginal.sucursal.nombre}">
+                    Sucursal
+                </span>
+      </div>
+
+      <div class="dato">
+        <strong>Consulta original</strong>
+
+        <span th:text="${consulta.id}">
+                    0
+                </span>
+      </div>
+
+      <div class="dato">
+        <strong>Estado de la consulta</strong>
+
+        <span th:text="${consulta.estadoConsulta}">
+                    FINALIZADA
+                </span>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ===================================== -->
+  <!-- MENSAJES -->
+  <!-- ===================================== -->
+
+  <div id="mensaje" class="mensaje"></div>
+
+
+  <!-- ===================================== -->
+  <!-- TIPO DE SEGUIMIENTO -->
+  <!-- ===================================== -->
+
+  <div class="tarjeta">
+
+    <h2>1. Tipo de seguimiento</h2>
+
+    <label for="tipoSeguimiento">
+      Seleccione el tipo de seguimiento
+    </label>
+
+    <select id="tipoSeguimiento">
+
+      <option value="">
+        -- Seleccionar --
+      </option>
+
+      <option value="MONITOREO_TRATAMIENTO">
+        Monitoreo de tratamiento
+      </option>
+
+      <option value="REVISION_RESULTADOS_LABORATORIO">
+        Revisión de resultados de laboratorio
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <!-- ===================================== -->
+  <!-- HORARIOS DISPONIBLES -->
+  <!-- ===================================== -->
+
+  <div class="tarjeta">
+
+    <h2>2. Seleccionar fecha y hora</h2>
+
+    <p>
+      Horarios disponibles del médico responsable.
+    </p>
+
+    <div id="horarios" class="horarios">
+
+      <p class="vacio">
+        Cargando horarios disponibles...
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- ===================================== -->
+  <!-- MOTIVO Y PRIORIDAD -->
+  <!-- ===================================== -->
+
+  <div class="tarjeta">
+
+    <h2>3. Datos de la cita</h2>
+
+    <label for="motivo">
+      Motivo del seguimiento
+    </label>
+
+    <textarea
+            id="motivo"
+            maxlength="2000"
+            placeholder="Describa el motivo del seguimiento médico..."></textarea>
+
+    <label for="prioridad">
+      Prioridad
+    </label>
+
+    <select id="prioridad">
+
+      <option value="NORMAL">
+        Normal
+      </option>
+
+      <option value="EMERGENCIA">
+        Emergencia
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <!-- ===================================== -->
+  <!-- BOTONES -->
+  <!-- ===================================== -->
+
+  <div class="tarjeta">
+
+    <div class="acciones">
+
+      <a th:href="${urlVolver}"
+         class="boton btn-cancelar">
+
+        Volver sin guardar
+
+      </a>
+
+      <button
+              type="button"
+              id="btnConfirmar"
+              class="btn-confirmar"
+              onclick="confirmarSeguimiento()">
+
+        Confirmar cita de seguimiento
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script th:inline="javascript">
+
+  // ======================================
+  // CONFIGURACIÓN
+  // ======================================
+
+  const consultaId = /*[[${consulta.id}]]*/ 0;
+
+  const urlHorarios =
+          /*[[@{/medico/citas-seguimiento/api/horarios/}]]*/
+          "/medico/citas-seguimiento/api/horarios/";
+
+  const urlConfirmar =
+          /*[[@{/medico/citas-seguimiento/api/confirmar}]]*/
+          "/medico/citas-seguimiento/api/confirmar";
+
+  // El panel del médico contiene el listado de citas.
+  const urlPanelMedico =
+          /*[[@{/medico}]]*/
+          "/medico";
+
+  let horarioSeleccionado = null;
+  let citaRegistrada = false;
+  let solicitudEnProceso = false;
+
+  // ======================================
+  // MOSTRAR MENSAJES
+  // ======================================
+
+  function mostrarMensaje(texto, tipo) {
+
+    const elemento = document.getElementById("mensaje");
+
+    elemento.textContent = texto;
+    elemento.className = "mensaje " + tipo;
+
+    elemento.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  }
+
+  // ======================================
+  // CARGAR HORARIOS DISPONIBLES
+  // ======================================
+
+  async function cargarHorarios() {
+
+    const contenedor = document.getElementById("horarios");
+
+    horarioSeleccionado = null;
+
+    contenedor.innerHTML =
+            '<p class="vacio">Cargando horarios disponibles...</p>';
+
+    try {
+
+      const respuesta = await fetch(
+              urlHorarios + consultaId,
+              {
+                method: "GET",
+                credentials: "same-origin"
+              }
+      );
+
+      if (!respuesta.ok) {
+        throw new Error("Error al consultar horarios.");
+      }
+
+      const horarios = await respuesta.json();
+
+      contenedor.innerHTML = "";
+
+      if (!Array.isArray(horarios) || horarios.length === 0) {
+
+        contenedor.innerHTML =
+                '<p class="vacio">No hay horarios disponibles.</p>';
+
+        return;
+      }
+
+      horarios.forEach(horario => {
+
+        const boton = document.createElement("button");
+
+        boton.type = "button";
+        boton.className = "horario";
+
+        const fecha = document.createElement("strong");
+        fecha.textContent = horario.fecha;
+
+        const hora = document.createElement("span");
+        hora.textContent = horario.hora;
+
+        boton.appendChild(fecha);
+        boton.appendChild(hora);
+
+        boton.addEventListener("click", () => {
+
+          if (citaRegistrada || solicitudEnProceso) {
+            return;
+          }
+
+          document.querySelectorAll(".horario")
+                  .forEach(elemento => {
+                    elemento.classList.remove("seleccionado");
+                  });
+
+          boton.classList.add("seleccionado");
+
+          horarioSeleccionado = horario.id;
+        });
+
+        contenedor.appendChild(boton);
+      });
+
+    } catch (error) {
+
+      console.error(
+              "CU-12: Error al cargar horarios:",
+              error
+      );
+
+      contenedor.innerHTML =
+              '<p class="vacio">No fue posible cargar los horarios.</p>';
+    }
+  }
+
+  // ======================================
+  // CONFIRMAR SEGUIMIENTO
+  // ======================================
+
+  async function confirmarSeguimiento() {
+
+    if (citaRegistrada || solicitudEnProceso) {
+      return;
+    }
+
+    const tipoSeguimiento =
+            document.getElementById("tipoSeguimiento").value;
+
+    const motivo =
+            document.getElementById("motivo").value.trim();
+
+    const prioridad =
+            document.getElementById("prioridad").value;
+
+    // ==================================
+    // VALIDACIONES
+    // ==================================
+
+    if (!tipoSeguimiento) {
+
+      mostrarMensaje(
+              "Seleccione el tipo de seguimiento.",
+              "error"
+      );
+
+      return;
+    }
+
+    if (!horarioSeleccionado) {
+
+      mostrarMensaje(
+              "Seleccione una fecha y hora disponibles.",
+              "error"
+      );
+
+      return;
+    }
+
+    if (motivo.length < 10 || motivo.length > 2000) {
+
+      mostrarMensaje(
+              "El motivo debe contener entre 10 y 2000 caracteres.",
+              "error"
+      );
+
+      return;
+    }
+
+    if (!prioridad) {
+
+      mostrarMensaje(
+              "Seleccione la prioridad.",
+              "error"
+      );
+
+      return;
+    }
+
+    // ==================================
+    // BLOQUEAR BOTÓN DURANTE EL REGISTRO
+    // ==================================
+
+    const boton = document.getElementById("btnConfirmar");
+
+    solicitudEnProceso = true;
+    boton.disabled = true;
+    boton.textContent = "Registrando cita...";
+
+    try {
+
+      // ==================================
+      // ENVIAR SOLICITUD
+      // ==================================
+
+      const respuesta = await fetch(urlConfirmar, {
+
+        method: "POST",
+
+        credentials: "same-origin",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+
+          consultaId: consultaId,
+          horarioId: horarioSeleccionado,
+          tipoSeguimiento: tipoSeguimiento,
+          motivo: motivo,
+          prioridad: prioridad
+
+        })
+      });
+
+      if (!respuesta.ok) {
+
+        throw new Error(
+                "El servidor respondió con estado " +
+                respuesta.status
+        );
+      }
+
+      const resultado = await respuesta.json();
+
+      // ==================================
+      // CITA REGISTRADA CORRECTAMENTE
+      // ==================================
+
+      if (resultado.estado === "OK") {
+
+        citaRegistrada = true;
+
+        mostrarMensaje(
+                (resultado.mensaje || "Cita de seguimiento agendada exitosamente.") +
+                " Número de cita: #" + resultado.citaId +
+                ". Estado: pendiente de pago.",
+                "exito"
+        );
+
+        boton.textContent = "Cita registrada";
+        boton.disabled = true;
+
+        setTimeout(() => {
+
+          window.location.href = urlPanelMedico;
+
+        }, 2000);
+
+        return;
+      }
+
+      // ==================================
+      // ERROR DE VALIDACIÓN
+      // ==================================
+
+      mostrarMensaje(
+              resultado.mensaje ||
+              "No fue posible registrar la cita.",
+              "error"
+      );
+
+      await cargarHorarios();
+
+    } catch (error) {
+
+      console.error(
+              "CU-12: Error al confirmar seguimiento:",
+              error
+      );
+
+      mostrarMensaje(
+              "No fue posible confirmar el resultado del registro. " +
+              "Verifique si la cita fue creada antes de intentarlo nuevamente.",
+              "error"
+      );
+
+    } finally {
+
+      solicitudEnProceso = false;
+
+      if (!citaRegistrada) {
+
+        boton.disabled = false;
+        boton.textContent = "Confirmar cita de seguimiento";
+      }
+    }
+  }
+
+  // ======================================
+  // INICIALIZAR
+  // ======================================
+
+  document.addEventListener(
+          "DOMContentLoaded",
+          cargarHorarios
+  );
+
+</script>
+
+</body>
+</html>

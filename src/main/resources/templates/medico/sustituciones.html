@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="_csrf"
+          th:if="${_csrf != null}"
+          th:content="${_csrf.token}">
+
+    <meta name="_csrf_header"
+          th:if="${_csrf != null}"
+          th:content="${_csrf.headerName}">
+
+    <title>Autorizaciones de Medicamentos | HIS</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #253247;
+        }
+
+        header {
+            background: #1f4e79;
+            color: white;
+            padding: 22px 35px;
+        }
+
+        .encabezado {
+            max-width: 1250px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header p {
+            margin-bottom: 0;
+            color: #dbeafe;
+        }
+
+        .btn-volver {
+            display: inline-block;
+            padding: 11px 17px;
+            background: white;
+            color: #1f4e79;
+            text-decoration: none;
+            border-radius: 7px;
+            font-weight: bold;
+        }
+
+        .contenedor {
+            max-width: 1250px;
+            width: 94%;
+            margin: 30px auto;
+        }
+
+        .tarjeta {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+            margin-bottom: 25px;
+        }
+
+        .titulo-seccion {
+            margin-top: 0;
+            color: #1f4e79;
+        }
+
+        .descripcion {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .barra {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .contador {
+            padding: 9px 14px;
+            background: #e0f2fe;
+            color: #075985;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .btn-actualizar {
+            background: #0d6efd;
+            color: white;
+            padding: 11px 18px;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tabla-contenedor {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 950px;
+        }
+
+        thead {
+            background: #edf3f9;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        th {
+            color: #334155;
+            font-size: 13px;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .estado {
+            display: inline-block;
+            padding: 6px 11px;
+            border-radius: 20px;
+            background: #fff3cd;
+            color: #856404;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-autorizar,
+        .btn-rechazar {
+            border: none;
+            border-radius: 6px;
+            padding: 10px 13px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+
+        .btn-autorizar {
+            background: #198754;
+        }
+
+        .btn-rechazar {
+            background: #dc3545;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .mensaje {
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .mensaje.exito {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .mensaje.error {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .sin-datos {
+            text-align: center;
+            padding: 35px;
+            color: #64748b;
+        }
+
+        .modal-fondo {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .modal h3 {
+            margin-top: 0;
+            color: #1f4e79;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 110px;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            resize: vertical;
+            font-family: Arial, sans-serif;
+        }
+
+        .modal-acciones {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-cancelar,
+        .btn-confirmar {
+            padding: 11px 16px;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-cancelar {
+            background: #e2e8f0;
+        }
+
+        .btn-confirmar {
+            background: #198754;
+            color: white;
+        }
+
+        @media (max-width: 700px) {
+            .encabezado {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            header {
+                padding: 20px;
+            }
+
+            .tarjeta {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="encabezado">
+        <div>
+            <h1>💊 Autorizaciones de Medicamentos</h1>
+            <p>
+                Revisión médica de solicitudes de sustitución
+            </p>
+        </div>
+
+        <a class="btn-volver"
+           th:href="@{/medico}">
+            ← Volver al panel médico
+        </a>
+    </div>
+</header>
+
+<main class="contenedor">
+
+    <div id="mensaje" class="mensaje"
+         role="alert"></div>
+
+    <section class="tarjeta">
+
+        <h2 class="titulo-seccion">
+            Solicitudes pendientes
+        </h2>
+
+        <p class="descripcion">
+            Revise el medicamento recetado, el sustituto
+            propuesto y el motivo indicado por Farmacia
+            antes de tomar una decisión.
+        </p>
+
+        <div class="barra">
+
+            <span id="contador"
+                  class="contador">
+                Cargando solicitudes...
+            </span>
+
+            <button type="button"
+                    class="btn-actualizar"
+                    onclick="cargarSolicitudes()">
+                🔄 Actualizar
+            </button>
+
+        </div>
+
+        <div class="tabla-contenedor">
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Solicitud</th>
+                    <th>Medicamento recetado</th>
+                    <th>Sustituto propuesto</th>
+                    <th>Sucursal</th>
+                    <th>Motivo</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+
+                <tbody id="tablaSolicitudes">
+
+                <tr>
+                    <td colspan="8"
+                        class="sin-datos">
+                        Cargando información...
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+<!-- MODAL DE RESPUESTA -->
+
+<div id="modalFondo"
+     class="modal-fondo">
+
+    <div class="modal"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="tituloModal">
+
+        <h3 id="tituloModal">
+            Responder solicitud
+        </h3>
+
+        <p id="descripcionModal"></p>
+
+        <label for="observaciones">
+            <strong>Observaciones médicas</strong>
+        </label>
+
+        <textarea
+                id="observaciones"
+                maxlength="1000"
+                placeholder="Escriba sus observaciones...">
+        </textarea>
+
+        <div class="modal-acciones">
+
+            <button type="button"
+                    class="btn-cancelar"
+                    onclick="cerrarModal()">
+                Cancelar
+            </button>
+
+            <button type="button"
+                    id="btnConfirmarRespuesta"
+                    class="btn-confirmar"
+                    onclick="confirmarRespuesta()">
+                Confirmar
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let solicitudSeleccionada = null;
+    let decisionSeleccionada = null;
+    let enviandoRespuesta = false;
+
+    const csrfToken =
+        document.querySelector('meta[name="_csrf"]')?.content;
+
+    const csrfHeader =
+        document.querySelector('meta[name="_csrf_header"]')?.content;
+
+    function mostrarMensaje(texto, tipo = "error") {
+        const elemento = document.getElementById("mensaje");
+
+        elemento.textContent = texto;
+        elemento.className = "mensaje " + tipo;
+        elemento.style.display = "block";
+    }
+
+    function limpiarMensaje() {
+        document.getElementById("mensaje").style.display = "none";
+    }
+
+    function mostrarTextoSeguro(celda, texto) {
+        celda.textContent = texto ?? "-";
+    }
+
+    async function cargarSolicitudes() {
+        const tabla = document.getElementById("tablaSolicitudes");
+        const contador = document.getElementById("contador");
+
+        tabla.replaceChildren();
+
+        const filaCarga = document.createElement("tr");
+        const celdaCarga = document.createElement("td");
+
+        celdaCarga.colSpan = 8;
+        celdaCarga.className = "sin-datos";
+        celdaCarga.textContent = "Cargando solicitudes...";
+
+        filaCarga.appendChild(celdaCarga);
+        tabla.appendChild(filaCarga);
+
+        try {
+            const respuesta = await fetch(
+                "/medico/sustituciones/api/pendientes",
+                {
+                    credentials: "same-origin",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            if (!respuesta.ok) {
+                throw new Error(
+                    "No fue posible consultar las solicitudes."
+                );
+            }
+
+            const solicitudes = await respuesta.json();
+
+            tabla.replaceChildren();
+
+            contador.textContent =
+                solicitudes.length + " solicitud(es) pendiente(s)";
+
+            if (solicitudes.length === 0) {
+                const fila = document.createElement("tr");
+                const celda = document.createElement("td");
+
+                celda.colSpan = 8;
+                celda.className = "sin-datos";
+                celda.textContent =
+                    "No existen solicitudes pendientes.";
+
+                fila.appendChild(celda);
+                tabla.appendChild(fila);
+                return;
+            }
+
+            solicitudes.forEach(solicitud => {
+                const fila = document.createElement("tr");
+
+                const valores = [
+                    "#" + solicitud.autorizacionId,
+                    solicitud.medicamentoOriginal,
+                    solicitud.medicamentoSustituto,
+                    solicitud.sucursal,
+                    solicitud.motivo,
+                    solicitud.fechaSolicitud,
+                    solicitud.estado
+                ];
+
+                valores.forEach((valor, indice) => {
+                    const celda = document.createElement("td");
+
+                    mostrarTextoSeguro(celda, valor);
+
+                    if (indice === 6) {
+                        celda.className = "estado";
+                    }
+
+                    fila.appendChild(celda);
+                });
+
+                const celdaAcciones =
+                    document.createElement("td");
+
+                const contenedorAcciones =
+                    document.createElement("div");
+
+                contenedorAcciones.className = "acciones";
+
+                const btnAutorizar =
+                    document.createElement("button");
+
+                btnAutorizar.type = "button";
+                btnAutorizar.className = "btn-autorizar";
+                btnAutorizar.textContent = "Autorizar";
+
+                btnAutorizar.addEventListener("click", () => {
+                    abrirModal(
+                        solicitud.autorizacionId,
+                        "AUTORIZADA"
+                    );
+                });
+
+                const btnRechazar =
+                    document.createElement("button");
+
+                btnRechazar.type = "button";
+                btnRechazar.className = "btn-rechazar";
+                btnRechazar.textContent = "Rechazar";
+
+                btnRechazar.addEventListener("click", () => {
+                    abrirModal(
+                        solicitud.autorizacionId,
+                        "RECHAZADA"
+                    );
+                });
+
+                contenedorAcciones.appendChild(btnAutorizar);
+                contenedorAcciones.appendChild(btnRechazar);
+
+                celdaAcciones.appendChild(contenedorAcciones);
+                fila.appendChild(celdaAcciones);
+
+                tabla.appendChild(fila);
+            });
+
+        } catch (error) {
+            contador.textContent = "Error de consulta";
+
+            tabla.replaceChildren();
+
+            mostrarMensaje(error.message, "error");
+        }
+    }
+
+    function abrirModal(id, decision) {
+        solicitudSeleccionada = id;
+        decisionSeleccionada = decision;
+
+        document.getElementById("observaciones").value = "";
+
+        const autorizando = decision === "AUTORIZADA";
+
+        document.getElementById("tituloModal").textContent =
+            autorizando
+                ? "Autorizar sustitución"
+                : "Rechazar sustitución";
+
+        document.getElementById("descripcionModal").textContent =
+            "Solicitud #" + id +
+            ". Revise su decisión antes de confirmar.";
+
+        document.getElementById("btnConfirmarRespuesta").style.background =
+            autorizando ? "#198754" : "#dc3545";
+
+        document.getElementById("modalFondo").style.display = "flex";
+    }
+
+    function cerrarModal() {
+        if (enviandoRespuesta) return;
+
+        document.getElementById("modalFondo").style.display = "none";
+
+        solicitudSeleccionada = null;
+        decisionSeleccionada = null;
+    }
+
+    async function confirmarRespuesta() {
+        if (enviandoRespuesta) return;
+
+        if (!solicitudSeleccionada || !decisionSeleccionada) {
+            mostrarMensaje("Seleccione una solicitud válida.");
+            return;
+        }
+
+        const observaciones =
+            document.getElementById("observaciones").value.trim();
+
+        if (decisionSeleccionada === "RECHAZADA" &&
+            !observaciones) {
+            alert("Indique el motivo del rechazo.");
+            return;
+        }
+
+        if (!confirm("¿Confirma su decisión médica?")) {
+            return;
+        }
+
+        enviandoRespuesta = true;
+
+        const boton =
+            document.getElementById("btnConfirmarRespuesta");
+
+        boton.disabled = true;
+
+        const encabezados = {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        };
+
+        if (csrfToken && csrfHeader) {
+            encabezados[csrfHeader] = csrfToken;
+        }
+
+        try {
+            const respuesta = await fetch(
+                "/medico/sustituciones/api/" +
+                solicitudSeleccionada +
+                "/responder",
+                {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: encabezados,
+                    body: JSON.stringify({
+                        decision: decisionSeleccionada,
+                        observaciones: observaciones
+                    })
+                }
+            );
+
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(
+                    datos.error || "No fue posible registrar la respuesta."
+                );
+            }
+
+            document.getElementById("modalFondo").style.display = "none";
+
+            mostrarMensaje(datos.mensaje, "exito");
+
+            await cargarSolicitudes();
+
+        } catch (error) {
+            mostrarMensaje(error.message, "error");
+
+        } finally {
+            enviandoRespuesta = false;
+            boton.disabled = false;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", cargarSolicitudes);
+</script>
+
+</body>
+</html>
