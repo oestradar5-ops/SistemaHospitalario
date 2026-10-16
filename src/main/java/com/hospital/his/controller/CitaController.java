@@ -100,7 +100,7 @@ public class CitaController {
             @RequestParam Long sucursalId) {
 
         return sucursalEspecialidadRepository
-                .findBySucursalIdAndEspecialidadActivoTrueOrderByEspecialidadNombreAsc(
+                .findBySucursalIdAndActivoTrueAndEspecialidadActivoTrueOrderByEspecialidadNombreAsc(
                         sucursalId
                 )
                 .stream()
@@ -310,7 +310,7 @@ public class CitaController {
 
         Especialidad especialidad =
                 sucursalEspecialidadRepository
-                        .findBySucursalIdAndEspecialidadActivoTrueOrderByEspecialidadNombreAsc(
+                        .findBySucursalIdAndActivoTrueAndEspecialidadActivoTrueOrderByEspecialidadNombreAsc(
                                 sucursalId
                         )
                         .stream()

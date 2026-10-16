@@ -108,6 +108,15 @@ public class SecurityConfig {
                                 "/admin/usuarios/**",
 
                                 // ==========================================
+                                // CU-13 - ESPECIALIDADES POR SEDE
+                                // La autorización del rol ADMINISTRADOR
+                                // se verifica en el controlador por sesión.
+                                // ==========================================
+
+                                "/branch-specialty",
+                                "/branch-specialty/**",
+
+                                // ==========================================
                                 // RECEPCIÓN
                                 // ==========================================
 

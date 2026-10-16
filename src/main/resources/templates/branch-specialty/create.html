@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Nueva Asignación | HIS</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    header {
+      background: #0f766e;
+      color: white;
+      padding: 22px 35px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 25px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      font-size: 14px;
+    }
+
+    .contenedor {
+      max-width: 650px;
+      margin: 45px auto;
+      padding: 0 20px;
+    }
+
+    .tarjeta {
+      background: white;
+      padding: 35px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: #0f766e;
+    }
+
+    .descripcion {
+      color: #64748b;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+
+    .grupo {
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    select {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      background: white;
+      font-size: 15px;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #0f766e;
+    }
+
+    .obligatorio {
+      color: #dc2626;
+    }
+
+    .botones {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .boton {
+      display: inline-block;
+      padding: 12px 22px;
+      border: none;
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: bold;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .boton-verde {
+      background: #0f766e;
+      color: white;
+    }
+
+    .boton-verde:hover {
+      background: #115e59;
+    }
+
+    .boton-gris {
+      background: #64748b;
+      color: white;
+    }
+
+    .alerta {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 14px;
+      margin-bottom: 25px;
+      border-radius: 7px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🏥 Sistema Hospitalario HIS</h1>
+  <p>Configuración de Especialidades por Sede</p>
+</header>
+
+<div class="contenedor">
+
+  <div class="tarjeta">
+
+    <h2>Nueva asignación</h2>
+
+    <p class="descripcion">
+      Seleccione la sede y la especialidad que desea asignar.
+      Ambas deben encontrarse activas.
+    </p>
+
+    <!-- MENSAJE DE ERROR -->
+
+    <div th:if="${error}"
+         class="alerta"
+         th:text="${error}">
+    </div>
+
+    <!-- FORMULARIO -->
+
+    <form th:action="@{/branch-specialty/create}"
+          method="post">
+
+      <!-- PROTECCIÓN CSRF -->
+
+      <input type="hidden"
+             th:if="${_csrf != null}"
+             th:name="${_csrf.parameterName}"
+             th:value="${_csrf.token}">
+
+      <!-- SEDE -->
+
+      <div class="grupo">
+
+        <label for="sucursalId">
+          Sede <span class="obligatorio">*</span>
+        </label>
+
+        <select id="sucursalId"
+                name="sucursalId"
+                required>
+
+          <option value="">
+            -- Seleccione una sede --
+          </option>
+
+          <option th:each="sucursal : ${sucursales}"
+                  th:value="${sucursal.id}"
+                  th:text="${sucursal.nombre}">
+          </option>
+
+        </select>
+
+      </div>
+
+      <!-- ESPECIALIDAD -->
+
+      <div class="grupo">
+
+        <label for="especialidadId">
+          Especialidad <span class="obligatorio">*</span>
+        </label>
+
+        <select id="especialidadId"
+                name="especialidadId"
+                required>
+
+          <option value="">
+            -- Seleccione una especialidad --
+          </option>
+
+          <option th:each="especialidad : ${especialidades}"
+                  th:value="${especialidad.id}"
+                  th:text="${especialidad.nombre}">
+          </option>
+
+        </select>
+
+      </div>
+
+      <!-- BOTONES -->
+
+      <div class="botones">
+
+        <button type="submit"
+                class="boton boton-verde">
+          Guardar asignación
+        </button>
+
+        <a th:href="@{/branch-specialty}"
+           class="boton boton-gris">
+          Cancelar
+        </a>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+</body>
+</html>

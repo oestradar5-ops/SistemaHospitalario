@@ -109,11 +109,8 @@
 
         .tarjeta {
             background: white;
-
             min-height: 190px;
-
             border-radius: 12px;
-
             padding: 25px;
 
             box-shadow:
@@ -156,11 +153,9 @@
             color: white;
 
             text-decoration: none;
-
             text-align: center;
 
             padding: 11px 15px;
-
             border-radius: 6px;
 
             font-weight: bold;
@@ -206,9 +201,11 @@
     </style>
 </head>
 
-
 <body>
 
+<!-- =========================================
+     ENCABEZADO PRINCIPAL
+     ========================================= -->
 
 <header>
 
@@ -223,7 +220,6 @@
         </p>
 
     </div>
-
 
     <div class="usuario">
 
@@ -246,8 +242,11 @@
 </header>
 
 
-<main>
+<!-- =========================================
+     CONTENIDO PRINCIPAL
+     ========================================= -->
 
+<main>
 
     <!-- =========================================
          BIENVENIDA
@@ -293,7 +292,38 @@
                 configuración administrativa.
             </p>
 
-            <a href="/admin/usuarios"
+            <a th:href="@{/admin/usuarios}"
+               class="boton">
+
+                Ingresar
+
+            </a>
+
+        </div>
+
+
+        <!-- =====================================
+             CU-13: ESPECIALIDADES POR SEDE
+             ===================================== -->
+
+        <div class="tarjeta"
+             th:if="${rol == 'ADMINISTRADOR'}">
+
+            <div class="icono">
+                🏥
+            </div>
+
+            <h3>
+                Especialidades por Sede
+            </h3>
+
+            <p>
+                Configuración y administración de
+                especialidades disponibles en cada
+                sede hospitalaria.
+            </p>
+
+            <a th:href="@{/branch-specialty}"
                class="boton">
 
                 Ingresar
@@ -322,7 +352,7 @@
                 pacientes y gestión de citas.
             </p>
 
-            <a href="/recepcion"
+            <a th:href="@{/recepcion}"
                class="boton">
 
                 Ingresar
@@ -351,7 +381,7 @@
                 pagos y emisión de comprobantes.
             </p>
 
-            <a href="/caja"
+            <a th:href="@{/caja}"
                class="boton">
 
                 Ingresar
@@ -496,12 +526,15 @@
 </main>
 
 
+<!-- =========================================
+     PIE DE PÁGINA
+     ========================================= -->
+
 <footer>
 
     Sistema Informático Hospitalario - HIS
 
 </footer>
-
 
 </body>
 </html>

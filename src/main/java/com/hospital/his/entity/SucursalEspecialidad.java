@@ -3,12 +3,32 @@ package com.hospital.his.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "sucursal_especialidad")
+@Table(
+        name = "sucursal_especialidad",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_sucursal_especialidad",
+                        columnNames = {
+                                "sucursal_id",
+                                "especialidad_id"
+                        }
+                )
+        }
+)
 public class SucursalEspecialidad {
+
+    // ==========================================
+    // IDENTIFICADOR
+    // ==========================================
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+
+    // ==========================================
+    // SUCURSAL
+    // ==========================================
 
     @ManyToOne
     @JoinColumn(
@@ -16,6 +36,11 @@ public class SucursalEspecialidad {
             nullable = false
     )
     private Sucursal sucursal;
+
+
+    // ==========================================
+    // ESPECIALIDAD
+    // ==========================================
 
     @ManyToOne
     @JoinColumn(
@@ -25,9 +50,28 @@ public class SucursalEspecialidad {
     private Especialidad especialidad;
 
 
+    // ==========================================
+    // ESTADO DE LA ASIGNACIÓN
+    // ==========================================
+
+    @Column(
+            name = "activo",
+            nullable = false
+    )
+    private Boolean activo = true;
+
+
+    // ==========================================
+    // CONSTRUCTOR
+    // ==========================================
+
     public SucursalEspecialidad() {
     }
 
+
+    // ==========================================
+    // GETTERS Y SETTERS
+    // ==========================================
 
     public Long getId() {
         return id;
@@ -55,5 +99,14 @@ public class SucursalEspecialidad {
             Especialidad especialidad) {
 
         this.especialidad = especialidad;
+    }
+
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
     }
 }
