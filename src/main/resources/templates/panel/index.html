@@ -303,11 +303,96 @@
 
 
         <!-- =====================================
-             CU-13: ESPECIALIDADES POR SEDE
+             CU-14: MANTENIMIENTO DE CATÁLOGOS
+             ACCESO EXCLUSIVO ADMINISTRADOR
              ===================================== -->
 
         <div class="tarjeta"
-             th:if="${rol == 'ADMINISTRADOR'}">
+             th:if="${rol == 'ADMIN' or rol == 'ADMINISTRADOR'}">
+            <div class="icono">⚙️</div>
+            <h3>Mantenimiento de Catálogos (CU-14)</h3>
+            <p>Accede a los catálogos del hospital para administrar sus registros.</p>
+            <span class="boton proximamente">Selecciona un catálogo abajo</span>
+        </div>
+
+        <div class="tarjeta"
+             th:if="${rol == 'ADMIN' or rol == 'ADMINISTRADOR'}">
+            <div class="icono">🩺</div>
+            <h3>Catálogo de Especialidades</h3>
+            <p>Administrar registros del catálogo de especialidades.</p>
+            <a th:href="@{/admin/catalogos/especialidades}" class="boton">Ingresar</a>
+        </div>
+
+        <div class="tarjeta"
+             th:if="${rol == 'ADMIN' or rol == 'ADMINISTRADOR'}">
+            <div class="icono">🏢</div>
+            <h3>Catálogo de Sucursales</h3>
+            <p>Administrar registros del catálogo de sucursales.</p>
+            <a th:href="@{/admin/catalogos/sucursales}" class="boton">Ingresar</a>
+        </div>
+
+        <div class="tarjeta"
+             th:if="${rol == 'ADMIN' or rol == 'ADMINISTRADOR'}">
+            <div class="icono">📅</div>
+            <h3>Catálogo de Estados de Cita</h3>
+            <p>Administrar registros del catálogo de estados de cita.</p>
+            <a th:href="@{/admin/catalogos/estados-cita}" class="boton">Ingresar</a>
+        </div>
+
+        <div class="tarjeta"
+             th:if="${rol == 'ADMIN' or rol == 'ADMINISTRADOR'}">
+            <div class="icono">🧪</div>
+            <h3>Catálogo de Laboratorios</h3>
+            <p>Administrar registros del catálogo de laboratorios.</p>
+            <a th:href="@{/admin/catalogos/laboratorios}" class="boton">Ingresar</a>
+        </div>
+
+        <div class="tarjeta"
+             th:if="${rol == 'ADMIN' or rol == 'ADMINISTRADOR'}">
+            <div class="icono">🔬</div>
+            <h3>Catálogo de Exámenes de Laboratorio</h3>
+            <p>Administrar registros del catálogo de exámenes de laboratorio.</p>
+            <a th:href="@{/admin/catalogos/examenes}" class="boton">Ingresar</a>
+        </div>
+
+        <div class="tarjeta"
+             th:if="${rol == 'ADMIN' or rol == 'ADMINISTRADOR'}">
+            <div class="icono">💊</div>
+            <h3>Catálogo de Medicamentos</h3>
+            <p>Administrar registros del catálogo de medicamentos.</p>
+            <a th:href="@{/admin/catalogos/medicamentos}" class="boton">Ingresar</a>
+        </div>
+
+        <div class="tarjeta"
+             th:if="${rol == 'ADMIN' or rol == 'ADMINISTRADOR'}">
+            <div class="icono">📦</div>
+            <h3>Catálogo de Inventario de Medicamentos</h3>
+            <p>Administrar registros del catálogo de inventario de medicamentos.</p>
+            <a th:href="@{/admin/catalogos/inventario-medicamentos}" class="boton">Ingresar</a>
+        </div>
+
+        <!-- =====================================
+             CU-14: CATÁLOGO DE ROLES
+             ===================================== -->
+
+        <div class="tarjeta"
+             th:if="${rol == 'ADMIN' or rol == 'ADMINISTRADOR'}">
+            <div class="icono">🔐</div>
+            <h3>Catálogo de Roles</h3>
+            <p>Registrar, consultar y administrar los roles del sistema hospitalario.</p>
+            <a th:href="@{/admin/catalogos/roles}" class="boton">Ingresar</a>
+        </div>
+
+        <!-- =====================================
+             CU-13: ESPECIALIDADES POR SEDE
+             ===================================== -->
+
+        <!-- =====================================
+        CU-13: ESPECIALIDADES POR SEDE
+        ===================================== -->
+
+        <div class="tarjeta"
+             th:if="${rol == 'ADMIN' or rol == 'ADMINISTRADOR'}">
 
             <div class="icono">
                 🏥
@@ -538,3 +623,4 @@
 
 </body>
 </html>
+

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Mantenimiento de Exámenes - HIS</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        header {
+            background: #123b63;
+            color: white;
+            padding: 20px 35px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .contenedor {
+            max-width: 700px;
+            margin: 45px auto;
+            padding: 0 20px;
+        }
+
+        .tarjeta {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            color: #123b63;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin-bottom: 20px;
+            background: white;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #0d6efd;
+        }
+
+        .botones {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .boton {
+            display: inline-block;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-guardar {
+            background: #198754;
+        }
+
+        .btn-cancelar {
+            background: #6c757d;
+        }
+
+        .btn-laboratorio {
+            background: #0d6efd;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #842029;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .informacion {
+            background: #cff4fc;
+            color: #055160;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .advertencia {
+            background: #fff3cd;
+            color: #664d03;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .nota {
+            color: #6c757d;
+            font-size: 13px;
+            margin-top: -12px;
+            margin-bottom: 20px;
+        }
+
+        .enlace-laboratorio {
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+
+            .tarjeta {
+                padding: 20px;
+            }
+
+            .botones {
+                flex-direction: column;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+    <h1>Sistema Informático Hospitalario</h1>
+</header>
+
+<div class="contenedor">
+
+    <div class="tarjeta">
+
+        <!-- TÍTULO DINÁMICO -->
+
+        <h2 th:text="${examen.id == null}
+                ? 'Registrar Examen de Laboratorio'
+                : 'Editar Examen de Laboratorio'">
+
+            Registrar Examen de Laboratorio
+
+        </h2>
+
+        <!-- MENSAJE DE ERROR -->
+
+        <div th:if="${error}"
+             class="error"
+             th:text="${error}">
+        </div>
+
+        <!-- INFORMACIÓN -->
+
+        <div class="informacion">
+
+            <strong>Información:</strong>
+
+            Registra los datos del examen.
+
+            El nombre, el precio y el laboratorio
+            son obligatorios.
+
+            El precio debe ser mayor que cero.
+
+        </div>
+
+        <!-- ADVERTENCIA SI NO HAY LABORATORIOS -->
+
+        <div th:if="${#lists.isEmpty(laboratorios)}"
+             class="advertencia">
+
+            <strong>Atención:</strong>
+
+            No existen laboratorios activos registrados.
+
+            Debes registrar o activar un laboratorio
+            antes de guardar un examen.
+
+        </div>
+
+        <!-- ENLACE AL CATÁLOGO DE LABORATORIOS -->
+
+        <div class="enlace-laboratorio">
+
+            <a th:href="@{/admin/catalogos/laboratorios}"
+               class="boton btn-laboratorio">
+
+                Administrar Laboratorios
+
+            </a>
+
+        </div>
+
+        <!-- FORMULARIO -->
+
+        <form method="post"
+              th:action="${examen.id == null}
+                  ? @{/admin/catalogos/examenes/create}
+                  : @{/admin/catalogos/examenes/edit/{id}(id=${examen.id})}">
+
+            <!-- NOMBRE -->
+
+            <label for="nombre">
+                Nombre del examen *
+            </label>
+
+            <input type="text"
+                   id="nombre"
+                   name="nombre"
+                   th:value="${examen.nombre}"
+                   maxlength="150"
+                   placeholder="Ejemplo: Hemograma completo"
+                   required>
+
+            <!-- DESCRIPCIÓN -->
+
+            <label for="descripcion">
+                Descripción
+            </label>
+
+            <textarea id="descripcion"
+                      name="descripcion"
+                      placeholder="Ingrese una descripción del examen"
+                      th:text="${examen.descripcion}"></textarea>
+
+            <!-- PRECIO -->
+
+            <label for="precio">
+                Precio del examen (Q) *
+            </label>
+
+            <input type="number"
+                   id="precio"
+                   name="precio"
+                   th:value="${examen.precio}"
+                   min="0.01"
+                   max="99999999.99"
+                   step="0.01"
+                   placeholder="Ejemplo: 45.00"
+                   required>
+
+            <p class="nota">
+                El precio debe ser mayor que cero
+                y contener como máximo dos decimales.
+            </p>
+
+            <!-- LABORATORIO -->
+
+            <label for="laboratorioId">
+                Laboratorio *
+            </label>
+
+            <select id="laboratorioId"
+                    name="laboratorioId"
+                    required>
+
+                <option value="">
+                    Seleccione un laboratorio
+                </option>
+
+                <option th:each="laboratorio : ${laboratorios}"
+                        th:value="${laboratorio.id}"
+                        th:text="${laboratorio.nombre}"
+                        th:selected="${examen.laboratorio != null
+                            and examen.laboratorio.id == laboratorio.id}">
+                </option>
+
+            </select>
+
+            <p class="nota">
+                Solo se muestran los laboratorios activos.
+            </p>
+
+            <!-- RANGO DE REFERENCIA -->
+
+            <label for="rangoReferencia">
+                Rango de referencia
+            </label>
+
+            <input type="text"
+                   id="rangoReferencia"
+                   name="rangoReferencia"
+                   th:value="${examen.rangoReferencia}"
+                   maxlength="150"
+                   placeholder="Ejemplo: 70 - 100">
+
+            <!-- UNIDAD DE REFERENCIA -->
+
+            <label for="unidadReferencia">
+                Unidad de referencia
+            </label>
+
+            <input type="text"
+                   id="unidadReferencia"
+                   name="unidadReferencia"
+                   th:value="${examen.unidadReferencia}"
+                   maxlength="50"
+                   placeholder="Ejemplo: mg/dL">
+
+            <p class="nota">
+                Los campos marcados con * son obligatorios.
+            </p>
+
+            <!-- BOTONES -->
+
+            <div class="botones">
+
+                <button type="submit"
+                        class="boton btn-guardar"
+                        th:disabled="${#lists.isEmpty(laboratorios)}"
+                        th:text="${examen.id == null}
+                            ? 'Registrar Examen'
+                            : 'Guardar Cambios'">
+
+                    Registrar Examen
+
+                </button>
+
+                <a th:href="@{/admin/catalogos/examenes}"
+                   class="boton btn-cancelar">
+
+                    Cancelar
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

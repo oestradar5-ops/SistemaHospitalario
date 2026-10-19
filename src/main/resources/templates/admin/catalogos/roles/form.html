@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${modoEdicion}
+            ? 'Editar Rol | HIS'
+            : 'Registrar Rol | HIS'">
+        Catálogo de Roles
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            color: #263445;
+        }
+
+        header {
+            background: #123b66;
+            color: white;
+            padding: 22px 35px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        header p {
+            margin: 8px 0 0;
+            color: #dbe8f5;
+        }
+
+        .contenedor {
+            max-width: 750px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .tarjeta {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.07);
+        }
+
+        .titulo {
+            margin-top: 0;
+            color: #123b66;
+            font-size: 24px;
+        }
+
+        .subtitulo {
+            color: #65758a;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .campo {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #34465a;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: Arial, sans-serif;
+            font-size: 15px;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #1769aa;
+            box-shadow: 0 0 0 3px rgba(23,105,170,0.12);
+        }
+
+        input[readonly] {
+            background: #edf1f5;
+            color: #65758a;
+            cursor: not-allowed;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .ayuda {
+            margin-top: 7px;
+            font-size: 13px;
+            color: #65758a;
+            line-height: 1.5;
+        }
+
+        .obligatorio {
+            color: #c44545;
+        }
+
+        .mensaje {
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .mensaje-error {
+            background: #fde5e5;
+            color: #a32929;
+            border: 1px solid #f0b7b7;
+        }
+
+        .mensaje-exito {
+            background: #dff3e7;
+            color: #17643d;
+            border: 1px solid #a9dfbd;
+        }
+
+        .informacion {
+            background: #eaf3fc;
+            border-left: 4px solid #1769aa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 22px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .advertencia {
+            background: #fff8e8;
+            border-left: 4px solid #e9a23b;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 22px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .estado {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .etiqueta {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .activo {
+            background: #dff3e7;
+            color: #17643d;
+        }
+
+        .inactivo {
+            background: #fde5e5;
+            color: #a32929;
+        }
+
+        .protegido {
+            background: #fff1d2;
+            color: #936000;
+        }
+
+        .normal {
+            background: #e9eef5;
+            color: #526477;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-guardar {
+            background: #1769aa;
+            color: white;
+        }
+
+        .btn-cancelar {
+            background: #65758a;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        @media (max-width: 600px) {
+
+            header {
+                padding: 20px;
+            }
+
+            .tarjeta {
+                padding: 22px;
+            }
+
+            .acciones {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<!-- ========================================== -->
+<!-- ENCABEZADO -->
+<!-- ========================================== -->
+
+<header>
+
+    <h1>🏥 Sistema Informático Hospitalario</h1>
+
+    <p>CU-14 | Mantenimiento del Catálogo de Roles</p>
+
+</header>
+
+
+<main class="contenedor">
+
+    <section class="tarjeta">
+
+        <!-- ================================== -->
+        <!-- TÍTULO DINÁMICO -->
+        <!-- ================================== -->
+
+        <h2 class="titulo"
+            th:text="${modoEdicion}
+                    ? 'Editar Rol'
+                    : 'Registrar Nuevo Rol'">
+            Registrar Nuevo Rol
+        </h2>
+
+        <p class="subtitulo"
+           th:text="${modoEdicion}
+                   ? 'Modifica la información del rol seleccionado.'
+                   : 'Completa los campos para registrar un nuevo rol en el sistema.'">
+            Completa la información del rol.
+        </p>
+
+
+        <!-- ================================== -->
+        <!-- MENSAJES -->
+        <!-- ================================== -->
+
+        <div th:if="${error}"
+             class="mensaje mensaje-error"
+             th:text="${error}">
+        </div>
+
+        <div th:if="${mensaje}"
+             class="mensaje mensaje-exito"
+             th:text="${mensaje}">
+        </div>
+
+
+        <!-- ================================== -->
+        <!-- INFORMACIÓN PARA REGISTRO -->
+        <!-- ================================== -->
+
+        <div th:unless="${modoEdicion}"
+             class="informacion">
+
+            <strong>Nuevo rol:</strong>
+
+            El rol se registrará inicialmente como
+            activo y no protegido.
+
+            Su creación no otorgará permisos
+            automáticamente dentro del sistema.
+
+        </div>
+
+
+        <!-- ================================== -->
+        <!-- ADVERTENCIA ROL PROTEGIDO -->
+        <!-- ================================== -->
+
+        <div th:if="${modoEdicion and rolProtegido}"
+             class="advertencia">
+
+            <strong>🔒 Rol protegido:</strong>
+
+            Este rol pertenece a la configuración
+            original del sistema hospitalario.
+
+            Puedes modificar su nombre y descripción,
+            pero no su código.
+
+            Tampoco puede desactivarse.
+
+        </div>
+
+
+        <!-- ================================== -->
+        <!-- ESTADO DEL ROL -->
+        <!-- ================================== -->
+
+        <div class="estado"
+             th:if="${modoEdicion}">
+
+            <span th:if="${rol.activo}"
+                  class="etiqueta activo">
+                Activo
+            </span>
+
+            <span th:unless="${rol.activo}"
+                  class="etiqueta inactivo">
+                Inactivo
+            </span>
+
+            <span th:if="${rol.protegido}"
+                  class="etiqueta protegido">
+                🔒 Protegido
+            </span>
+
+            <span th:unless="${rol.protegido}"
+                  class="etiqueta normal">
+                No protegido
+            </span>
+
+        </div>
+
+
+        <!-- ================================== -->
+        <!-- FORMULARIO -->
+        <!-- ================================== -->
+
+        <form method="post"
+              th:action="${modoEdicion}
+                      ? @{/admin/catalogos/roles/edit/{id}(id=${rol.id})}
+                      : @{/admin/catalogos/roles/create}">
+
+            <!-- ================================= -->
+            <!-- CÓDIGO -->
+            <!-- ================================= -->
+
+            <div class="campo">
+
+                <label for="codigo">
+                    Código del rol
+                    <span class="obligatorio">*</span>
+                </label>
+
+                <input type="text"
+                       id="codigo"
+                       name="codigo"
+                       th:value="${rol.codigo}"
+                       th:readonly="${modoEdicion and rolProtegido}"
+                       maxlength="50"
+                       pattern="[A-Za-z][A-Za-z0-9_]*"
+                       title="Debe comenzar con una letra y contener únicamente letras, números o guiones bajos."
+                       required>
+
+                <p class="ayuda"
+                   th:unless="${modoEdicion and rolProtegido}">
+
+                    Ejemplo: SUPERVISOR,
+                    COORDINADOR o JEFE_ENFERMERIA.
+
+                </p>
+
+                <p class="ayuda"
+                   th:if="${modoEdicion and rolProtegido}">
+
+                    El código de este rol está protegido
+                    y no puede modificarse.
+
+                </p>
+
+            </div>
+
+
+            <!-- ================================= -->
+            <!-- NOMBRE -->
+            <!-- ================================= -->
+
+            <div class="campo">
+
+                <label for="nombre">
+                    Nombre del rol
+                    <span class="obligatorio">*</span>
+                </label>
+
+                <input type="text"
+                       id="nombre"
+                       name="nombre"
+                       th:value="${rol.nombre}"
+                       maxlength="100"
+                       required>
+
+                <p class="ayuda">
+
+                    Nombre descriptivo que identificará
+                    al rol dentro del catálogo.
+
+                </p>
+
+            </div>
+
+
+            <!-- ================================= -->
+            <!-- DESCRIPCIÓN -->
+            <!-- ================================= -->
+
+            <div class="campo">
+
+                <label for="descripcion">
+                    Descripción
+                </label>
+
+                <textarea id="descripcion"
+                          name="descripcion"
+                          rows="4"
+                          th:text="${rol.descripcion}"
+                          placeholder="Describe la función general del rol."></textarea>
+
+                <p class="ayuda">
+
+                    Este campo es opcional.
+
+                </p>
+
+            </div>
+
+
+            <!-- ================================= -->
+            <!-- INFORMACIÓN DE SEGURIDAD -->
+            <!-- ================================= -->
+
+            <div class="informacion">
+
+                <strong>Información de seguridad:</strong>
+
+                Los permisos de acceso se administran
+                mediante las reglas de autorización
+                existentes en el sistema.
+
+                Registrar o editar un rol en este
+                catálogo no modifica automáticamente
+                los permisos de los usuarios.
+
+            </div>
+
+
+            <!-- ================================= -->
+            <!-- BOTONES -->
+            <!-- ================================= -->
+
+            <div class="acciones">
+
+                <button type="submit"
+                        class="btn btn-guardar"
+                        th:text="${modoEdicion}
+                                ? 'Guardar cambios'
+                                : 'Registrar rol'">
+
+                    Registrar rol
+
+                </button>
+
+                <a class="btn btn-cancelar"
+                   th:href="@{/admin/catalogos/roles}">
+
+                    Cancelar
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</main>
+
+</body>
+</html>

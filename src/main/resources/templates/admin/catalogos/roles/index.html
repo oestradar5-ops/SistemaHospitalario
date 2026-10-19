@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Catálogo de Roles | HIS</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            color: #263445;
+        }
+
+        header {
+            background: #123b66;
+            color: white;
+            padding: 22px 35px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        header p {
+            margin: 8px 0 0;
+            color: #dbe8f5;
+        }
+
+        .contenedor {
+            max-width: 1300px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .encabezado {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .encabezado h2 {
+            margin: 0;
+            color: #123b66;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            border: none;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-principal {
+            background: #1769aa;
+            color: white;
+        }
+
+        .btn-secundario {
+            background: #65758a;
+            color: white;
+        }
+
+        .btn-editar {
+            background: #e9a23b;
+            color: #202020;
+        }
+
+        .btn-activar {
+            background: #218455;
+            color: white;
+        }
+
+        .btn-desactivar {
+            background: #c44545;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .estadisticas {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .tarjeta {
+            background: white;
+            padding: 22px;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+            border-left: 5px solid #1769aa;
+        }
+
+        .tarjeta h3 {
+            margin: 0 0 12px;
+            font-size: 15px;
+            color: #65758a;
+        }
+
+        .tarjeta .numero {
+            font-size: 32px;
+            font-weight: bold;
+            color: #123b66;
+        }
+
+        .tarjeta.activos {
+            border-left-color: #218455;
+        }
+
+        .tarjeta.inactivos {
+            border-left-color: #c44545;
+        }
+
+        .tarjeta.protegidos {
+            border-left-color: #e9a23b;
+        }
+
+        .mensaje {
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .mensaje-exito {
+            background: #dff3e7;
+            color: #17643d;
+            border: 1px solid #a9dfbd;
+        }
+
+        .mensaje-error {
+            background: #fde5e5;
+            color: #a32929;
+            border: 1px solid #f0b7b7;
+        }
+
+        .tabla-contenedor {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th {
+            background: #eaf1f8;
+            color: #123b66;
+            padding: 14px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #e8edf2;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8fbff;
+        }
+
+        .codigo {
+            font-weight: bold;
+            color: #123b66;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-activo {
+            background: #dff3e7;
+            color: #17643d;
+        }
+
+        .badge-inactivo {
+            background: #fde5e5;
+            color: #a32929;
+        }
+
+        .badge-protegido {
+            background: #fff1d2;
+            color: #936000;
+        }
+
+        .badge-normal {
+            background: #e9eef5;
+            color: #526477;
+        }
+
+        .botones-tabla {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .botones-tabla form {
+            margin: 0;
+        }
+
+        .vacio {
+            text-align: center;
+            padding: 35px;
+            color: #65758a;
+        }
+
+        .nota {
+            margin-top: 20px;
+            padding: 16px;
+            background: #fff8e8;
+            border-left: 4px solid #e9a23b;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+
+            header {
+                padding: 20px;
+            }
+
+            .contenedor {
+                margin-top: 20px;
+            }
+
+            .encabezado {
+                align-items: stretch;
+            }
+
+            .acciones {
+                width: 100%;
+            }
+
+            .acciones .btn {
+                flex: 1;
+            }
+
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- ========================================== -->
+<!-- ENCABEZADO -->
+<!-- ========================================== -->
+
+<header>
+
+    <h1>🏥 Sistema Informático Hospitalario</h1>
+
+    <p>CU-14 | Mantenimiento del Catálogo de Roles</p>
+
+</header>
+
+
+<main class="contenedor">
+
+    <!-- ====================================== -->
+    <!-- TÍTULO Y BOTONES -->
+    <!-- ====================================== -->
+
+    <div class="encabezado">
+
+        <h2>Administración de Roles</h2>
+
+        <div class="acciones">
+
+            <a class="btn btn-secundario"
+               th:href="@{/panel}">
+                ← Panel principal
+            </a>
+
+            <a class="btn btn-principal"
+               th:href="@{/admin/catalogos/roles/create}">
+                + Registrar rol
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ====================================== -->
+    <!-- MENSAJES -->
+    <!-- ====================================== -->
+
+    <div th:if="${mensaje}"
+         class="mensaje mensaje-exito"
+         th:text="${mensaje}">
+    </div>
+
+    <div th:if="${error}"
+         class="mensaje mensaje-error"
+         th:text="${error}">
+    </div>
+
+
+    <!-- ====================================== -->
+    <!-- ESTADÍSTICAS -->
+    <!-- ====================================== -->
+
+    <section class="estadisticas">
+
+        <div class="tarjeta">
+
+            <h3>Total de roles</h3>
+
+            <div class="numero"
+                 th:text="${totalRoles}">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="tarjeta activos">
+
+            <h3>Roles activos</h3>
+
+            <div class="numero"
+                 th:text="${rolesActivos}">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="tarjeta inactivos">
+
+            <h3>Roles inactivos</h3>
+
+            <div class="numero"
+                 th:text="${rolesInactivos}">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="tarjeta protegidos">
+
+            <h3>Roles protegidos</h3>
+
+            <div class="numero"
+                 th:text="${rolesProtegidos}">
+                0
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ====================================== -->
+    <!-- TABLA DE ROLES -->
+    <!-- ====================================== -->
+
+    <section class="tabla-contenedor">
+
+        <table>
+
+            <thead>
+
+            <tr>
+                <th>ID</th>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+                <th>Protección</th>
+                <th>Acciones</th>
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            <!-- ================================= -->
+            <!-- MOSTRAR ROLES -->
+            <!-- ================================= -->
+
+            <tr th:each="rol : ${roles}">
+
+                <td th:text="${rol.id}">
+                    1
+                </td>
+
+                <td class="codigo"
+                    th:text="${rol.codigo}">
+                    ADMIN
+                </td>
+
+                <td th:text="${rol.nombre}">
+                    Administrador
+                </td>
+
+                <td th:text="${rol.descripcion != null
+                        and !#strings.isEmpty(rol.descripcion)
+                        ? rol.descripcion
+                        : 'Sin descripción'}">
+                    Sin descripción
+                </td>
+
+                <!-- ESTADO -->
+
+                <td>
+
+                    <span th:if="${rol.activo}"
+                          class="badge badge-activo">
+                        Activo
+                    </span>
+
+                    <span th:unless="${rol.activo}"
+                          class="badge badge-inactivo">
+                        Inactivo
+                    </span>
+
+                </td>
+
+                <!-- PROTECCIÓN -->
+
+                <td>
+
+                    <span th:if="${rol.protegido}"
+                          class="badge badge-protegido">
+                        🔒 Protegido
+                    </span>
+
+                    <span th:unless="${rol.protegido}"
+                          class="badge badge-normal">
+                        Normal
+                    </span>
+
+                </td>
+
+                <!-- ACCIONES -->
+
+                <td>
+
+                    <div class="botones-tabla">
+
+                        <!-- EDITAR -->
+
+                        <a class="btn btn-editar"
+                           th:href="@{/admin/catalogos/roles/edit/{id}(id=${rol.id})}">
+                            Editar
+                        </a>
+
+
+                        <!-- DESACTIVAR -->
+
+                        <form th:if="${rol.activo and !rol.protegido}"
+                              th:action="@{/admin/catalogos/roles/desactivar/{id}(id=${rol.id})}"
+                              method="post"
+                              onsubmit="return confirm('¿Deseas desactivar este rol?');">
+
+                            <button type="submit"
+                                    class="btn btn-desactivar">
+                                Desactivar
+                            </button>
+
+                        </form>
+
+
+                        <!-- ACTIVAR -->
+
+                        <form th:if="${!rol.activo}"
+                              th:action="@{/admin/catalogos/roles/activar/{id}(id=${rol.id})}"
+                              method="post"
+                              onsubmit="return confirm('¿Deseas activar este rol?');">
+
+                            <button type="submit"
+                                    class="btn btn-activar">
+                                Activar
+                            </button>
+
+                        </form>
+
+
+                        <!-- ROL PROTEGIDO -->
+
+                        <span th:if="${rol.protegido}"
+                              class="badge badge-protegido">
+                            No desactivable
+                        </span>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+
+            <!-- ================================= -->
+            <!-- SIN REGISTROS -->
+            <!-- ================================= -->
+
+            <tr th:if="${roles == null or #lists.isEmpty(roles)}">
+
+                <td colspan="7"
+                    class="vacio">
+
+                    No existen roles registrados.
+
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+
+    <!-- ====================================== -->
+    <!-- NOTA INFORMATIVA -->
+    <!-- ====================================== -->
+
+    <div class="nota">
+
+        <strong>Información importante:</strong>
+
+        Los roles protegidos forman parte de la configuración
+        original del Sistema Informático Hospitalario.
+
+        Sus códigos no pueden modificarse y no pueden
+        desactivarse.
+
+        Los nuevos roles pueden administrarse desde este
+        catálogo, pero su registro no les otorga permisos
+        automáticamente dentro de los módulos del sistema.
+
+    </div>
+
+</main>
+
+</body>
+</html>

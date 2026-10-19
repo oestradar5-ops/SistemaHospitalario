@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title th:text="${modoEdicion}
+            ? 'Editar Inventario | HIS'
+            : 'Registrar Inventario | HIS'">
+    Inventario de Medicamentos
+  </title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 30px;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #243247;
+    }
+
+    .contenedor {
+      max-width: 750px;
+      margin: auto;
+    }
+
+    .tarjeta {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      color: #123b63;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    .subtitulo {
+      color: #64748b;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .campo {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #334155;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      font-size: 15px;
+      background: white;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #1677c8;
+    }
+
+    input[readonly] {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .ayuda {
+      display: block;
+      margin-top: 6px;
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .obligatorio {
+      color: #dc2626;
+    }
+
+    .mensaje {
+      padding: 14px;
+      border-radius: 7px;
+      margin-bottom: 20px;
+    }
+
+    .mensaje-error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .mensaje-exito {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .informacion {
+      background: #eff6ff;
+      color: #1e40af;
+      padding: 15px;
+      border-radius: 7px;
+      margin-bottom: 25px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .acciones {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 25px;
+    }
+
+    .boton {
+      display: inline-block;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 7px;
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .boton-guardar {
+      background: #1677c8;
+    }
+
+    .boton-cancelar {
+      background: #64748b;
+    }
+
+    @media (max-width: 600px) {
+
+      body {
+        padding: 15px;
+      }
+
+      .tarjeta {
+        padding: 20px;
+      }
+
+      .acciones {
+        flex-direction: column;
+      }
+
+      .boton {
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<div class="contenedor">
+
+  <div class="tarjeta">
+
+    <!-- ====================================== -->
+    <!-- ENCABEZADO -->
+    <!-- ====================================== -->
+
+    <h1 th:text="${modoEdicion}
+                ? 'Editar Inventario'
+                : 'Registrar Inventario'">
+      Inventario de Medicamentos
+    </h1>
+
+    <p class="subtitulo"
+       th:text="${modoEdicion}
+                ? 'Actualiza las existencias, el stock mínimo y el precio unitario.'
+                : 'Registra las existencias iniciales de un medicamento en una sucursal.'">
+    </p>
+
+    <!-- ====================================== -->
+    <!-- MENSAJES -->
+    <!-- ====================================== -->
+
+    <div th:if="${error}"
+         class="mensaje mensaje-error"
+         th:text="${error}">
+    </div>
+
+    <div th:if="${mensaje}"
+         class="mensaje mensaje-exito"
+         th:text="${mensaje}">
+    </div>
+
+    <!-- ====================================== -->
+    <!-- INFORMACIÓN DE EDICIÓN -->
+    <!-- ====================================== -->
+
+    <div th:if="${modoEdicion}"
+         class="informacion">
+
+      Estás modificando un registro existente.
+      El medicamento y la sucursal no pueden cambiarse
+      desde este formulario.
+
+      <br><br>
+
+      Si las existencias cambian mientras realizas
+      la edición, el sistema solicitará que vuelvas
+      a cargar el formulario.
+
+    </div>
+
+    <!-- ====================================== -->
+    <!-- FORMULARIO -->
+    <!-- ====================================== -->
+
+    <form th:action="${modoEdicion}
+                ? @{/admin/catalogos/inventario-medicamentos/edit/{id}(id=${inventario.id})}
+                : @{/admin/catalogos/inventario-medicamentos/create}"
+          method="post">
+
+      <!-- ================================== -->
+      <!-- CANTIDAD ORIGINAL -->
+      <!-- PROTECCIÓN CONTRA CONCURRENCIA -->
+      <!-- ================================== -->
+
+      <input type="hidden"
+             name="cantidadOriginal"
+             th:if="${modoEdicion}"
+             th:value="${inventario.cantidadDisponible}">
+
+      <!-- ================================== -->
+      <!-- MEDICAMENTO: REGISTRO -->
+      <!-- ================================== -->
+
+      <div class="campo" th:unless="${modoEdicion}">
+
+        <label for="medicamentoId">
+          Medicamento
+          <span class="obligatorio">*</span>
+        </label>
+
+        <select id="medicamentoId"
+                name="medicamentoId"
+                required>
+
+          <option value="">
+            Selecciona un medicamento
+          </option>
+
+          <option th:each="medicamento : ${medicamentos}"
+                  th:value="${medicamento.id}"
+                  th:text="${medicamento.nombre
+                                + ' - '
+                                + (medicamento.presentacion != null
+                                    ? medicamento.presentacion
+                                    : 'Sin presentación')}">
+          </option>
+
+        </select>
+
+        <small class="ayuda">
+          Solamente se muestran medicamentos activos.
+        </small>
+
+      </div>
+
+      <!-- ================================== -->
+      <!-- MEDICAMENTO: EDICIÓN -->
+      <!-- ================================== -->
+
+      <div class="campo" th:if="${modoEdicion}">
+
+        <label>
+          Medicamento
+        </label>
+
+        <input type="text"
+               th:value="${inventario.medicamento.nombre}"
+               readonly>
+
+        <small class="ayuda">
+          No se puede cambiar el medicamento
+          de un inventario existente.
+        </small>
+
+      </div>
+
+      <!-- ================================== -->
+      <!-- SUCURSAL: REGISTRO -->
+      <!-- ================================== -->
+
+      <div class="campo" th:unless="${modoEdicion}">
+
+        <label for="sucursalId">
+          Sucursal
+          <span class="obligatorio">*</span>
+        </label>
+
+        <select id="sucursalId"
+                name="sucursalId"
+                required>
+
+          <option value="">
+            Selecciona una sucursal
+          </option>
+
+          <option th:each="sucursal : ${sucursales}"
+                  th:value="${sucursal.id}"
+                  th:text="${sucursal.nombre}">
+          </option>
+
+        </select>
+
+        <small class="ayuda">
+          Solamente se muestran sucursales activas.
+        </small>
+
+      </div>
+
+      <!-- ================================== -->
+      <!-- SUCURSAL: EDICIÓN -->
+      <!-- ================================== -->
+
+      <div class="campo" th:if="${modoEdicion}">
+
+        <label>
+          Sucursal
+        </label>
+
+        <input type="text"
+               th:value="${inventario.sucursal.nombre}"
+               readonly>
+
+        <small class="ayuda">
+          No se puede cambiar la sucursal
+          de un inventario existente.
+        </small>
+
+      </div>
+
+      <!-- ================================== -->
+      <!-- CANTIDAD DISPONIBLE -->
+      <!-- ================================== -->
+
+      <div class="campo">
+
+        <label for="cantidadDisponible">
+          Cantidad disponible
+          <span class="obligatorio">*</span>
+        </label>
+
+        <input type="number"
+               id="cantidadDisponible"
+               name="cantidadDisponible"
+               min="0"
+               step="1"
+               required
+               th:value="${inventario.cantidadDisponible}">
+
+        <small class="ayuda">
+          Ingresa una cantidad mayor o igual a cero.
+        </small>
+
+      </div>
+
+      <!-- ================================== -->
+      <!-- STOCK MÍNIMO -->
+      <!-- ================================== -->
+
+      <div class="campo">
+
+        <label for="stockMinimo">
+          Stock mínimo
+          <span class="obligatorio">*</span>
+        </label>
+
+        <input type="number"
+               id="stockMinimo"
+               name="stockMinimo"
+               min="0"
+               step="1"
+               required
+               th:value="${inventario.stockMinimo}">
+
+        <small class="ayuda">
+          El sistema mostrará una alerta cuando
+          las existencias sean iguales o inferiores
+          a este valor.
+        </small>
+
+      </div>
+
+      <!-- ================================== -->
+      <!-- PRECIO UNITARIO -->
+      <!-- ================================== -->
+
+      <div class="campo">
+
+        <label for="precioUnitario">
+          Precio unitario (Q)
+          <span class="obligatorio">*</span>
+        </label>
+
+        <input type="number"
+               id="precioUnitario"
+               name="precioUnitario"
+               min="0.01"
+               max="99999999.99"
+               step="0.01"
+               required
+               th:value="${inventario.precioUnitario}">
+
+        <small class="ayuda">
+          Ingresa el precio de una unidad del medicamento,
+          expresado en quetzales.
+        </small>
+
+      </div>
+
+      <!-- ================================== -->
+      <!-- ESTADO -->
+      <!-- ================================== -->
+
+      <div class="campo" th:if="${modoEdicion}">
+
+        <label>
+          Estado del inventario
+        </label>
+
+        <input type="text"
+               th:value="${inventario.activo}
+                            ? 'ACTIVO'
+                            : 'INACTIVO'"
+               readonly>
+
+        <small class="ayuda">
+          La activación y desactivación se realizan
+          desde el listado administrativo.
+        </small>
+
+      </div>
+
+      <!-- ================================== -->
+      <!-- BOTONES -->
+      <!-- ================================== -->
+
+      <div class="acciones">
+
+        <button type="submit"
+                class="boton boton-guardar"
+                th:text="${modoEdicion}
+                            ? 'Guardar cambios'
+                            : 'Registrar inventario'">
+          Guardar
+        </button>
+
+        <a th:href="@{/admin/catalogos/inventario-medicamentos}"
+           class="boton boton-cancelar">
+          Cancelar
+        </a>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+</body>
+</html>

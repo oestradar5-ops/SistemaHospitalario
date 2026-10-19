@@ -6,24 +6,93 @@ import jakarta.persistence.*;
 @Table(name = "catalogo_medicamentos")
 public class CatalogoMedicamento {
 
+    // ==========================================
+    // IDENTIFICADOR
+    // ==========================================
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 150)
+
+    // ==========================================
+    // NOMBRE DEL MEDICAMENTO
+    // ==========================================
+
+    @Column(
+            name = "nombre",
+            nullable = false,
+            length = 150
+    )
     private String nombre;
 
-    @Column(length = 100)
+
+    // ==========================================
+    // PRESENTACIÓN
+    // ==========================================
+
+    @Column(
+            name = "presentacion",
+            length = 100
+    )
     private String presentacion;
 
-    @Column(length = 100)
+
+    // ==========================================
+    // CONCENTRACIÓN
+    // ==========================================
+
+    @Column(
+            name = "concentracion",
+            length = 100
+    )
     private String concentracion;
 
-    @Column(nullable = false)
+
+    // ==========================================
+    // CU-14: UNIDAD DE MEDIDA
+    // ==========================================
+
+    @Column(
+            name = "unidad_medida",
+            length = 50
+    )
+    private String unidadMedida;
+
+
+    // ==========================================
+    // CU-14: MEDICAMENTO CONTROLADO
+    // ==========================================
+
+    @Column(
+            name = "controlado",
+            nullable = false
+    )
+    private Boolean controlado = false;
+
+
+    // ==========================================
+    // ESTADO DEL MEDICAMENTO
+    // ==========================================
+
+    @Column(
+            name = "activo",
+            nullable = false
+    )
     private Boolean activo = true;
+
+
+    // ==========================================
+    // CONSTRUCTOR
+    // ==========================================
 
     public CatalogoMedicamento() {
     }
+
+
+    // ==========================================
+    // GETTERS Y SETTERS
+    // ==========================================
 
     public Long getId() {
         return id;
@@ -33,6 +102,7 @@ public class CatalogoMedicamento {
         this.id = id;
     }
 
+
     public String getNombre() {
         return nombre;
     }
@@ -40,6 +110,7 @@ public class CatalogoMedicamento {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
+
 
     public String getPresentacion() {
         return presentacion;
@@ -49,6 +120,7 @@ public class CatalogoMedicamento {
         this.presentacion = presentacion;
     }
 
+
     public String getConcentracion() {
         return concentracion;
     }
@@ -57,6 +129,37 @@ public class CatalogoMedicamento {
         this.concentracion = concentracion;
     }
 
+
+    // ==========================================
+    // CU-14: UNIDAD DE MEDIDA
+    // ==========================================
+
+    public String getUnidadMedida() {
+        return unidadMedida;
+    }
+
+    public void setUnidadMedida(String unidadMedida) {
+        this.unidadMedida = unidadMedida;
+    }
+
+
+    // ==========================================
+    // CU-14: MEDICAMENTO CONTROLADO
+    // ==========================================
+
+    public Boolean getControlado() {
+        return controlado;
+    }
+
+    public void setControlado(Boolean controlado) {
+        this.controlado = controlado;
+    }
+
+
+    // ==========================================
+    // ESTADO
+    // ==========================================
+
     public Boolean getActivo() {
         return activo;
     }
@@ -64,4 +167,5 @@ public class CatalogoMedicamento {
     public void setActivo(Boolean activo) {
         this.activo = activo;
     }
+
 }

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Mantenimiento de Estados de Cita - HIS</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      color: #333;
+    }
+
+    header {
+      background: #123b63;
+      color: white;
+      padding: 20px 35px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .contenedor {
+      max-width: 650px;
+      margin: 45px auto;
+      padding: 0 20px;
+    }
+
+    .tarjeta {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      color: #123b63;
+      margin-top: 0;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #0d6efd;
+    }
+
+    input[readonly] {
+      background: #e9ecef;
+      color: #495057;
+      cursor: not-allowed;
+    }
+
+    .botones {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .boton {
+      display: inline-block;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .btn-guardar {
+      background: #198754;
+    }
+
+    .btn-cancelar {
+      background: #6c757d;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #842029;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    .informacion {
+      background: #cff4fc;
+      color: #055160;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .nota {
+      color: #6c757d;
+      font-size: 13px;
+      margin-top: -12px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .tarjeta {
+        padding: 20px;
+      }
+
+      .botones {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Sistema Informático Hospitalario</h1>
+</header>
+
+<div class="contenedor">
+
+  <div class="tarjeta">
+
+    <!-- TÍTULO DINÁMICO -->
+
+    <h2 th:text="${estado.id == null}
+                ? 'Registrar Estado de Cita'
+                : 'Editar Estado de Cita'">
+      Registrar Estado de Cita
+    </h2>
+
+    <!-- MENSAJE DE ERROR -->
+
+    <div th:if="${error}"
+         class="error"
+         th:text="${error}">
+    </div>
+
+    <!-- INFORMACIÓN PARA ESTADOS PROTEGIDOS -->
+
+    <div th:if="${estado.id != null and estado.protegido}"
+         class="informacion">
+
+      <strong>Estado protegido:</strong>
+
+      Este estado pertenece a los procesos internos
+      del sistema hospitalario.
+
+      Puedes modificar su nombre y descripción,
+      pero no su código.
+
+    </div>
+
+    <!-- FORMULARIO -->
+
+    <form method="post"
+          th:action="${estado.id == null}
+                  ? @{/admin/catalogos/estados-cita/create}
+                  : @{/admin/catalogos/estados-cita/edit/{id}(id=${estado.id})}">
+
+      <!-- CÓDIGO -->
+
+      <label for="codigo">
+        Código del estado *
+      </label>
+
+      <input type="text"
+             id="codigo"
+             name="codigo"
+             th:value="${estado.codigo}"
+             th:readonly="${estado.id != null and estado.protegido}"
+             maxlength="50"
+             pattern="[A-Za-z0-9_]+"
+             placeholder="Ejemplo: EN_ESPERA"
+             title="Solo letras, números y guiones bajos"
+             required>
+
+      <p class="nota">
+        El código debe contener únicamente letras,
+        números y guiones bajos.
+      </p>
+
+      <!-- NOMBRE -->
+
+      <label for="nombre">
+        Nombre del estado *
+      </label>
+
+      <input type="text"
+             id="nombre"
+             name="nombre"
+             th:value="${estado.nombre}"
+             maxlength="100"
+             placeholder="Ejemplo: En espera"
+             required>
+
+      <!-- DESCRIPCIÓN -->
+
+      <label for="descripcion">
+        Descripción
+      </label>
+
+      <textarea id="descripcion"
+                name="descripcion"
+                placeholder="Ingrese una descripción del estado"
+                th:text="${estado.descripcion}"></textarea>
+
+      <p class="nota">
+        Los campos marcados con * son obligatorios.
+      </p>
+
+      <!-- BOTONES -->
+
+      <div class="botones">
+
+        <button type="submit"
+                class="boton btn-guardar"
+                th:text="${estado.id == null}
+                            ? 'Registrar Estado'
+                            : 'Guardar Cambios'">
+          Registrar Estado
+        </button>
+
+        <a th:href="@{/admin/catalogos/estados-cita}"
+           class="boton btn-cancelar">
+          Cancelar
+        </a>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+</body>
+</html>

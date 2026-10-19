@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Catálogo de Laboratorios - HIS</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        header {
+            background: #123b63;
+            color: white;
+            padding: 20px 35px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .contenedor {
+            max-width: 1250px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .encabezado {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            color: #123b63;
+            margin: 0;
+        }
+
+        .boton {
+            display: inline-block;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-nuevo {
+            background: #198754;
+        }
+
+        .btn-editar {
+            background: #0d6efd;
+        }
+
+        .btn-desactivar {
+            background: #dc3545;
+        }
+
+        .btn-activar {
+            background: #198754;
+        }
+
+        .btn-volver {
+            background: #6c757d;
+        }
+
+        .mensaje {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #842029;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .informacion {
+            background: #cff4fc;
+            color: #055160;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .tabla-contenedor {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #123b63;
+            color: white;
+            padding: 14px;
+            text-align: left;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #ddd;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .activo {
+            color: #198754;
+            font-weight: bold;
+        }
+
+        .inactivo {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .acciones form {
+            margin: 0;
+        }
+
+        .pie {
+            margin-top: 25px;
+        }
+
+        @media (max-width: 700px) {
+
+            .encabezado {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .acciones {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+    <h1>Sistema Informático Hospitalario</h1>
+</header>
+
+<div class="contenedor">
+
+    <!-- ENCABEZADO -->
+
+    <div class="encabezado">
+
+        <h2>Mantenimiento de Laboratorios</h2>
+
+        <a th:href="@{/admin/catalogos/laboratorios/create}"
+           class="boton btn-nuevo">
+            + Nuevo Laboratorio
+        </a>
+
+    </div>
+
+    <!-- MENSAJE DE ÉXITO -->
+
+    <div th:if="${mensaje}"
+         class="mensaje"
+         th:text="${mensaje}">
+    </div>
+
+    <!-- MENSAJE DE ERROR -->
+
+    <div th:if="${error}"
+         class="error"
+         th:text="${error}">
+    </div>
+
+    <!-- INFORMACIÓN -->
+
+    <div class="informacion">
+
+        <strong>Información:</strong>
+
+        Desde este módulo puedes registrar, editar,
+        desactivar y reactivar los laboratorios del hospital.
+
+        Los laboratorios desactivados permanecerán
+        almacenados en la base de datos.
+
+    </div>
+
+    <!-- TABLA DE LABORATORIOS -->
+
+    <div class="tabla-contenedor">
+
+        <table>
+
+            <thead>
+
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Ubicación</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            <!-- LISTADO -->
+
+            <tr th:each="laboratorio : ${laboratorios}">
+
+                <td th:text="${laboratorio.id}"></td>
+
+                <td th:text="${laboratorio.nombre}"></td>
+
+                <td th:text="${laboratorio.descripcion != null
+                        and !laboratorio.descripcion.isEmpty()
+                        ? laboratorio.descripcion
+                        : 'Sin descripción'}">
+                </td>
+
+                <td th:text="${laboratorio.ubicacion != null
+                        and !laboratorio.ubicacion.isEmpty()
+                        ? laboratorio.ubicacion
+                        : 'No especificada'}">
+                </td>
+
+                <td th:text="${laboratorio.telefono != null
+                        and !laboratorio.telefono.isEmpty()
+                        ? laboratorio.telefono
+                        : 'No registrado'}">
+                </td>
+
+                <!-- ESTADO -->
+
+                <td>
+
+                    <span th:if="${laboratorio.activo}"
+                          class="activo">
+                        ACTIVO
+                    </span>
+
+                    <span th:unless="${laboratorio.activo}"
+                          class="inactivo">
+                        INACTIVO
+                    </span>
+
+                </td>
+
+                <!-- ACCIONES -->
+
+                <td>
+
+                    <div class="acciones">
+
+                        <!-- EDITAR -->
+
+                        <a th:href="@{/admin/catalogos/laboratorios/edit/{id}(id=${laboratorio.id})}"
+                           class="boton btn-editar">
+                            Editar
+                        </a>
+
+                        <!-- DESACTIVAR -->
+
+                        <form th:if="${laboratorio.activo}"
+                              th:action="@{/admin/catalogos/laboratorios/delete/{id}(id=${laboratorio.id})}"
+                              method="post"
+                              onsubmit="return confirm('¿Deseas desactivar este laboratorio?');">
+
+                            <button type="submit"
+                                    class="boton btn-desactivar">
+                                Desactivar
+                            </button>
+
+                        </form>
+
+                        <!-- REACTIVAR -->
+
+                        <form th:unless="${laboratorio.activo}"
+                              th:action="@{/admin/catalogos/laboratorios/activate/{id}(id=${laboratorio.id})}"
+                              method="post"
+                              onsubmit="return confirm('¿Deseas reactivar este laboratorio?');">
+
+                            <button type="submit"
+                                    class="boton btn-activar">
+                                Reactivar
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+            <!-- FA01: LISTADO VACÍO -->
+
+            <tr th:if="${#lists.isEmpty(laboratorios)}">
+
+                <td colspan="7"
+                    style="text-align:center; padding:25px;">
+
+                    No hay laboratorios registrados.
+
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- REGRESAR AL PANEL -->
+
+    <div class="pie">
+
+        <a th:href="@{/panel}"
+           class="boton btn-volver">
+            Volver al Panel
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

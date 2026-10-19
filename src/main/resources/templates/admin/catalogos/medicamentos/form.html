@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Mantenimiento de Medicamentos - HIS</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      color: #333;
+    }
+
+    header {
+      background: #123b63;
+      color: white;
+      padding: 20px 35px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .contenedor {
+      max-width: 700px;
+      margin: 45px auto;
+      padding: 0 20px;
+    }
+
+    .tarjeta {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      color: #123b63;
+      margin-top: 0;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      margin-bottom: 20px;
+      background: white;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #0d6efd;
+    }
+
+    .botones {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .boton {
+      display: inline-block;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .btn-guardar {
+      background: #198754;
+    }
+
+    .btn-cancelar {
+      background: #6c757d;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #842029;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    .informacion {
+      background: #cff4fc;
+      color: #055160;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .advertencia {
+      background: #fff3cd;
+      color: #664d03;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .nota {
+      color: #6c757d;
+      font-size: 13px;
+      margin-top: -12px;
+      margin-bottom: 20px;
+    }
+
+    .obligatorio {
+      color: #dc3545;
+    }
+
+    @media (max-width: 600px) {
+
+      .tarjeta {
+        padding: 20px;
+      }
+
+      .botones {
+        flex-direction: column;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<header>
+
+  <h1>Sistema Informático Hospitalario</h1>
+
+</header>
+
+<div class="contenedor">
+
+  <div class="tarjeta">
+
+    <!-- ===================================== -->
+    <!-- TÍTULO DINÁMICO -->
+    <!-- ===================================== -->
+
+    <h2 th:text="${medicamento.id == null}
+                ? 'Registrar Medicamento'
+                : 'Editar Medicamento'">
+
+      Registrar Medicamento
+
+    </h2>
+
+
+    <!-- ===================================== -->
+    <!-- MENSAJES DE ERROR -->
+    <!-- ===================================== -->
+
+    <div th:if="${error}"
+         class="error"
+         th:text="${error}">
+    </div>
+
+
+    <!-- ===================================== -->
+    <!-- INFORMACIÓN -->
+    <!-- ===================================== -->
+
+    <div class="informacion">
+
+      <strong>Información:</strong>
+
+      Registra los datos generales del medicamento.
+
+      El nombre, la presentación, la concentración
+      y la unidad de medida son obligatorios.
+
+      Las existencias y los precios se administran
+      desde el módulo de inventario.
+
+    </div>
+
+
+    <!-- ===================================== -->
+    <!-- ADVERTENCIA MEDICAMENTOS CONTROLADOS -->
+    <!-- ===================================== -->
+
+    <div class="advertencia">
+
+      <strong>Importante:</strong>
+
+      La clasificación de medicamento controlado
+      debe realizarse con información farmacológica
+      y normativa verificada.
+
+      Esta opción identifica el medicamento,
+      pero no sustituye los controles de
+      prescripción y despacho.
+
+    </div>
+
+
+    <!-- ===================================== -->
+    <!-- FORMULARIO -->
+    <!-- ===================================== -->
+
+    <form method="post"
+          th:action="${medicamento.id == null}
+                  ? @{/admin/catalogos/medicamentos/create}
+                  : @{/admin/catalogos/medicamentos/edit/{id}(id=${medicamento.id})}">
+
+
+      <!-- ================================= -->
+      <!-- NOMBRE -->
+      <!-- ================================= -->
+
+      <label for="nombre">
+
+        Nombre del medicamento
+        <span class="obligatorio">*</span>
+
+      </label>
+
+      <input type="text"
+             id="nombre"
+             name="nombre"
+             th:value="${medicamento.nombre}"
+             maxlength="150"
+             placeholder="Ejemplo: Paracetamol"
+             required>
+
+
+      <!-- ================================= -->
+      <!-- PRESENTACIÓN -->
+      <!-- ================================= -->
+
+      <label for="presentacion">
+
+        Presentación
+        <span class="obligatorio">*</span>
+
+      </label>
+
+      <input type="text"
+             id="presentacion"
+             name="presentacion"
+             th:value="${medicamento.presentacion}"
+             maxlength="100"
+             placeholder="Ejemplo: Tableta, cápsula, jarabe"
+             required>
+
+
+      <!-- ================================= -->
+      <!-- CONCENTRACIÓN -->
+      <!-- ================================= -->
+
+      <label for="concentracion">
+
+        Concentración
+        <span class="obligatorio">*</span>
+
+      </label>
+
+      <input type="text"
+             id="concentracion"
+             name="concentracion"
+             th:value="${medicamento.concentracion}"
+             maxlength="100"
+             placeholder="Ejemplo: 500 mg"
+             required>
+
+
+      <!-- ================================= -->
+      <!-- UNIDAD DE MEDIDA -->
+      <!-- ================================= -->
+
+      <label for="unidadMedida">
+
+        Unidad de medida
+        <span class="obligatorio">*</span>
+
+      </label>
+
+      <select id="unidadMedida"
+              name="unidadMedida"
+              required>
+
+        <option value="">
+          Seleccione una unidad
+        </option>
+
+        <option value="Tableta"
+                th:selected="${medicamento.unidadMedida == 'Tableta'}">
+          Tableta
+        </option>
+
+        <option value="Cápsula"
+                th:selected="${medicamento.unidadMedida == 'Cápsula'}">
+          Cápsula
+        </option>
+
+        <option value="Mililitro"
+                th:selected="${medicamento.unidadMedida == 'Mililitro'}">
+          Mililitro
+        </option>
+
+        <option value="Ampolla"
+                th:selected="${medicamento.unidadMedida == 'Ampolla'}">
+          Ampolla
+        </option>
+
+        <option value="Frasco"
+                th:selected="${medicamento.unidadMedida == 'Frasco'}">
+          Frasco
+        </option>
+
+        <option value="Sobre"
+                th:selected="${medicamento.unidadMedida == 'Sobre'}">
+          Sobre
+        </option>
+
+        <option value="Unidad"
+                th:selected="${medicamento.unidadMedida == 'Unidad'}">
+          Unidad
+        </option>
+
+      </select>
+
+      <p class="nota">
+        Selecciona la unidad utilizada para
+        contabilizar el medicamento en inventario.
+      </p>
+
+
+      <!-- ================================= -->
+      <!-- MEDICAMENTO CONTROLADO -->
+      <!-- ================================= -->
+
+      <label for="controlado">
+
+        ¿Es un medicamento controlado?
+        <span class="obligatorio">*</span>
+
+      </label>
+
+      <select id="controlado"
+              name="controlado"
+              required>
+
+        <option value="false"
+                th:selected="${medicamento.controlado == null
+                            or medicamento.controlado == false}">
+
+          No marcado como controlado
+
+        </option>
+
+        <option value="true"
+                th:selected="${medicamento.controlado == true}">
+
+          Sí, medicamento controlado
+
+        </option>
+
+      </select>
+
+      <p class="nota">
+        Selecciona esta clasificación únicamente
+        cuando haya sido verificada.
+      </p>
+
+
+      <!-- ================================= -->
+      <!-- CAMPOS OBLIGATORIOS -->
+      <!-- ================================= -->
+
+      <p class="nota">
+        Los campos marcados con * son obligatorios.
+      </p>
+
+
+      <!-- ================================= -->
+      <!-- BOTONES -->
+      <!-- ================================= -->
+
+      <div class="botones">
+
+        <button type="submit"
+                class="boton btn-guardar"
+                th:text="${medicamento.id == null}
+                            ? 'Registrar Medicamento'
+                            : 'Guardar Cambios'">
+
+          Registrar Medicamento
+
+        </button>
+
+        <a th:href="@{/admin/catalogos/medicamentos}"
+           class="boton btn-cancelar">
+
+          Cancelar
+
+        </a>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+</body>
+
+</html>

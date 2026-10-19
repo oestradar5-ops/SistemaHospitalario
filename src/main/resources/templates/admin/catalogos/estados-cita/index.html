@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Catálogo de Estados de Cita - HIS</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        header {
+            background: #123b63;
+            color: white;
+            padding: 20px 35px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .contenedor {
+            max-width: 1250px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .encabezado {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            color: #123b63;
+            margin: 0;
+        }
+
+        .boton {
+            display: inline-block;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-nuevo {
+            background: #198754;
+        }
+
+        .btn-editar {
+            background: #0d6efd;
+        }
+
+        .btn-desactivar {
+            background: #dc3545;
+        }
+
+        .btn-activar {
+            background: #198754;
+        }
+
+        .btn-volver {
+            background: #6c757d;
+        }
+
+        .mensaje {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #842029;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .informacion {
+            background: #cff4fc;
+            color: #055160;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .tabla-contenedor {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #123b63;
+            color: white;
+            padding: 14px;
+            text-align: left;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #ddd;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .activo {
+            color: #198754;
+            font-weight: bold;
+        }
+
+        .inactivo {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .protegido {
+            background: #fff3cd;
+            color: #856404;
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .normal {
+            background: #e2e3e5;
+            color: #41464b;
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .acciones form {
+            margin: 0;
+        }
+
+        .codigo {
+            font-family: Consolas, monospace;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .pie {
+            margin-top: 25px;
+        }
+
+        @media (max-width: 700px) {
+
+            .encabezado {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .acciones {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+    <h1>Sistema Informático Hospitalario</h1>
+</header>
+
+<div class="contenedor">
+
+    <!-- ENCABEZADO -->
+
+    <div class="encabezado">
+
+        <h2>Mantenimiento de Estados de Cita</h2>
+
+        <a th:href="@{/admin/catalogos/estados-cita/create}"
+           class="boton btn-nuevo">
+            + Nuevo Estado
+        </a>
+
+    </div>
+
+    <!-- MENSAJE DE ÉXITO -->
+
+    <div th:if="${mensaje}"
+         class="mensaje"
+         th:text="${mensaje}">
+    </div>
+
+    <!-- MENSAJE DE ERROR -->
+
+    <div th:if="${error}"
+         class="error"
+         th:text="${error}">
+    </div>
+
+    <!-- INFORMACIÓN -->
+
+    <div class="informacion">
+
+        <strong>Información:</strong>
+
+        Los estados protegidos forman parte de los procesos
+        internos del sistema hospitalario.
+
+        Sus códigos no pueden modificarse y tampoco pueden
+        desactivarse desde este módulo.
+
+    </div>
+
+    <!-- TABLA DE ESTADOS -->
+
+    <div class="tabla-contenedor">
+
+        <table>
+
+            <thead>
+
+            <tr>
+                <th>ID</th>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+                <th>Protección</th>
+                <th>Acciones</th>
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            <!-- LISTADO -->
+
+            <tr th:each="estado : ${estados}">
+
+                <td th:text="${estado.id}"></td>
+
+                <td class="codigo"
+                    th:text="${estado.codigo}">
+                </td>
+
+                <td th:text="${estado.nombre}"></td>
+
+                <td th:text="${estado.descripcion != null
+                        ? estado.descripcion
+                        : 'Sin descripción'}">
+                </td>
+
+                <!-- ESTADO ACTIVO / INACTIVO -->
+
+                <td>
+
+                    <span th:if="${estado.activo}"
+                          class="activo">
+                        ACTIVO
+                    </span>
+
+                    <span th:unless="${estado.activo}"
+                          class="inactivo">
+                        INACTIVO
+                    </span>
+
+                </td>
+
+                <!-- PROTECCIÓN -->
+
+                <td>
+
+                    <span th:if="${estado.protegido}"
+                          class="protegido">
+                        PROTEGIDO
+                    </span>
+
+                    <span th:unless="${estado.protegido}"
+                          class="normal">
+                        NORMAL
+                    </span>
+
+                </td>
+
+                <!-- ACCIONES -->
+
+                <td>
+
+                    <div class="acciones">
+
+                        <!-- EDITAR -->
+
+                        <a th:href="@{/admin/catalogos/estados-cita/edit/{id}(id=${estado.id})}"
+                           class="boton btn-editar">
+                            Editar
+                        </a>
+
+                        <!-- DESACTIVAR SOLO SI NO ESTÁ PROTEGIDO -->
+
+                        <form th:if="${estado.activo and !estado.protegido}"
+                              th:action="@{/admin/catalogos/estados-cita/delete/{id}(id=${estado.id})}"
+                              method="post"
+                              onsubmit="return confirm('¿Deseas desactivar este estado?');">
+
+                            <button type="submit"
+                                    class="boton btn-desactivar">
+                                Desactivar
+                            </button>
+
+                        </form>
+
+                        <!-- REACTIVAR -->
+
+                        <form th:if="${!estado.activo}"
+                              th:action="@{/admin/catalogos/estados-cita/activate/{id}(id=${estado.id})}"
+                              method="post"
+                              onsubmit="return confirm('¿Deseas reactivar este estado?');">
+
+                            <button type="submit"
+                                    class="boton btn-activar">
+                                Reactivar
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+            <!-- FA01: LISTADO VACÍO -->
+
+            <tr th:if="${#lists.isEmpty(estados)}">
+
+                <td colspan="7"
+                    style="text-align:center; padding:25px;">
+                    No hay estados de cita registrados.
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- REGRESAR AL PANEL -->
+
+    <div class="pie">
+
+        <a th:href="@{/panel}"
+           class="boton btn-volver">
+            Volver al Panel
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

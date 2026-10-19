@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Catálogo de Sucursales - HIS</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        header {
+            background: #123b63;
+            color: white;
+            padding: 20px 35px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .contenedor {
+            max-width: 1200px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .encabezado {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .encabezado h2 {
+            margin: 0;
+            color: #123b63;
+        }
+
+        .boton {
+            display: inline-block;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-nuevo {
+            background: #198754;
+        }
+
+        .btn-editar {
+            background: #0d6efd;
+        }
+
+        .btn-desactivar {
+            background: #dc3545;
+        }
+
+        .btn-activar {
+            background: #198754;
+        }
+
+        .btn-volver {
+            background: #6c757d;
+        }
+
+        .mensaje {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #842029;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .tabla-contenedor {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #123b63;
+            color: white;
+            padding: 14px;
+            text-align: left;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .activo {
+            color: #198754;
+            font-weight: bold;
+        }
+
+        .inactivo {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .acciones form {
+            margin: 0;
+        }
+
+        .pie {
+            margin-top: 25px;
+        }
+
+        @media (max-width: 700px) {
+
+            .encabezado {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .acciones {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+    <h1>Sistema Informático Hospitalario</h1>
+</header>
+
+<div class="contenedor">
+
+    <!-- ENCABEZADO -->
+
+    <div class="encabezado">
+
+        <h2>Mantenimiento de Sucursales</h2>
+
+        <a th:href="@{/admin/catalogos/sucursales/create}"
+           class="boton btn-nuevo">
+            + Nueva Sucursal
+        </a>
+
+    </div>
+
+    <!-- MENSAJE DE ÉXITO -->
+
+    <div th:if="${mensaje}"
+         class="mensaje"
+         th:text="${mensaje}">
+    </div>
+
+    <!-- MENSAJE DE ERROR -->
+
+    <div th:if="${error}"
+         class="error"
+         th:text="${error}">
+    </div>
+
+    <!-- TABLA DE SUCURSALES -->
+
+    <div class="tabla-contenedor">
+
+        <table>
+
+            <thead>
+
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            <!-- LISTADO -->
+
+            <tr th:each="sucursal : ${sucursales}">
+
+                <td th:text="${sucursal.id}"></td>
+
+                <td th:text="${sucursal.nombre}"></td>
+
+                <td th:text="${sucursal.direccion != null
+                        ? sucursal.direccion
+                        : 'Sin dirección'}">
+                </td>
+
+                <td th:text="${sucursal.telefono != null
+                        ? sucursal.telefono
+                        : 'Sin teléfono'}">
+                </td>
+
+                <!-- ESTADO -->
+
+                <td>
+
+                    <span th:if="${sucursal.activo}"
+                          class="activo">
+                        ACTIVA
+                    </span>
+
+                    <span th:unless="${sucursal.activo}"
+                          class="inactivo">
+                        INACTIVA
+                    </span>
+
+                </td>
+
+                <!-- ACCIONES -->
+
+                <td>
+
+                    <div class="acciones">
+
+                        <!-- EDITAR -->
+
+                        <a th:href="@{/admin/catalogos/sucursales/edit/{id}(id=${sucursal.id})}"
+                           class="boton btn-editar">
+                            Editar
+                        </a>
+
+                        <!-- DESACTIVAR -->
+
+                        <form th:if="${sucursal.activo}"
+                              th:action="@{/admin/catalogos/sucursales/delete/{id}(id=${sucursal.id})}"
+                              method="post"
+                              onsubmit="return confirm('¿Deseas desactivar esta sucursal?');">
+
+                            <button type="submit"
+                                    class="boton btn-desactivar">
+                                Desactivar
+                            </button>
+
+                        </form>
+
+                        <!-- REACTIVAR -->
+
+                        <form th:unless="${sucursal.activo}"
+                              th:action="@{/admin/catalogos/sucursales/activate/{id}(id=${sucursal.id})}"
+                              method="post"
+                              onsubmit="return confirm('¿Deseas reactivar esta sucursal?');">
+
+                            <button type="submit"
+                                    class="boton btn-activar">
+                                Reactivar
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+            <!-- FA01: LISTADO VACÍO -->
+
+            <tr th:if="${#lists.isEmpty(sucursales)}">
+
+                <td colspan="6"
+                    style="text-align:center; padding:25px;">
+                    No hay sucursales registradas.
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- REGRESAR AL PANEL -->
+
+    <div class="pie">
+
+        <a th:href="@{/panel}"
+           class="boton btn-volver">
+            Volver al Panel
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

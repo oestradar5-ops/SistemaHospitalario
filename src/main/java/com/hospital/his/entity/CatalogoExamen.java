@@ -42,7 +42,7 @@ public class CatalogoExamen {
 
 
     // ==========================================
-    // ESTADO
+    // ESTADO ACTIVO / INACTIVO
     // ==========================================
 
     @Column(
@@ -88,6 +88,20 @@ public class CatalogoExamen {
             length = 50
     )
     private String unidadReferencia;
+
+
+    // ==========================================
+    // CU-14
+    // LABORATORIO ASOCIADO AL EXAMEN
+    // ==========================================
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "laboratorio_id",
+            referencedColumnName = "id",
+            nullable = true
+    )
+    private Laboratorio laboratorio;
 
 
     // ==========================================
@@ -174,5 +188,19 @@ public class CatalogoExamen {
 
     public void setUnidadReferencia(String unidadReferencia) {
         this.unidadReferencia = unidadReferencia;
+    }
+
+
+    // ==========================================
+    // CU-14
+    // LABORATORIO
+    // ==========================================
+
+    public Laboratorio getLaboratorio() {
+        return laboratorio;
+    }
+
+    public void setLaboratorio(Laboratorio laboratorio) {
+        this.laboratorio = laboratorio;
     }
 }

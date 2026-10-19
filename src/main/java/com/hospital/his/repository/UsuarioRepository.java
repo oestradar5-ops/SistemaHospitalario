@@ -46,4 +46,11 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     boolean existsByNombreUsuarioIgnoreCase(
             String nombreUsuario
     );
+
+    // ==========================================
+// CU-14: VALIDAR SI UN ROL ESTÁ ASIGNADO
+// ==========================================
+
+    boolean existsByRolIgnoreCase(String rol);
+
 }

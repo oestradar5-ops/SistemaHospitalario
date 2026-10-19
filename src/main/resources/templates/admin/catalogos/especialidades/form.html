@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Especialidades - HIS</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      color: #333;
+    }
+
+    header {
+      background: #123b63;
+      color: white;
+      padding: 20px 35px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .contenedor {
+      max-width: 650px;
+      margin: 45px auto;
+      padding: 0 20px;
+    }
+
+    .tarjeta {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      color: #123b63;
+      margin-top: 0;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #0d6efd;
+    }
+
+    .botones {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .boton {
+      display: inline-block;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-guardar {
+      background: #198754;
+    }
+
+    .btn-cancelar {
+      background: #6c757d;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #842029;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    .nota {
+      color: #6c757d;
+      font-size: 13px;
+      margin-top: -12px;
+      margin-bottom: 20px;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<header>
+  <h1>Sistema Informático Hospitalario</h1>
+</header>
+
+<div class="contenedor">
+
+  <div class="tarjeta">
+
+    <!-- TÍTULO DINÁMICO -->
+
+    <h2 th:text="${especialidad.id == null}
+                ? 'Registrar Especialidad'
+                : 'Editar Especialidad'">
+      Registrar Especialidad
+    </h2>
+
+    <!-- MENSAJE DE ERROR -->
+
+    <div th:if="${error}"
+         class="error"
+         th:text="${error}">
+    </div>
+
+    <!-- FORMULARIO -->
+
+    <form method="post"
+          th:action="${especialidad.id == null}
+                  ? @{/admin/catalogos/especialidades/create}
+                  : @{/admin/catalogos/especialidades/edit/{id}(id=${especialidad.id})}">
+
+      <!-- NOMBRE -->
+
+      <label for="nombre">
+        Nombre de la especialidad *
+      </label>
+
+      <input type="text"
+             id="nombre"
+             name="nombre"
+             th:value="${especialidad.nombre}"
+             maxlength="120"
+             placeholder="Ejemplo: Cardiología"
+             required>
+
+      <!-- DESCRIPCIÓN -->
+
+      <label for="descripcion">
+        Descripción *
+      </label>
+
+      <textarea id="descripcion"
+                name="descripcion"
+                placeholder="Ingrese una descripción de la especialidad"
+                required
+                th:text="${especialidad.descripcion}"></textarea>
+
+      <p class="nota">
+        Los campos marcados con * son obligatorios.
+      </p>
+
+      <!-- BOTONES -->
+
+      <div class="botones">
+
+        <button type="submit"
+                class="boton btn-guardar"
+                th:text="${especialidad.id == null}
+                            ? 'Registrar Especialidad'
+                            : 'Guardar Cambios'">
+          Registrar Especialidad
+        </button>
+
+        <a th:href="@{/admin/catalogos/especialidades}"
+           class="boton btn-cancelar">
+          Cancelar
+        </a>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+</body>
+</html>

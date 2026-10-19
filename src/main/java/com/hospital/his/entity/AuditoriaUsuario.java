@@ -15,7 +15,7 @@ public class AuditoriaUsuario {
     @Column(nullable = false, length = 80)
     private String administrador;
 
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 100)
     private String accion;
 
     @Column(name = "usuario_afectado", length = 80)
