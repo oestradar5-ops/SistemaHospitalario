@@ -2,10 +2,14 @@ package com.hospital.his.controller;
 
 import com.hospital.his.entity.Cita;
 import com.hospital.his.entity.Pago;
+import com.hospital.his.entity.HorarioMedico;
 import com.hospital.his.repository.CitaRepository;
 import com.hospital.his.repository.PagoRepository;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
 
 import com.hospital.his.service.ComprobanteService;
 
@@ -16,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,6 +31,17 @@ public class PagoController {
     private final CitaRepository citaRepository;
     private final PagoRepository pagoRepository;
     private final ComprobanteService comprobanteService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    private static final String PENDIENTE = "PENDIENTE_DE_PAGO";
+    private static final String EXPIRADA = "EXPIRADA";
+    private static final int MINUTOS_RESERVA = 5;
+    private static final String MENSAJE_EXPIRACION =
+            "El tiempo para confirmar su cita ha expirado. " +
+                    "El horario seleccionado ha sido liberado. " +
+                    "Por favor, seleccione un nuevo horario.";
 
     public PagoController(
             CitaRepository citaRepository,
@@ -42,6 +59,7 @@ public class PagoController {
     // =====================================================
 
     @GetMapping("/paciente/pago")
+    @Transactional
     public String mostrarPago(
             @RequestParam Long citaId,
             HttpSession session,
@@ -61,10 +79,8 @@ public class PagoController {
         }
 
 
-        Cita cita =
-                citaRepository
-                        .findById(citaId)
-                        .orElse(null);
+        Cita cita = entityManager.find(
+                Cita.class, citaId, LockModeType.PESSIMISTIC_WRITE);
 
 
         if (cita == null) {
@@ -83,6 +99,20 @@ public class PagoController {
         }
 
 
+        // Calculamos el tiempo desde la creación real de la cita,
+        // sin reiniciarlo cuando se actualiza el navegador.
+        if (PENDIENTE.equalsIgnoreCase(cita.getEstado())
+                && segundosRestantes(cita) == 0L) {
+            expirarReserva(cita);
+        }
+
+        boolean pendiente = PENDIENTE.equalsIgnoreCase(cita.getEstado());
+        boolean expirada = EXPIRADA.equalsIgnoreCase(cita.getEstado());
+
+        model.addAttribute("pendientePago", pendiente);
+        model.addAttribute("reservaExpirada", expirada);
+        model.addAttribute("segundosRestantes", pendiente ? segundosRestantes(cita) : 0L);
+
         model.addAttribute(
                 "cita",
                 cita
@@ -98,6 +128,91 @@ public class PagoController {
 
 
         return "paciente/pago";
+    }
+
+
+    // =====================================================
+    // ESTADO DE RESERVA PARA EL RELOJ DE LA PÁGINA
+    // =====================================================
+
+    @ResponseBody
+    @GetMapping("/api/pagos/reserva/estado")
+    @Transactional
+    public Map<String, Object> estadoReserva(
+            @RequestParam Long citaId,
+            HttpSession session) {
+
+        String usuario = (String) session.getAttribute("usuario");
+        String rol = (String) session.getAttribute("rol");
+
+        if (usuario == null || !"PACIENTE".equalsIgnoreCase(rol)) {
+            return Map.of("estado", "ERROR", "mensaje", "Debe iniciar sesión como paciente.");
+        }
+
+        Cita cita = entityManager.find(Cita.class, citaId, LockModeType.PESSIMISTIC_WRITE);
+        if (cita == null || cita.getPaciente() == null ||
+                !usuario.equalsIgnoreCase(cita.getPaciente().getNombreUsuario())) {
+            return Map.of("estado", "ERROR", "mensaje", "Cita no disponible.");
+        }
+
+        if (PENDIENTE.equalsIgnoreCase(cita.getEstado()) && segundosRestantes(cita) == 0L) {
+            expirarReserva(cita);
+        }
+
+        if (EXPIRADA.equalsIgnoreCase(cita.getEstado())) {
+            return Map.of("estado", "EXPIRADA", "segundosRestantes", 0,
+                    "mensaje", MENSAJE_EXPIRACION);
+        }
+        if (!PENDIENTE.equalsIgnoreCase(cita.getEstado())) {
+            return Map.of("estado", "NO_DISPONIBLE", "segundosRestantes", 0,
+                    "mensaje", "La cita ya no está pendiente de pago.");
+        }
+        return Map.of("estado", "ACTIVA", "segundosRestantes", segundosRestantes(cita));
+    }
+
+    // =====================================================
+    // CUENTA REGRESIVA Y VENCIMIENTO DEL HORARIO
+    // =====================================================
+
+    private long segundosRestantes(Cita cita) {
+        if (cita.getFechaCreacion() == null) {
+            return 0L;
+        }
+        LocalDateTime vence = cita.getFechaCreacion().plusMinutes(MINUTOS_RESERVA);
+        long milisegundos = Duration.between(LocalDateTime.now(), vence).toMillis();
+        return Math.max(0L, (milisegundos + 999L) / 1000L);
+    }
+
+    private void expirarReserva(Cita cita) {
+        // Solo se pueden expirar reservas aún pendientes; nunca citas pagadas.
+        if (!PENDIENTE.equalsIgnoreCase(cita.getEstado()) || segundosRestantes(cita) > 0L) {
+            return;
+        }
+
+        cita.setEstado(EXPIRADA);
+        citaRepository.save(cita);
+
+        if (cita.getHorario() == null) {
+            return;
+        }
+
+        // No liberamos el horario si existe otra cita vigente asociada.
+        Long otrosUsos = entityManager.createQuery(
+                        "SELECT COUNT(c) FROM Cita c " +
+                                "WHERE c.horario.id = :horarioId AND c.id <> :citaId " +
+                                "AND c.estado NOT IN :estadosInactivos", Long.class)
+                .setParameter("horarioId", cita.getHorario().getId())
+                .setParameter("citaId", cita.getId())
+                .setParameter("estadosInactivos", List.of("EXPIRADA", "CANCELADA", "CANCELADO"))
+                .getSingleResult();
+
+        if (otrosUsos == 0L) {
+            HorarioMedico horario = entityManager.find(HorarioMedico.class,
+                    cita.getHorario().getId(), LockModeType.PESSIMISTIC_WRITE);
+            if (horario != null) {
+                horario.setDisponible(true);
+            }
+        }
     }
 
 
@@ -231,10 +346,8 @@ public class PagoController {
         // BUSCAR CITA
         // =================================================
 
-        Cita cita =
-                citaRepository
-                        .findById(citaId)
-                        .orElse(null);
+        Cita cita = entityManager.find(
+                Cita.class, citaId, LockModeType.PESSIMISTIC_WRITE);
 
 
         if (cita == null) {
@@ -262,6 +375,12 @@ public class PagoController {
             );
         }
 
+
+        // Si se venció la reserva, no se permite confirmar el pago.
+        if (PENDIENTE.equalsIgnoreCase(cita.getEstado()) && segundosRestantes(cita) == 0L) {
+            expirarReserva(cita);
+            return Map.of("estado", "EXPIRADA", "mensaje", MENSAJE_EXPIRACION);
+        }
 
         // =================================================
         // COMPROBAR ESTADO

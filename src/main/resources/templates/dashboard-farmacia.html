@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Farmacia | HIS</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f0f4f8; color: #17324d; }
+    header { background: #153b61; color: white; padding: 28px 40px; }
+    header h1 { margin: 0 0 12px; }
+    header p { margin: 0; }
+    .contenedor { padding: 30px; max-width: 1400px; margin: auto; }
+    .tarjetas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
+    .tarjeta, .grafica, .historial { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .tarjeta h3 { font-size: 15px; color: #64748b; margin: 0 0 20px; }
+    .tarjeta .valor { font-size: 29px; font-weight: bold; color: #153b61; overflow-wrap: anywhere; }
+    .graficas { display: grid; grid-template-columns: 1fr; gap: 25px; }
+    .grafica h2, .historial h2 { font-size: 20px; margin-top: 0; }
+    .grafica-contenido { height: 380px; position: relative; }
+    .boton { background: #0f766e; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; font-size: 15px; }
+    .boton:hover { background: #115e59; }
+    .boton-secundario { background: #153b61; margin: 0; }
+    .boton-secundario:hover { background: #24547e; }
+    .historial { margin-top: 25px; }
+    .historial-cabecera { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+    .historial-cabecera h2 { margin: 0; }
+    .indicacion { color: #64748b; font-size: 14px; }
+    .resumen { font-weight: bold; margin: 16px 0; }
+    .tabla-contenedor { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 650px; }
+    th, td { padding: 13px 12px; text-align: left; border-bottom: 1px solid #dbe4ee; }
+    th { background: #e8eff7; color: #153b61; }
+    tbody tr:nth-child(even) { background: #f7f9fc; }
+    .estado { font-size: 13px; color: #64748b; margin-bottom: 16px; }
+    .error { color: #b91c1c; }
+    @media (max-width: 768px) { .tarjetas { grid-template-columns: 1fr; } .contenedor { padding: 15px; } header { padding: 24px 18px; } }
+  </style>
+</head>
+<body>
+<header>
+  <h1>💊 Dashboard de Farmacia</h1>
+  <p>Sistema Informático Hospitalario - Estadísticas de medicamentos despachados</p>
+</header>
+<div class="contenedor">
+  <button class="boton" type="button" onclick="cargarDashboard()">🔄 Actualizar estadísticas</button>
+  <div class="tarjetas">
+    <div class="tarjeta"><h3>Total de unidades despachadas</h3><div class="valor" id="totalUnidades">0</div></div>
+    <div class="tarjeta"><h3>Medicamento más despachado</h3><div class="valor" id="medicamentoTop">Cargando...</div></div>
+    <div class="tarjeta"><h3>Cantidad del medicamento líder</h3><div class="valor" id="cantidadTop">0</div></div>
+  </div>
+  <div class="graficas">
+    <div class="grafica">
+      <h2>Top 5 de medicamentos más despachados</h2>
+      <p class="indicacion">Hacé clic en una barra para ver las fechas y horas de los despachos de ese medicamento.</p>
+      <div class="grafica-contenido"><canvas id="graficaMedicamentos"></canvas></div>
+    </div>
+  </div>
+  <section class="historial" id="seccionHistorial">
+    <div class="historial-cabecera">
+      <h2>📅 Historial de despachos confirmados</h2>
+      <button type="button" class="boton boton-secundario" onclick="verTodosLosDespachos()">Ver todos los despachos</button>
+    </div>
+    <div class="resumen" id="resumenHistorial">Cargando historial...</div>
+    <div class="tabla-contenedor">
+      <table>
+        <thead><tr><th>ID despacho</th><th>Medicamento</th><th>Cantidad</th><th>Fecha</th><th>Hora</th></tr></thead>
+        <tbody id="tablaHistorial"><tr><td colspan="5">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+    <p class="estado" id="estadoActualizacion" aria-live="polite"></p>
+  </section>
+</div>
+<script>
+  let graficaMedicamentos = null;
+  let historialCompleto = [];
+  let medicamentoSeleccionadoId = null;
+  let cargando = false;
+  let errorNotificado = false;
+
+  function formatoNumero(valor) {
+    return Number(valor ?? 0).toLocaleString('es-GT');
+  }
+
+  function textoSeguro(valor) {
+    return String(valor ?? '—');
+  }
+
+  function agregarCelda(fila, contenido) {
+    const celda = document.createElement('td');
+    celda.textContent = textoSeguro(contenido);
+    fila.appendChild(celda);
+  }
+
+  function mostrarHistorial() {
+    const registros = medicamentoSeleccionadoId === null
+            ? historialCompleto
+            : historialCompleto.filter(item => String(item.id_medicamento) === String(medicamentoSeleccionadoId));
+
+    const nombre = medicamentoSeleccionadoId === null
+            ? 'todos los medicamentos'
+            : (historialCompleto.find(item => String(item.id_medicamento) === String(medicamentoSeleccionadoId))?.medicamento || 'medicamento seleccionado');
+
+    document.getElementById('resumenHistorial').textContent =
+            `Mostrando ${nombre} — ${registros.length} registro(s) de despacho`;
+
+    const cuerpo = document.getElementById('tablaHistorial');
+    cuerpo.replaceChildren();
+
+    if (registros.length === 0) {
+      const fila = document.createElement('tr');
+      agregarCelda(fila, 'No hay despachos confirmados para este filtro.');
+      fila.firstChild.colSpan = 5;
+      cuerpo.appendChild(fila);
+      return;
+    }
+
+    for (const item of registros) {
+      const fila = document.createElement('tr');
+      agregarCelda(fila, item.id_despacho);
+      agregarCelda(fila, item.medicamento);
+      agregarCelda(fila, formatoNumero(item.cantidad));
+      agregarCelda(fila, item.fecha);
+      agregarCelda(fila, item.hora);
+      cuerpo.appendChild(fila);
+    }
+  }
+
+  function verTodosLosDespachos() {
+    medicamentoSeleccionadoId = null;
+    mostrarHistorial();
+  }
+
+  async function cargarDashboard() {
+    if (cargando) return;
+    cargando = true;
+    try {
+      const rutas = [
+        '/api/dashboards/farmacia/top',
+        '/api/dashboards/farmacia/total',
+        '/api/dashboards/farmacia/mas-despachado',
+        '/api/dashboards/farmacia/historial'
+      ];
+      const respuestas = await Promise.all(rutas.map(ruta => fetch(ruta, { cache: 'no-store' })));
+      if (respuestas.some(respuesta => !respuesta.ok)) {
+        throw new Error('No se pudieron obtener las estadísticas o el historial');
+      }
+      const [medicamentos, total, mayor, historial] = await Promise.all(respuestas.map(respuesta => respuesta.json()));
+
+      document.getElementById('totalUnidades').textContent = formatoNumero(total.total_unidades);
+      document.getElementById('medicamentoTop').textContent = mayor.length > 0 ? mayor[0].medicamento : 'Sin registros';
+      document.getElementById('cantidadTop').textContent = mayor.length > 0 ? formatoNumero(mayor[0].cantidad_despachada) : '0';
+
+      historialCompleto = historial;
+      mostrarHistorial();
+
+      const nombres = medicamentos.map(item => item.medicamento);
+      const cantidades = medicamentos.map(item => Number(item.cantidad_despachada));
+      const ids = medicamentos.map(item => item.id);
+      const fechasRecientes = medicamentos.map(item => {
+        const registros = historialCompleto.filter(registro => String(registro.id_medicamento) === String(item.id));
+        return registros.length > 0 ? `${registros[0].fecha ?? 'Sin fecha'} ${registros[0].hora ?? ''}`.trim() : 'Sin fecha registrada';
+      });
+
+      if (graficaMedicamentos !== null) graficaMedicamentos.destroy();
+      graficaMedicamentos = new Chart(document.getElementById('graficaMedicamentos'), {
+        type: 'bar',
+        data: {
+          labels: nombres,
+          datasets: [{ label: 'Unidades despachadas', data: cantidades, backgroundColor: '#2563eb', borderRadius: 6 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          onHover: (evento, elementos, grafica) => {
+            grafica.canvas.style.cursor = elementos.length ? 'pointer' : 'default';
+          },
+          onClick: (evento, elementos) => {
+            if (!elementos.length) return;
+            medicamentoSeleccionadoId = ids[elementos[0].index];
+            mostrarHistorial();
+            document.getElementById('seccionHistorial').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                afterLabel: contexto => 'Último despacho: ' + fechasRecientes[contexto.dataIndex]
+              }
+            }
+          },
+          scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+      });
+
+      document.getElementById('estadoActualizacion').classList.remove('error');
+      document.getElementById('estadoActualizacion').textContent =
+              'Datos actualizados: ' + new Date().toLocaleTimeString('es-GT');
+      errorNotificado = false;
+    } catch (error) {
+      console.error('Error al cargar el dashboard:', error);
+      const estado = document.getElementById('estadoActualizacion');
+      estado.classList.add('error');
+      estado.textContent = 'No se pudieron actualizar los datos. Se conservan los últimos resultados disponibles.';
+      if (!errorNotificado) {
+        alert('No se pudieron cargar las estadísticas de farmacia. Revisá la conexión con el servidor.');
+        errorNotificado = true;
+      }
+    } finally {
+      cargando = false;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarDashboard();
+    setInterval(cargarDashboard, 5000);
+  });
+</script>
+</body>
+</html>

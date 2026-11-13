@@ -24,6 +24,13 @@ public class InventarioMedicamento {
     private Long id;
 
     // ==========================================
+// CONTROL DE CONCURRENCIA OPTIMISTA - CU15
+// ==========================================
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
+    // ==========================================
     // MEDICAMENTO
     // ==========================================
 
@@ -149,5 +156,13 @@ public class InventarioMedicamento {
 
     public void setActivo(Boolean activo) {
         this.activo = activo;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

@@ -1,5 +1,7 @@
 package com.hospital.his.controller;
 
+import com.hospital.his.dto.MovimientoInventarioRequest;
+
 import com.hospital.his.entity.AuditoriaUsuario;
 import com.hospital.his.entity.CatalogoMedicamento;
 import com.hospital.his.entity.InventarioMedicamento;
@@ -9,6 +11,8 @@ import com.hospital.his.repository.AuditoriaUsuarioRepository;
 import com.hospital.his.repository.CatalogoMedicamentoRepository;
 import com.hospital.his.repository.InventarioMedicamentoRepository;
 import com.hospital.his.repository.SucursalRepository;
+
+import com.hospital.his.service.MovimientoInventarioService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -20,13 +24,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 @Controller
 @RequestMapping("/admin/catalogos/inventario-medicamentos")
 public class InventarioMedicamentoAdminController {
 
     // ==========================================
-    // REPOSITORIOS
+    // REPOSITORIOS Y SERVICIOS
     // ==========================================
 
     private final InventarioMedicamentoRepository inventarioRepository;
@@ -37,6 +42,8 @@ public class InventarioMedicamentoAdminController {
 
     private final AuditoriaUsuarioRepository auditoriaRepository;
 
+    private final MovimientoInventarioService movimientoInventarioService;
+
 
     // ==========================================
     // CONSTRUCTOR
@@ -46,12 +53,14 @@ public class InventarioMedicamentoAdminController {
             InventarioMedicamentoRepository inventarioRepository,
             CatalogoMedicamentoRepository medicamentoRepository,
             SucursalRepository sucursalRepository,
-            AuditoriaUsuarioRepository auditoriaRepository) {
+            AuditoriaUsuarioRepository auditoriaRepository,
+            MovimientoInventarioService movimientoInventarioService) {
 
         this.inventarioRepository = inventarioRepository;
         this.medicamentoRepository = medicamentoRepository;
         this.sucursalRepository = sucursalRepository;
         this.auditoriaRepository = auditoriaRepository;
+        this.movimientoInventarioService = movimientoInventarioService;
     }
 
 
@@ -60,6 +69,10 @@ public class InventarioMedicamentoAdminController {
     // ==========================================
 
     private boolean esAdministrador(HttpSession session) {
+
+        if (session == null) {
+            return false;
+        }
 
         Object usuario = session.getAttribute("usuario");
         Object rol = session.getAttribute("rol");
@@ -93,9 +106,47 @@ public class InventarioMedicamentoAdminController {
         auditoriaRepository.save(auditoria);
     }
 
+
     // ==========================================
-// CU-14: LISTAR INVENTARIO DE MEDICAMENTOS
-// ==========================================
+    // VALIDAR PRECIO UNITARIO
+    // ==========================================
+
+    private BigDecimal validarPrecio(String precioUnitario) {
+
+        if (precioUnitario == null || precioUnitario.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Debe ingresar un precio unitario."
+            );
+        }
+
+        try {
+
+            BigDecimal precio =
+                    new BigDecimal(precioUnitario.trim());
+
+            if (precio.compareTo(BigDecimal.ZERO) <= 0
+                    || precio.scale() > 2
+                    || precio.precision() - precio.scale() > 8) {
+
+                throw new IllegalArgumentException(
+                        "El precio debe ser mayor que cero y tener máximo dos decimales."
+                );
+            }
+
+            return precio;
+
+        } catch (NumberFormatException e) {
+
+            throw new IllegalArgumentException(
+                    "El precio unitario no tiene un formato válido."
+            );
+        }
+    }
+
+
+    // ==========================================
+    // CU-14: LISTAR INVENTARIO
+    // ==========================================
 
     @GetMapping
     @Transactional(readOnly = true)
@@ -103,89 +154,42 @@ public class InventarioMedicamentoAdminController {
             HttpSession session,
             Model model) {
 
-        // ======================================
-        // VALIDAR ADMINISTRADOR
-        // ======================================
-
         if (!esAdministrador(session)) {
             return "redirect:/admin/login";
         }
 
-        // ======================================
-        // CONSULTAR INVENTARIO COMPLETO
-        // ======================================
-
         List<InventarioMedicamento> inventarios =
                 inventarioRepository.findAllConDetalles();
-
-        // ======================================
-        // CONSULTAR MEDICAMENTOS CON STOCK BAJO
-        // ======================================
 
         List<InventarioMedicamento> stockBajo =
                 inventarioRepository.buscarStockBajoGeneral();
 
-        // ======================================
-        // CALCULAR ESTADÍSTICAS
-        // ======================================
-
         long totalRegistros = inventarios.size();
 
         long registrosActivos = inventarios.stream()
-                .filter(inventario ->
-                        Boolean.TRUE.equals(inventario.getActivo()))
+                .filter(i -> Boolean.TRUE.equals(i.getActivo()))
                 .count();
 
         long registrosInactivos = inventarios.stream()
-                .filter(inventario ->
-                        !Boolean.TRUE.equals(inventario.getActivo()))
+                .filter(i -> !Boolean.TRUE.equals(i.getActivo()))
                 .count();
 
         long totalStockBajo = stockBajo.size();
 
-        // ======================================
-        // ENVIAR INFORMACIÓN A THYMELEAF
-        // ======================================
-
-        model.addAttribute(
-                "inventarios",
-                inventarios
-        );
-
-        model.addAttribute(
-                "stockBajo",
-                stockBajo
-        );
-
-        model.addAttribute(
-                "totalRegistros",
-                totalRegistros
-        );
-
-        model.addAttribute(
-                "registrosActivos",
-                registrosActivos
-        );
-
-        model.addAttribute(
-                "registrosInactivos",
-                registrosInactivos
-        );
-
-        model.addAttribute(
-                "totalStockBajo",
-                totalStockBajo
-        );
-
-        // ======================================
-        // MOSTRAR PANTALLA ADMINISTRATIVA
-        // ======================================
+        model.addAttribute("inventarios", inventarios);
+        model.addAttribute("stockBajo", stockBajo);
+        model.addAttribute("totalRegistros", totalRegistros);
+        model.addAttribute("registrosActivos", registrosActivos);
+        model.addAttribute("registrosInactivos", registrosInactivos);
+        model.addAttribute("totalStockBajo", totalStockBajo);
 
         return "admin/catalogos/inventario-medicamentos/index";
     }
+
+
     // ==========================================
-// CU-14: FORMULARIO DE REGISTRO DE INVENTARIO
-// ==========================================
+    // CU-14: FORMULARIO DE REGISTRO
+    // ==========================================
 
     @GetMapping("/create")
     @Transactional(readOnly = true)
@@ -193,33 +197,15 @@ public class InventarioMedicamentoAdminController {
             HttpSession session,
             Model model) {
 
-        // ======================================
-        // VALIDAR ADMINISTRADOR
-        // ======================================
-
         if (!esAdministrador(session)) {
             return "redirect:/admin/login";
         }
 
-        // ======================================
-        // CONSULTAR MEDICAMENTOS ACTIVOS
-        // ======================================
-
         List<CatalogoMedicamento> medicamentos =
-                medicamentoRepository
-                        .findByActivoTrueOrderByNombreAsc();
-
-        // ======================================
-        // CONSULTAR SUCURSALES ACTIVAS
-        // ======================================
+                medicamentoRepository.findByActivoTrueOrderByNombreAsc();
 
         List<Sucursal> sucursales =
-                sucursalRepository
-                        .findByActivoTrueOrderByNombreAsc();
-
-        // ======================================
-        // PREPARAR NUEVO INVENTARIO
-        // ======================================
+                sucursalRepository.findByActivoTrueOrderByNombreAsc();
 
         InventarioMedicamento inventario =
                 new InventarioMedicamento();
@@ -229,39 +215,18 @@ public class InventarioMedicamentoAdminController {
         inventario.setPrecioUnitario(BigDecimal.ZERO);
         inventario.setActivo(true);
 
-        // ======================================
-        // ENVIAR DATOS AL FORMULARIO
-        // ======================================
-
-        model.addAttribute(
-                "inventario",
-                inventario
-        );
-
-        model.addAttribute(
-                "medicamentos",
-                medicamentos
-        );
-
-        model.addAttribute(
-                "sucursales",
-                sucursales
-        );
-
-        model.addAttribute(
-                "modoEdicion",
-                false
-        );
-
-        // ======================================
-        // MOSTRAR FORMULARIO
-        // ======================================
+        model.addAttribute("inventario", inventario);
+        model.addAttribute("medicamentos", medicamentos);
+        model.addAttribute("sucursales", sucursales);
+        model.addAttribute("modoEdicion", false);
 
         return "admin/catalogos/inventario-medicamentos/form";
     }
+
+
     // ==========================================
-// CU-14: REGISTRAR INVENTARIO
-// ==========================================
+    // CU-14: REGISTRAR INVENTARIO
+    // ==========================================
 
     @PostMapping("/create")
     @Transactional
@@ -274,10 +239,6 @@ public class InventarioMedicamentoAdminController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
-        // ======================================
-        // VALIDAR ADMINISTRADOR
-        // ======================================
-
         if (!esAdministrador(session)) {
             return "redirect:/admin/login";
         }
@@ -285,23 +246,15 @@ public class InventarioMedicamentoAdminController {
         String rutaFormulario =
                 "redirect:/admin/catalogos/inventario-medicamentos/create";
 
-        // ======================================
-        // VALIDAR CAMPOS OBLIGATORIOS
-        // ======================================
-
         if (medicamentoId == null || sucursalId == null) {
 
             redirectAttributes.addFlashAttribute(
                     "error",
-                    "Debes seleccionar un medicamento y una sucursal."
+                    "Debe seleccionar un medicamento y una sucursal."
             );
 
             return rutaFormulario;
         }
-
-        // ======================================
-        // VALIDAR CANTIDADES
-        // ======================================
 
         if (cantidadDisponible == null || cantidadDisponible < 0) {
 
@@ -323,41 +276,19 @@ public class InventarioMedicamentoAdminController {
             return rutaFormulario;
         }
 
-        // ======================================
-        // VALIDAR PRECIO
-        // ======================================
-
         BigDecimal precio;
 
         try {
-
-            if (precioUnitario == null || precioUnitario.isBlank()) {
-                throw new NumberFormatException();
-            }
-
-            precio = new BigDecimal(precioUnitario.trim());
-
-            if (precio.compareTo(BigDecimal.ZERO) <= 0
-                    || precio.scale() > 2
-                    || precio.precision() - precio.scale() > 8) {
-
-                throw new NumberFormatException();
-            }
-
-        } catch (NumberFormatException e) {
+            precio = validarPrecio(precioUnitario);
+        } catch (IllegalArgumentException e) {
 
             redirectAttributes.addFlashAttribute(
                     "error",
-                    "El precio debe ser mayor que cero, "
-                            + "con máximo dos decimales."
+                    e.getMessage()
             );
 
             return rutaFormulario;
         }
-
-        // ======================================
-        // VALIDAR MEDICAMENTO
-        // ======================================
 
         CatalogoMedicamento medicamento =
                 medicamentoRepository.findById(medicamentoId)
@@ -368,15 +299,11 @@ public class InventarioMedicamentoAdminController {
 
             redirectAttributes.addFlashAttribute(
                     "error",
-                    "El medicamento seleccionado no existe o está inactivo."
+                    "El medicamento no existe o está inactivo."
             );
 
             return rutaFormulario;
         }
-
-        // ======================================
-        // VALIDAR SUCURSAL
-        // ======================================
 
         Sucursal sucursal =
                 sucursalRepository.findById(sucursalId)
@@ -387,15 +314,11 @@ public class InventarioMedicamentoAdminController {
 
             redirectAttributes.addFlashAttribute(
                     "error",
-                    "La sucursal seleccionada no existe o está inactiva."
+                    "La sucursal no existe o está inactiva."
             );
 
             return rutaFormulario;
         }
-
-        // ======================================
-        // VALIDAR INVENTARIO DUPLICADO
-        // ======================================
 
         if (inventarioRepository.existsByMedicamentoIdAndSucursalId(
                 medicamentoId,
@@ -403,17 +326,11 @@ public class InventarioMedicamentoAdminController {
 
             redirectAttributes.addFlashAttribute(
                     "error",
-                    "Este medicamento ya tiene un registro de inventario "
-                            + "en la sucursal seleccionada. "
-                            + "Debes editar el registro existente."
+                    "Este medicamento ya tiene inventario en la sucursal seleccionada."
             );
 
             return rutaFormulario;
         }
-
-        // ======================================
-        // CREAR REGISTRO DE INVENTARIO
-        // ======================================
 
         InventarioMedicamento inventario =
                 new InventarioMedicamento();
@@ -425,15 +342,7 @@ public class InventarioMedicamentoAdminController {
         inventario.setPrecioUnitario(precio);
         inventario.setActivo(true);
 
-        // ======================================
-        // GUARDAR INVENTARIO
-        // ======================================
-
         inventarioRepository.save(inventario);
-
-        // ======================================
-        // REGISTRAR AUDITORÍA
-        // ======================================
 
         registrarAuditoria(
                 session,
@@ -446,10 +355,6 @@ public class InventarioMedicamentoAdminController {
                         + " | Precio: Q " + precio
         );
 
-        // ======================================
-        // MENSAJE DE CONFIRMACIÓN
-        // ======================================
-
         redirectAttributes.addFlashAttribute(
                 "mensaje",
                 "Inventario registrado correctamente."
@@ -457,9 +362,11 @@ public class InventarioMedicamentoAdminController {
 
         return "redirect:/admin/catalogos/inventario-medicamentos";
     }
+
+
     // ==========================================
-// CU-14: FORMULARIO DE EDICIÓN DE INVENTARIO
-// ==========================================
+    // CU-14: FORMULARIO DE EDICIÓN
+    // ==========================================
 
     @GetMapping("/edit/{id}")
     @Transactional(readOnly = true)
@@ -469,85 +376,42 @@ public class InventarioMedicamentoAdminController {
             Model model,
             RedirectAttributes redirectAttributes) {
 
-        // ======================================
-        // VALIDAR ADMINISTRADOR
-        // ======================================
-
         if (!esAdministrador(session)) {
             return "redirect:/admin/login";
         }
-
-        // ======================================
-        // BUSCAR REGISTRO DE INVENTARIO
-        // ======================================
 
         InventarioMedicamento inventario =
                 inventarioRepository.findById(id)
                         .orElse(null);
 
-        // ======================================
-        // VALIDAR EXISTENCIA
-        // ======================================
-
         if (inventario == null) {
 
             redirectAttributes.addFlashAttribute(
                     "error",
-                    "El registro de inventario solicitado no existe."
+                    "El inventario solicitado no existe."
             );
 
             return "redirect:/admin/catalogos/inventario-medicamentos";
         }
 
-        // ======================================
-        // CONSULTAR MEDICAMENTOS ACTIVOS
-        // ======================================
-
         List<CatalogoMedicamento> medicamentos =
-                medicamentoRepository
-                        .findByActivoTrueOrderByNombreAsc();
-
-        // ======================================
-        // CONSULTAR SUCURSALES ACTIVAS
-        // ======================================
+                medicamentoRepository.findByActivoTrueOrderByNombreAsc();
 
         List<Sucursal> sucursales =
-                sucursalRepository
-                        .findByActivoTrueOrderByNombreAsc();
+                sucursalRepository.findByActivoTrueOrderByNombreAsc();
 
-        // ======================================
-        // PREPARAR FORMULARIO
-        // ======================================
-
-        model.addAttribute(
-                "inventario",
-                inventario
-        );
-
-        model.addAttribute(
-                "medicamentos",
-                medicamentos
-        );
-
-        model.addAttribute(
-                "sucursales",
-                sucursales
-        );
-
-        model.addAttribute(
-                "modoEdicion",
-                true
-        );
-
-        // ======================================
-        // MOSTRAR FORMULARIO
-        // ======================================
+        model.addAttribute("inventario", inventario);
+        model.addAttribute("medicamentos", medicamentos);
+        model.addAttribute("sucursales", sucursales);
+        model.addAttribute("modoEdicion", true);
 
         return "admin/catalogos/inventario-medicamentos/form";
     }
+
+
     // ==========================================
-// CU-14: ACTUALIZAR INVENTARIO
-// ==========================================
+    // CU-14 + CU-15: ACTUALIZAR INVENTARIO
+    // ==========================================
 
     @PostMapping("/edit/{id}")
     @Transactional
@@ -570,6 +434,9 @@ public class InventarioMedicamentoAdminController {
 
         String rutaFormulario =
                 "redirect:/admin/catalogos/inventario-medicamentos/edit/" + id;
+
+        String rutaListado =
+                "redirect:/admin/catalogos/inventario-medicamentos";
 
         // ======================================
         // VALIDAR CANTIDADES
@@ -596,48 +463,30 @@ public class InventarioMedicamentoAdminController {
         }
 
         // ======================================
-        // VALIDAR PRECIO UNITARIO
+        // VALIDAR PRECIO
         // ======================================
 
         BigDecimal precio;
 
         try {
-
-            if (precioUnitario == null || precioUnitario.isBlank()) {
-                throw new NumberFormatException();
-            }
-
-            precio = new BigDecimal(precioUnitario.trim());
-
-            if (precio.compareTo(BigDecimal.ZERO) <= 0
-                    || precio.scale() > 2
-                    || precio.precision() - precio.scale() > 8) {
-
-                throw new NumberFormatException();
-            }
-
-        } catch (NumberFormatException e) {
+            precio = validarPrecio(precioUnitario);
+        } catch (IllegalArgumentException e) {
 
             redirectAttributes.addFlashAttribute(
                     "error",
-                    "El precio debe ser mayor que cero, "
-                            + "con máximo dos decimales."
+                    e.getMessage()
             );
 
             return rutaFormulario;
         }
 
         // ======================================
-        // BLOQUEAR REGISTRO DE INVENTARIO
+        // BLOQUEAR INVENTARIO
         // ======================================
 
         InventarioMedicamento inventario =
                 inventarioRepository.buscarParaActualizar(id)
                         .orElse(null);
-
-        // ======================================
-        // VALIDAR EXISTENCIA
-        // ======================================
 
         if (inventario == null) {
 
@@ -646,12 +495,8 @@ public class InventarioMedicamentoAdminController {
                     "El registro de inventario no existe."
             );
 
-            return "redirect:/admin/catalogos/inventario-medicamentos";
+            return rutaListado;
         }
-
-        // ======================================
-        // VALIDAR ESTADO DEL INVENTARIO
-        // ======================================
 
         if (!Boolean.TRUE.equals(inventario.getActivo())) {
 
@@ -660,32 +505,31 @@ public class InventarioMedicamentoAdminController {
                     "No puedes modificar un inventario inactivo."
             );
 
-            return "redirect:/admin/catalogos/inventario-medicamentos";
+            return rutaListado;
         }
 
         // ======================================
-        // EVITAR SOBRESCRIBIR EXISTENCIAS DESACTUALIZADAS
+        // VALIDAR EXISTENCIAS ORIGINALES
         // ======================================
 
         if (cantidadOriginal == null) {
 
             redirectAttributes.addFlashAttribute(
                     "error",
-                    "No se pudo verificar la cantidad original del inventario. "
-                            + "Vuelve a abrir el formulario."
+                    "No se pudo verificar la cantidad original. Vuelve a abrir el formulario."
             );
 
             return rutaFormulario;
         }
 
-        if (!java.util.Objects.equals(
+        if (!Objects.equals(
                 cantidadOriginal,
                 inventario.getCantidadDisponible())) {
 
             redirectAttributes.addFlashAttribute(
                     "error",
                     "Las existencias cambiaron mientras editabas el inventario. "
-                            + "Revisa la cantidad actual y vuelve a guardar."
+                            + "Vuelve a abrir el formulario."
             );
 
             return rutaFormulario;
@@ -695,20 +539,92 @@ public class InventarioMedicamentoAdminController {
         // GUARDAR VALORES ANTERIORES
         // ======================================
 
-        Integer cantidadAnterior =
+        int cantidadAnterior =
                 inventario.getCantidadDisponible();
 
-        Integer stockMinimoAnterior =
+        int stockMinimoAnterior =
                 inventario.getStockMinimo();
 
         BigDecimal precioAnterior =
                 inventario.getPrecioUnitario();
 
         // ======================================
-        // ACTUALIZAR INVENTARIO
+        // CALCULAR DIFERENCIA DE EXISTENCIAS
         // ======================================
 
-        inventario.setCantidadDisponible(cantidadDisponible);
+        long diferencia =
+                (long) cantidadDisponible - cantidadAnterior;
+
+        // ======================================
+        // CU-15: REGISTRAR AJUSTE AUTOMÁTICO
+        // ======================================
+
+        if (diferencia != 0) {
+
+            int tipoMovimiento;
+
+            int cantidadMovimiento;
+
+            if (diferencia > 0) {
+
+                // Tipo 4: Ajuste positivo
+                tipoMovimiento = 4;
+
+            } else {
+
+                // Tipo 5: Ajuste negativo
+                tipoMovimiento = 5;
+            }
+
+            cantidadMovimiento = Math.toIntExact(
+                    Math.abs(diferencia)
+            );
+
+            MovimientoInventarioRequest solicitud =
+                    new MovimientoInventarioRequest();
+
+            solicitud.setMedicamentoId(
+                    inventario.getMedicamento().getId()
+            );
+
+            solicitud.setSucursalId(
+                    inventario.getSucursal().getId()
+            );
+
+            solicitud.setTipoMovimiento(tipoMovimiento);
+
+            solicitud.setCantidad(cantidadMovimiento);
+
+            solicitud.setCostoUnitario(precio);
+
+            solicitud.setNumeroReferencia(
+                    "AJUSTE-ADMIN-" + id
+            );
+
+            solicitud.setMotivoNotas(
+                    "Ajuste administrativo de inventario. "
+                            + "Existencias anteriores: " + cantidadAnterior
+                            + ". Existencias nuevas: " + cantidadDisponible
+                            + ". Responsable: "
+                            + session.getAttribute("usuario")
+            );
+
+            // IMPORTANTE:
+            // Este servicio actualiza las existencias
+            // y registra el movimiento en la bitácora.
+            //
+            // No debemos modificar directamente
+            // cantidadDisponible en este controlador.
+
+            movimientoInventarioService.registrarMovimiento(
+                    solicitud,
+                    session
+            );
+        }
+
+        // ======================================
+        // ACTUALIZAR STOCK MÍNIMO Y PRECIO
+        // ======================================
 
         inventario.setStockMinimo(stockMinimo);
 
@@ -717,7 +633,7 @@ public class InventarioMedicamentoAdminController {
         inventarioRepository.save(inventario);
 
         // ======================================
-        // REGISTRAR AUDITORÍA
+        // REGISTRAR AUDITORÍA ADMINISTRATIVA
         // ======================================
 
         registrarAuditoria(
@@ -742,15 +658,18 @@ public class InventarioMedicamentoAdminController {
 
         redirectAttributes.addFlashAttribute(
                 "mensaje",
-                "Inventario actualizado correctamente."
+                diferencia == 0
+                        ? "Inventario actualizado correctamente."
+                        : "Inventario actualizado y movimiento registrado en la bitácora."
         );
 
-        return "redirect:/admin/catalogos/inventario-medicamentos";
+        return rutaListado;
     }
 
+
     // ==========================================
-// CU-14: DESACTIVAR INVENTARIO
-// ==========================================
+    // CU-14: DESACTIVAR INVENTARIO
+    // ==========================================
 
     @PostMapping("/desactivar/{id}")
     @Transactional
@@ -759,10 +678,6 @@ public class InventarioMedicamentoAdminController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
-        // ======================================
-        // VALIDAR ADMINISTRADOR
-        // ======================================
-
         if (!esAdministrador(session)) {
             return "redirect:/admin/login";
         }
@@ -770,17 +685,9 @@ public class InventarioMedicamentoAdminController {
         String rutaListado =
                 "redirect:/admin/catalogos/inventario-medicamentos";
 
-        // ======================================
-        // BLOQUEAR REGISTRO DE INVENTARIO
-        // ======================================
-
         InventarioMedicamento inventario =
                 inventarioRepository.buscarParaActualizar(id)
                         .orElse(null);
-
-        // ======================================
-        // VALIDAR EXISTENCIA
-        // ======================================
 
         if (inventario == null) {
 
@@ -792,23 +699,15 @@ public class InventarioMedicamentoAdminController {
             return rutaListado;
         }
 
-        // ======================================
-        // VALIDAR ESTADO ACTUAL
-        // ======================================
-
         if (!Boolean.TRUE.equals(inventario.getActivo())) {
 
             redirectAttributes.addFlashAttribute(
                     "error",
-                    "Este inventario ya se encuentra desactivado."
+                    "Este inventario ya está desactivado."
             );
 
             return rutaListado;
         }
-
-        // ======================================
-        // CONSERVAR INFORMACIÓN
-        // ======================================
 
         Long inventarioId = inventario.getId();
 
@@ -821,31 +720,19 @@ public class InventarioMedicamentoAdminController {
         Integer cantidadDisponible =
                 inventario.getCantidadDisponible();
 
-        // ======================================
-        // DESACTIVACIÓN LÓGICA
-        // ======================================
-
         inventario.setActivo(false);
 
         inventarioRepository.save(inventario);
 
-        // ======================================
-        // REGISTRAR AUDITORÍA
-        // ======================================
-
         registrarAuditoria(
                 session,
                 "DESACTIVAR_INVENTARIO_MEDICAMENTO",
-                "Desactivó el inventario ID: " + inventarioId
+                "Desactivó inventario ID: " + inventarioId
                         + " | Medicamento ID: " + medicamentoId
                         + " | Sucursal ID: " + sucursalId
                         + " | Existencias conservadas: "
                         + cantidadDisponible
         );
-
-        // ======================================
-        // MENSAJE DE CONFIRMACIÓN
-        // ======================================
 
         redirectAttributes.addFlashAttribute(
                 "mensaje",
@@ -855,9 +742,10 @@ public class InventarioMedicamentoAdminController {
         return rutaListado;
     }
 
+
     // ==========================================
-// CU-14: ACTIVAR INVENTARIO
-// ==========================================
+    // CU-14: ACTIVAR INVENTARIO
+    // ==========================================
 
     @PostMapping("/activar/{id}")
     @Transactional
@@ -866,10 +754,6 @@ public class InventarioMedicamentoAdminController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
-        // ======================================
-        // VALIDAR ADMINISTRADOR
-        // ======================================
-
         if (!esAdministrador(session)) {
             return "redirect:/admin/login";
         }
@@ -877,17 +761,9 @@ public class InventarioMedicamentoAdminController {
         String rutaListado =
                 "redirect:/admin/catalogos/inventario-medicamentos";
 
-        // ======================================
-        // BLOQUEAR REGISTRO DE INVENTARIO
-        // ======================================
-
         InventarioMedicamento inventario =
                 inventarioRepository.buscarParaActualizar(id)
                         .orElse(null);
-
-        // ======================================
-        // VALIDAR EXISTENCIA
-        // ======================================
 
         if (inventario == null) {
 
@@ -899,23 +775,15 @@ public class InventarioMedicamentoAdminController {
             return rutaListado;
         }
 
-        // ======================================
-        // VALIDAR ESTADO ACTUAL
-        // ======================================
-
         if (Boolean.TRUE.equals(inventario.getActivo())) {
 
             redirectAttributes.addFlashAttribute(
                     "error",
-                    "Este inventario ya se encuentra activo."
+                    "Este inventario ya está activo."
             );
 
             return rutaListado;
         }
-
-        // ======================================
-        // OBTENER MEDICAMENTO Y SUCURSAL
-        // ======================================
 
         CatalogoMedicamento medicamento =
                 inventario.getMedicamento();
@@ -923,63 +791,41 @@ public class InventarioMedicamentoAdminController {
         Sucursal sucursal =
                 inventario.getSucursal();
 
-        // ======================================
-        // VALIDAR MEDICAMENTO ACTIVO
-        // ======================================
-
         if (medicamento == null
                 || !Boolean.TRUE.equals(medicamento.getActivo())) {
 
             redirectAttributes.addFlashAttribute(
                     "error",
-                    "No se puede activar el inventario porque "
-                            + "el medicamento está desactivado."
+                    "No se puede activar porque el medicamento está inactivo."
             );
 
             return rutaListado;
         }
-
-        // ======================================
-        // VALIDAR SUCURSAL ACTIVA
-        // ======================================
 
         if (sucursal == null
                 || !Boolean.TRUE.equals(sucursal.getActivo())) {
 
             redirectAttributes.addFlashAttribute(
                     "error",
-                    "No se puede activar el inventario porque "
-                            + "la sucursal está desactivada."
+                    "No se puede activar porque la sucursal está inactiva."
             );
 
             return rutaListado;
         }
 
-        // ======================================
-        // REACTIVAR INVENTARIO
-        // ======================================
-
         inventario.setActivo(true);
 
         inventarioRepository.save(inventario);
 
-        // ======================================
-        // REGISTRAR AUDITORÍA
-        // ======================================
-
         registrarAuditoria(
                 session,
                 "ACTIVAR_INVENTARIO_MEDICAMENTO",
-                "Reactivó el inventario ID: " + inventario.getId()
+                "Reactivó inventario ID: " + inventario.getId()
                         + " | Medicamento: " + medicamento.getNombre()
                         + " | Sucursal: " + sucursal.getNombre()
                         + " | Existencias conservadas: "
                         + inventario.getCantidadDisponible()
         );
-
-        // ======================================
-        // MENSAJE DE CONFIRMACIÓN
-        // ======================================
 
         redirectAttributes.addFlashAttribute(
                 "mensaje",
@@ -988,5 +834,4 @@ public class InventarioMedicamentoAdminController {
 
         return rutaListado;
     }
-
 }

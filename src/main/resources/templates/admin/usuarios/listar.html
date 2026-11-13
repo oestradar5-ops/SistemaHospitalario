@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org">
@@ -273,6 +274,48 @@
       cursor: pointer;
     }
 
+
+    /* ACCESOS A DASHBOARDS */
+    .panel-dashboards {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .panel-dashboards h2 {
+      margin: 0 0 20px;
+      color: #0b5ed7;
+    }
+
+    .botones-dashboards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .boton-dashboard {
+      display: inline-block;
+      padding: 15px 22px;
+      border-radius: 8px;
+      color: white;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: bold;
+      text-align: center;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    .boton-dashboard:hover {
+      opacity: 0.88;
+      transform: translateY(-2px);
+    }
+
+    .dashboard-medicos { background: #0b5ed7; }
+    .dashboard-farmacia { background: #198754; }
+    .dashboard-pagos { background: #6f42c1; }
+
   </style>
 </head>
 
@@ -297,6 +340,23 @@
 
 
 <div class="contenedor">
+
+  <!-- ACCESOS A ESTADÍSTICAS HOSPITALARIAS -->
+  <section class="panel-dashboards" aria-labelledby="titulo-dashboards">
+    <h2 id="titulo-dashboards">📊 Panel de Estadísticas Hospitalarias</h2>
+    <div class="botones-dashboards">
+      <a href="/dashboards/medicos" class="boton-dashboard dashboard-medicos">
+        👨‍⚕️ Dashboard de Médicos
+      </a>
+      <a href="/dashboards/farmacia" class="boton-dashboard dashboard-farmacia">
+        💊 Dashboard de Farmacia
+      </a>
+      <a href="/dashboards/pagos" class="boton-dashboard dashboard-pagos">
+        💳 Dashboard de Métodos de Pago
+      </a>
+    </div>
+  </section>
+
 
   <div class="encabezado">
 

@@ -40,7 +40,32 @@ public class AdminUsuarioController {
         this.usuarioRepository = usuarioRepository;
         this.auditoriaUsuarioRepository = auditoriaUsuarioRepository;
     }
+// =====================================================
+// RN-GLOBAL-002: VALIDACIÓN DEL NIT
+// =====================================================
 
+    private String validarNit(String nit) {
+
+        // 1. NIT obligatorio
+        if (nit == null || nit.isBlank()) {
+            return "El campo NIT es obligatorio.";
+        }
+
+        nit = nit.trim();
+
+        // 2. Longitud entre 8 y 9 caracteres
+        if (nit.length() < 8 || nit.length() > 9) {
+            return "El NIT debe contener entre 8 y 9 caracteres. " +
+                    "Usted ingresó " + nit.length() + " caracteres.";
+        }
+
+        // 3. Solo caracteres alfanuméricos
+        if (!nit.matches("[a-zA-Z0-9]+")) {
+            return "El NIT debe contener únicamente caracteres alfanuméricos.";
+        }
+
+        return null;
+    }
 
     // =====================================================
     // COMPROBAR SI EL USUARIO ES ADMINISTRADOR
@@ -454,7 +479,20 @@ public class AdminUsuarioController {
                 );
             }
         }
+// =====================================================
+// RN-GLOBAL-002: VALIDAR NIT AL CREAR
+// =====================================================
 
+        String errorNit = validarNit(usuario.getNit());
+
+        if (errorNit != null) {
+            return Map.of(
+                    "estado", "ERROR",
+                    "mensaje", errorNit
+            );
+        }
+
+        usuario.setNit(usuario.getNit().trim());
 
         // =================================================
         // ESPECIALIDAD SOLO PARA MÉDICOS
@@ -675,7 +713,20 @@ public class AdminUsuarioController {
             );
         }
 
+// =====================================================
+// RN-GLOBAL-002: VALIDAR NIT AL ACTUALIZAR
+// =====================================================
 
+        String errorNit = validarNit(datos.getNit());
+
+        if (errorNit != null) {
+            return Map.of(
+                    "estado", "ERROR",
+                    "mensaje", errorNit
+            );
+        }
+
+        datos.setNit(datos.getNit().trim());
         // =================================================
         // VALIDAR DPI
         // =================================================

@@ -4,7 +4,6 @@ import com.hospital.his.dto.FarmaciaDespachoRequest;
 import com.hospital.his.dto.FarmaciaDetalleRequest;
 
 import com.hospital.his.entity.*;
-
 import com.hospital.his.repository.*;
 
 import jakarta.servlet.http.HttpSession;
@@ -36,6 +35,9 @@ public class FarmaciaDespachoService {
     private final AutorizacionSustitucionRepository autorizacionRepository;
     private final CatalogoMedicamentoRepository medicamentoRepository;
 
+    // CU-15: BITÁCORA DE MOVIMIENTOS
+    private final MovimientoInventarioRepository movimientoInventarioRepository;
+
     // ==========================================
     // CONSTRUCTOR
     // ==========================================
@@ -48,7 +50,8 @@ public class FarmaciaDespachoService {
             DespachoMedicamentoRepository despachoRepository,
             InventarioMedicamentoRepository inventarioRepository,
             AutorizacionSustitucionRepository autorizacionRepository,
-            CatalogoMedicamentoRepository medicamentoRepository) {
+            CatalogoMedicamentoRepository medicamentoRepository,
+            MovimientoInventarioRepository movimientoInventarioRepository) {
 
         this.farmaciaSesionService = farmaciaSesionService;
         this.farmaciaRecetaService = farmaciaRecetaService;
@@ -58,6 +61,8 @@ public class FarmaciaDespachoService {
         this.inventarioRepository = inventarioRepository;
         this.autorizacionRepository = autorizacionRepository;
         this.medicamentoRepository = medicamentoRepository;
+
+        this.movimientoInventarioRepository = movimientoInventarioRepository;
     }
 
     // ==========================================
@@ -428,12 +433,56 @@ public class FarmaciaDespachoService {
             // 11. DESCONTAR INVENTARIO
             // ==================================
 
-            inventario.setCantidadDisponible(
-                    inventario.getCantidadDisponible()
-                            - item.getCantidad()
-            );
+            // Guardar el stock antes del despacho.
+            Integer stockAnterior =
+                    inventario.getCantidadDisponible();
+
+            // Calcular el nuevo stock.
+            Integer stockNuevo =
+                    stockAnterior - item.getCantidad();
+
+            // Actualizar las existencias.
+            inventario.setCantidadDisponible(stockNuevo);
 
             inventarioRepository.save(inventario);
+
+            // ==================================
+            // CU-15: REGISTRAR MOVIMIENTO AUTOMÁTICO
+            // ==================================
+
+            MovimientoInventario movimiento =
+                    new MovimientoInventario();
+
+            movimiento.setInventario(inventario);
+
+            // Tipo 6 = Despacho automático de Farmacia.
+            movimiento.setTipoMovimiento(6);
+
+            movimiento.setCantidad(item.getCantidad());
+
+            movimiento.setStockAnterior(stockAnterior);
+
+            movimiento.setStockNuevo(stockNuevo);
+
+            movimiento.setCostoUnitario(precioUnitario);
+
+            movimiento.setNumeroReferencia(
+                    "RECETA-" + receta.getId()
+            );
+
+            movimiento.setMotivoNotas(
+                    "Despacho automático de Farmacia (CU-11). "
+                            + "Medicamento: "
+                            + medicamentoEntregado.getNombre()
+                            + "."
+            );
+
+            movimiento.setUsuario(empleado);
+
+            movimiento.setActivo(true);
+
+            // Guardar movimiento sin volver a descontar.
+            movimientoInventarioRepository.save(movimiento);
 
             // ==================================
             // 12. CREAR DETALLE DEL DESPACHO

@@ -533,12 +533,44 @@
         }
 
 
+        // ==========================================
+// RN-GLOBAL-002: VALIDACIÓN DEL NIT
+// ==========================================
+
+// 1. NIT OBLIGATORIO
         if (datos.nit === "") {
 
             marcarError(
                 "nit",
                 "errorNit",
-                "El NIT es obligatorio."
+                "El campo NIT es obligatorio."
+            );
+
+            valido = false;
+
+        }
+
+// 2. LONGITUD ENTRE 8 Y 9 CARACTERES
+        else if (datos.nit.length < 8 || datos.nit.length > 9) {
+
+            marcarError(
+                "nit",
+                "errorNit",
+                "El NIT debe contener entre 8 y 9 caracteres. " +
+                "Usted ingresó " + datos.nit.length + " caracteres."
+            );
+
+            valido = false;
+
+        }
+
+// 3. SOLO CARACTERES ALFANUMÉRICOS
+        else if (!/^[a-zA-Z0-9]+$/.test(datos.nit)) {
+
+            marcarError(
+                "nit",
+                "errorNit",
+                "El NIT debe contener únicamente caracteres alfanuméricos."
             );
 
             valido = false;

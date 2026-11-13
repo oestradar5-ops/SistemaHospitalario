@@ -131,6 +131,35 @@
       display: none;
     }
 
+
+    /* CU-04 - Temporizador de reserva */
+    .panel-tiempo {
+      background: #edf5ff;
+      color: #13477e;
+      border: 2px solid #0b5ed7;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 18px 0 24px;
+      text-align: center;
+    }
+    .panel-tiempo strong {
+      display: block;
+      font-size: 36px;
+      margin: 8px 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .panel-tiempo.alerta {
+      background: #fff3cd;
+      border-color: #bd7b00;
+      color: #704600;
+    }
+    .panel-tiempo.expirada {
+      background: #fbe7e9;
+      border-color: #bb2636;
+      color: #891521;
+    }
+    .panel-tiempo p { margin: 6px 0; }
+
     @media (max-width: 700px) {
 
       .formulario {
@@ -163,6 +192,13 @@
           type="hidden"
           id="citaId"
           th:value="${cita.id}">
+
+  <div class="panel-tiempo" id="panelTiempo"
+       th:attr="data-segundos=${segundosRestantes}, data-pendiente=${pendientePago}, data-expirada=${reservaExpirada}">
+    <div><strong style="font-size:18px">⏱ Tiempo para completar el pago</strong></div>
+    <strong id="contadorTiempo">05:00</strong>
+    <p id="mensajeTiempo" role="status" aria-live="polite">La reserva tiene una duración máxima de cinco minutos.</p>
+  </div>
 
 
   <div class="resumen">
@@ -338,6 +374,106 @@
 
 
 <script>
+  // =====================================================
+  // CU-04 - Temporizador ligado a la fecha de la cita
+  // El servidor decide si una reserva expiró y la libera.
+  // =====================================================
+  const panelTiempo = document.getElementById("panelTiempo");
+  const contadorTiempo = document.getElementById("contadorTiempo");
+  const mensajeTiempo = document.getElementById("mensajeTiempo");
+  const citaIdTemporizador = document.getElementById("citaId").value;
+  let tiempoServidor = Number(panelTiempo.dataset.segundos || 0);
+  let reservaActiva = panelTiempo.dataset.pendiente === "true";
+  let yaExpirada = panelTiempo.dataset.expirada === "true";
+  let pagoCompletado = false;
+  let fechaObjetivo = performance.now() + tiempoServidor * 1000;
+  let redireccionProgramada = false;
+  let verificacionEnCurso = false;
+
+  function mostrarTiempo(segundos) {
+    const restantes = Math.max(0, Math.ceil(segundos));
+    const minutos = String(Math.floor(restantes / 60)).padStart(2, "0");
+    const segundosReloj = String(restantes % 60).padStart(2, "0");
+    contadorTiempo.textContent = minutos + ":" + segundosReloj;
+    panelTiempo.classList.toggle("alerta", restantes <= 60 && restantes > 0 && reservaActiva);
+  }
+
+  function deshabilitarFormulario() {
+    ["numeroTarjeta", "titular", "vencimiento", "cvv", "btnPagar"].forEach(id => {
+      const campo = document.getElementById(id);
+      if (campo) campo.disabled = true;
+    });
+  }
+
+  function detenerReserva(mensaje, expirada) {
+    reservaActiva = false;
+    yaExpirada = expirada;
+    mostrarTiempo(0);
+    deshabilitarFormulario();
+    panelTiempo.classList.remove("alerta");
+    panelTiempo.classList.toggle("expirada", expirada);
+    mensajeTiempo.textContent = mensaje;
+
+    if (expirada && !redireccionProgramada) {
+      redireccionProgramada = true;
+      setTimeout(() => {
+        window.location.href = "/paciente/citas/agendar";
+      }, 4000);
+    }
+  }
+
+  async function consultarReserva() {
+    if (!reservaActiva || pagoCompletado || verificacionEnCurso) return;
+    verificacionEnCurso = true;
+    try {
+      const respuesta = await fetch(
+              "/api/pagos/reserva/estado?citaId=" + encodeURIComponent(citaIdTemporizador),
+              {cache: "no-store"}
+      );
+      if (!respuesta.ok) return;
+      const datos = await respuesta.json();
+      if (datos.estado === "ACTIVA") {
+        tiempoServidor = Number(datos.segundosRestantes) || 0;
+        fechaObjetivo = performance.now() + tiempoServidor * 1000;
+        mostrarTiempo(tiempoServidor);
+      } else if (datos.estado === "EXPIRADA") {
+        detenerReserva(datos.mensaje, true);
+      } else {
+        detenerReserva(datos.mensaje || "Esta cita ya no está pendiente de pago.", false);
+      }
+    } catch (e) {
+      console.warn("No fue posible consultar la reserva", e);
+      mensajeTiempo.textContent = "Verificando conexión con el servidor...";
+    } finally {
+      verificacionEnCurso = false;
+    }
+  }
+
+  function actualizarReloj() {
+    if (!reservaActiva || pagoCompletado) return;
+    const restantes = Math.max(0, Math.ceil((fechaObjetivo - performance.now()) / 1000));
+    mostrarTiempo(restantes);
+    if (restantes === 0) {
+      document.getElementById("btnPagar").disabled = true;
+      mensajeTiempo.textContent = "Comprobando si venció la reserva...";
+      consultarReserva();
+    }
+  }
+
+  if (yaExpirada) {
+    detenerReserva("El tiempo para confirmar su cita ha expirado. El horario seleccionado ha sido liberado. Por favor, seleccione un nuevo horario.", true);
+  } else if (!reservaActiva) {
+    detenerReserva("Esta cita ya no está pendiente de pago.", false);
+  } else {
+    mostrarTiempo(tiempoServidor);
+    actualizarReloj();
+    setInterval(actualizarReloj, 1000);
+    setInterval(consultarReserva, 5000);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) consultarReserva();
+    });
+  }
+
 
   function formatearTarjeta() {
 
@@ -394,6 +530,9 @@
 
 
   async function realizarPago() {
+    if (!reservaActiva || pagoCompletado) {
+      return;
+    }
 
     const mensaje =
             document.getElementById("mensaje");
@@ -531,6 +670,11 @@
               await respuesta.json();
 
 
+      if (resultado.estado === "EXPIRADA") {
+        detenerReserva(resultado.mensaje, true);
+        return;
+      }
+
       if (
               resultado.estado !== "OK"
       ) {
@@ -547,6 +691,11 @@
         return;
       }
 
+
+      pagoCompletado = true;
+      reservaActiva = false;
+      mensajeTiempo.textContent = "Pago registrado. Se abrirá el comprobante.";
+      panelTiempo.classList.remove("alerta");
 
       mensaje.style.color =
               "green";
@@ -615,4 +764,4 @@
 </script>
 
 </body>
-</html>
+</html

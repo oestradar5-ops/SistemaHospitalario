@@ -19,18 +19,20 @@ public interface DetalleDespachoRepository
             Long despachoId
     );
 
+
     // ==========================================
     // CONSULTAR CANTIDAD YA DESPACHADA
     // ==========================================
 
-    @Query("""
-            SELECT COALESCE(SUM(d.cantidad), 0)
-            FROM DetalleDespacho d
-            WHERE d.recetaMedicamento.id = :recetaMedicamentoId
-              AND d.despacho.estado = 'CONFIRMADO'
-            """)
+    @Query(
+            "SELECT COALESCE(SUM(d.cantidad), 0) " +
+                    "FROM DetalleDespacho d " +
+                    "WHERE d.recetaMedicamento.id = :recetaMedicamentoId " +
+                    "AND d.despacho.estado = 'CONFIRMADO'"
+    )
     Long obtenerCantidadDespachada(
             @Param("recetaMedicamentoId")
             Long recetaMedicamentoId
     );
+
 }

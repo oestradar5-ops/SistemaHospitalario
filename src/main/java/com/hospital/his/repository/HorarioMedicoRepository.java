@@ -25,6 +25,7 @@ public interface HorarioMedicoRepository
             Long medicoId
     );
 
+
     // ==========================================
     // HORARIOS DISPONIBLES POR FECHA
     // ==========================================
@@ -35,17 +36,15 @@ public interface HorarioMedicoRepository
             LocalDate fecha
     );
 
+
     // ==========================================
     // CU-12 - BLOQUEAR HORARIO PARA RESERVA
     // ==========================================
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("""
-            SELECT h
-            FROM HorarioMedico h
-            WHERE h.id = :horarioId
-            """)
+    @Query("SELECT h FROM HorarioMedico h WHERE h.id = :horarioId")
     Optional<HorarioMedico> buscarHorarioParaReserva(
             @Param("horarioId") Long horarioId
     );
+
 }

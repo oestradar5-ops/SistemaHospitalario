@@ -544,10 +544,13 @@
                 await respuesta.json();
 
 
-            if (!respuesta.ok) {
+            // ==========================================
+// VALIDAR RESPUESTA DEL SERVIDOR
+// ==========================================
 
-                mensaje.style.color =
-                    "#b02a37";
+            if (!respuesta.ok || datos.estado !== "OK") {
+
+                mensaje.style.color = "#b02a37";
 
                 mensaje.textContent =
                     datos.mensaje ||

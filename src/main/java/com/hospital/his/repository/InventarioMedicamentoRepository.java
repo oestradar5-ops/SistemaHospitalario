@@ -48,20 +48,19 @@ public interface InventarioMedicamentoRepository
 
 
     // ==========================================
-    // BLOQUEAR INVENTARIO DURANTE UN DESPACHO
+    // CU-11: BLOQUEAR INVENTARIO DURANTE DESPACHO
     // EVITA DESCUENTOS SIMULTÁNEOS INCORRECTOS
     // ==========================================
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("""
-            SELECT i
-            FROM InventarioMedicamento i
-            WHERE i.medicamento.id = :medicamentoId
-              AND i.sucursal.id = :sucursalId
-              AND i.activo = true
-            """)
-    Optional<InventarioMedicamento>
-    buscarParaDespacho(
+    @Query(
+            "SELECT i " +
+                    "FROM InventarioMedicamento i " +
+                    "WHERE i.medicamento.id = :medicamentoId " +
+                    "AND i.sucursal.id = :sucursalId " +
+                    "AND i.activo = true"
+    )
+    Optional<InventarioMedicamento> buscarParaDespacho(
             @Param("medicamentoId") Long medicamentoId,
             @Param("sucursalId") Long sucursalId
     );
@@ -72,13 +71,13 @@ public interface InventarioMedicamentoRepository
     // MÉTODO ORIGINAL
     // ==========================================
 
-    @Query("""
-            SELECT i
-            FROM InventarioMedicamento i
-            WHERE i.sucursal.id = :sucursalId
-              AND i.activo = true
-              AND i.cantidadDisponible <= i.stockMinimo
-            """)
+    @Query(
+            "SELECT i " +
+                    "FROM InventarioMedicamento i " +
+                    "WHERE i.sucursal.id = :sucursalId " +
+                    "AND i.activo = true " +
+                    "AND i.cantidadDisponible <= i.stockMinimo"
+    )
     List<InventarioMedicamento> buscarStockBajo(
             @Param("sucursalId") Long sucursalId
     );
@@ -89,13 +88,13 @@ public interface InventarioMedicamentoRepository
     // CON MEDICAMENTO Y SUCURSAL
     // ==========================================
 
-    @Query("""
-            SELECT i
-            FROM InventarioMedicamento i
-            JOIN FETCH i.medicamento
-            JOIN FETCH i.sucursal
-            ORDER BY i.medicamento.nombre ASC
-            """)
+    @Query(
+            "SELECT i " +
+                    "FROM InventarioMedicamento i " +
+                    "JOIN FETCH i.medicamento " +
+                    "JOIN FETCH i.sucursal " +
+                    "ORDER BY i.medicamento.nombre ASC"
+    )
     List<InventarioMedicamento> findAllConDetalles();
 
 
@@ -104,14 +103,14 @@ public interface InventarioMedicamentoRepository
     // INCLUYE REGISTROS ACTIVOS E INACTIVOS
     // ==========================================
 
-    @Query("""
-            SELECT i
-            FROM InventarioMedicamento i
-            JOIN FETCH i.medicamento
-            JOIN FETCH i.sucursal
-            WHERE i.sucursal.id = :sucursalId
-            ORDER BY i.medicamento.nombre ASC
-            """)
+    @Query(
+            "SELECT i " +
+                    "FROM InventarioMedicamento i " +
+                    "JOIN FETCH i.medicamento " +
+                    "JOIN FETCH i.sucursal " +
+                    "WHERE i.sucursal.id = :sucursalId " +
+                    "ORDER BY i.medicamento.nombre ASC"
+    )
     List<InventarioMedicamento> findAllBySucursalConDetalles(
             @Param("sucursalId") Long sucursalId
     );
@@ -149,14 +148,14 @@ public interface InventarioMedicamentoRepository
     // CU-14: LISTAR INVENTARIO POR MEDICAMENTO
     // ==========================================
 
-    @Query("""
-            SELECT i
-            FROM InventarioMedicamento i
-            JOIN FETCH i.medicamento
-            JOIN FETCH i.sucursal
-            WHERE i.medicamento.id = :medicamentoId
-            ORDER BY i.sucursal.nombre ASC
-            """)
+    @Query(
+            "SELECT i " +
+                    "FROM InventarioMedicamento i " +
+                    "JOIN FETCH i.medicamento " +
+                    "JOIN FETCH i.sucursal " +
+                    "WHERE i.medicamento.id = :medicamentoId " +
+                    "ORDER BY i.sucursal.nombre ASC"
+    )
     List<InventarioMedicamento> findByMedicamentoConDetalles(
             @Param("medicamentoId") Long medicamentoId
     );
@@ -166,16 +165,16 @@ public interface InventarioMedicamentoRepository
     // CU-14: CONSULTAR STOCK BAJO GENERAL
     // ==========================================
 
-    @Query("""
-            SELECT i
-            FROM InventarioMedicamento i
-            JOIN FETCH i.medicamento
-            JOIN FETCH i.sucursal
-            WHERE i.activo = true
-              AND i.cantidadDisponible <= i.stockMinimo
-            ORDER BY i.sucursal.nombre ASC,
-                     i.medicamento.nombre ASC
-            """)
+    @Query(
+            "SELECT i " +
+                    "FROM InventarioMedicamento i " +
+                    "JOIN FETCH i.medicamento " +
+                    "JOIN FETCH i.sucursal " +
+                    "WHERE i.activo = true " +
+                    "AND i.cantidadDisponible <= i.stockMinimo " +
+                    "ORDER BY i.sucursal.nombre ASC, " +
+                    "i.medicamento.nombre ASC"
+    )
     List<InventarioMedicamento> buscarStockBajoGeneral();
 
 
@@ -184,11 +183,11 @@ public interface InventarioMedicamentoRepository
     // ==========================================
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("""
-            SELECT i
-            FROM InventarioMedicamento i
-            WHERE i.id = :id
-            """)
+    @Query(
+            "SELECT i " +
+                    "FROM InventarioMedicamento i " +
+                    "WHERE i.id = :id"
+    )
     Optional<InventarioMedicamento> buscarParaActualizar(
             @Param("id") Long id
     );

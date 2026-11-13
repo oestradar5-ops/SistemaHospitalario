@@ -539,7 +539,60 @@
       .acceso-sustituciones { flex-direction: column; align-items: stretch; }
       .btn-sustituciones { white-space: normal; }
     }
+    /* ====================================== */
+    /* CU-16: ACCESO A AGENDA MÉDICA          */
+    /* ====================================== */
 
+    .acceso-agenda {
+      background: linear-gradient(110deg, #f3efff, #faf8ff);
+      border: 1px solid #ddd6fe;
+      border-left: 6px solid #8b5cf6;
+      border-radius: 10px;
+      padding: 22px;
+      margin-bottom: 30px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .acceso-agenda h2 {
+      color: #6d28d9;
+      margin: 0 0 8px;
+    }
+
+    .acceso-agenda p {
+      margin: 0;
+      color: #526273;
+    }
+
+    .btn-agenda {
+      display: inline-block;
+      padding: 13px 20px;
+      border-radius: 8px;
+      background: #8b5cf6;
+      color: white;
+      font-weight: bold;
+      text-decoration: none;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .btn-agenda:hover {
+      background: #7c3aed;
+    }
+
+    @media (max-width: 700px) {
+      .acceso-agenda {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn-agenda {
+        white-space: normal;
+      }
+    }
   </style>
 
 </head>
@@ -622,7 +675,35 @@
       Ver solicitudes de sustitución
     </a>
   </section>
+  <!-- ======================================== -->
+  <!-- CU-16: GESTIÓN DE AGENDA MÉDICA -->
+  <!-- ======================================== -->
 
+  <section class="acceso-agenda"
+           aria-labelledby="titulo-agenda">
+
+    <div>
+
+      <h2 id="titulo-agenda">
+        📅 Agenda Médica
+      </h2>
+
+      <p>
+        Consulte sus citas programadas,
+        organice eventos personales y
+        administre sus tareas y recordatorios.
+      </p>
+
+    </div>
+
+    <a class="btn-agenda"
+       th:href="@{/medico/agenda}">
+
+      📆 Abrir Agenda Médica
+
+    </a>
+
+  </section>
   <!-- ======================================== -->
   <!-- 1. EN ESPERA DE CONSULTA -->
   <!-- ======================================== -->

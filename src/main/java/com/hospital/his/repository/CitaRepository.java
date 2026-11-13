@@ -63,23 +63,52 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     // CU-12 - CITAS PENDIENTES DE RECORDATORIO
     // ==========================================
 
-    @Query("""
-            SELECT c
-            FROM Cita c
-            JOIN c.horario h
-            WHERE c.origenCita = 'SEGUIMIENTO'
-              AND c.estado = 'CONFIRMADA'
-              AND (
-                  c.recordatorioSeguimientoEnviado = false
-                  OR c.recordatorioSeguimientoEnviado IS NULL
-              )
-              AND h.fecha >= :fechaActual
-              AND h.fecha <= :fechaLimite
-            ORDER BY h.fecha ASC, h.hora ASC
-            """)
+    @Query(
+            "SELECT c " +
+                    "FROM Cita c " +
+                    "JOIN c.horario h " +
+                    "WHERE c.origenCita = 'SEGUIMIENTO' " +
+                    "AND c.estado = 'CONFIRMADA' " +
+                    "AND ( " +
+                    "    c.recordatorioSeguimientoEnviado = false " +
+                    "    OR c.recordatorioSeguimientoEnviado IS NULL " +
+                    ") " +
+                    "AND h.fecha >= :fechaActual " +
+                    "AND h.fecha <= :fechaLimite " +
+                    "ORDER BY h.fecha ASC, h.hora ASC"
+    )
     List<Cita> buscarSeguimientosPendientesRecordatorio(
             @Param("fechaActual") LocalDate fechaActual,
             @Param("fechaLimite") LocalDate fechaLimite
+    );
+
+    // ==========================================
+// CU-16 - CITAS DE LA AGENDA MÉDICA
+// ==========================================
+
+    // ==========================================
+// CU-16 - CITAS DE LA AGENDA MÉDICA
+// FILTRAR ESTADOS NO PERMITIDOS
+// ==========================================
+
+    @Query("""
+    SELECT c
+    FROM Cita c
+    JOIN FETCH c.horario h
+    JOIN FETCH c.paciente p
+    WHERE c.medico.id = :medicoId
+
+    AND c.estado NOT IN (
+        'PENDIENTE_DE_PAGO',
+        'PENDIENTE',
+        'CANCELADA',
+        'NO_ASISTIO'
+    )
+
+    ORDER BY h.fecha ASC, h.hora ASC
+    """)
+    List<Cita> buscarCitasAgendaMedica(
+            @Param("medicoId") Long medicoId
     );
 
 }

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Mis Citas - HIS</title>
+
+    <style>
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fb;
+        }
+
+        header {
+            background-color: #0b5ed7;
+            color: white;
+            padding: 25px 40px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        .contenedor {
+            max-width: 1150px;
+            margin: 40px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #0b5ed7;
+        }
+
+        .tabla-contenedor {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        th {
+            background-color: #0b5ed7;
+            color: white;
+            padding: 14px;
+            text-align: left;
+        }
+
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background-color: #f1f5ff;
+        }
+
+        .estado {
+            font-weight: bold;
+            color: #198754;
+        }
+
+        .vacio {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+
+        .boton {
+            display: inline-block;
+            margin-top: 25px;
+            background-color: #0b5ed7;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+    <h1>Sistema Informático Hospitalario</h1>
+</header>
+
+<div class="contenedor">
+
+    <h2>Mis Citas Médicas</h2>
+
+    <p>
+        Bienvenido,
+        <strong th:text="${usuario}"></strong>
+    </p>
+
+    <p>
+        Consulte las citas médicas que tiene
+        registradas en nuestro hospital.
+    </p>
+
+    <div class="tabla-contenedor">
+
+        <table th:if="${!#lists.isEmpty(citas)}">
+
+            <thead>
+            <tr>
+                <th>No. Cita</th>
+                <th>Sucursal</th>
+                <th>Especialidad</th>
+                <th>Médico</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Estado</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            <tr th:each="cita : ${citas}">
+
+                <td th:text="${cita.id}"></td>
+
+                <td th:text="${cita.sucursal.nombre}"></td>
+
+                <td th:text="${cita.especialidad.nombre}"></td>
+
+                <td th:text="${cita.medico.usuario.nombreCompleto}"></td>
+
+                <td th:text="${cita.horario.fecha}"></td>
+
+                <td th:text="${cita.horario.hora}"></td>
+
+                <td class="estado"
+                    th:text="${cita.estado}">
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <div class="vacio"
+         th:if="${#lists.isEmpty(citas)}">
+
+        No tiene citas médicas registradas.
+
+    </div>
+
+    <a th:href="@{/paciente/dashboard}"
+       class="boton">
+
+        Volver al Portal del Paciente
+
+    </a>
+
+</div>
+
+</body>
+</html>

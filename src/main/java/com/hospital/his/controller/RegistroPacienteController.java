@@ -48,7 +48,9 @@ public class RegistroPacienteController {
             @RequestBody Usuario usuario) {
 
 
-        // NOMBRE
+        // ==========================================
+        // VALIDAR NOMBRE
+        // ==========================================
 
         if (
                 usuario.getNombreCompleto() == null ||
@@ -63,7 +65,9 @@ public class RegistroPacienteController {
         }
 
 
-        // DPI
+        // ==========================================
+        // RN-GLOBAL-001: VALIDAR DPI
+        // ==========================================
 
         if (
                 usuario.getDpi() == null ||
@@ -78,7 +82,9 @@ public class RegistroPacienteController {
         }
 
 
-        // DPI DUPLICADO
+        // ==========================================
+        // VALIDAR DPI DUPLICADO
+        // ==========================================
 
         if (
                 usuarioRepository.existsByDpi(
@@ -95,7 +101,11 @@ public class RegistroPacienteController {
         }
 
 
-        // NIT
+        // ==========================================
+        // RN-GLOBAL-002: VALIDACIÓN DEL NIT
+        // ==========================================
+
+        // 1. NIT OBLIGATORIO
 
         if (
                 usuario.getNit() == null ||
@@ -105,12 +115,47 @@ public class RegistroPacienteController {
             return Map.of(
                     "estado", "ERROR",
                     "mensaje",
-                    "El NIT es obligatorio."
+                    "El campo NIT es obligatorio."
             );
         }
 
 
-        // TELÉFONO
+        // Eliminar espacios al inicio y al final
+
+        String nit = usuario.getNit().trim();
+
+
+        // 2. LONGITUD ENTRE 8 Y 9 CARACTERES
+
+        if (nit.length() < 8 || nit.length() > 9) {
+
+            return Map.of(
+                    "estado", "ERROR",
+                    "mensaje",
+                    "El NIT debe contener entre 8 y 9 caracteres. " +
+                            "Usted ingresó " + nit.length() + " caracteres."
+            );
+        }
+
+
+        // 3. ÚNICAMENTE CARACTERES ALFANUMÉRICOS
+
+        if (!nit.matches("[a-zA-Z0-9]+")) {
+
+            return Map.of(
+                    "estado", "ERROR",
+                    "mensaje",
+                    "El NIT debe contener únicamente caracteres alfanuméricos."
+            );
+        }
+
+        // Guardar el NIT sin espacios externos
+        usuario.setNit(nit);
+
+
+        // ==========================================
+        // VALIDAR TELÉFONO
+        // ==========================================
 
         if (
                 usuario.getNumeroTelefono() == null ||
@@ -125,7 +170,9 @@ public class RegistroPacienteController {
         }
 
 
-        // CORREO
+        // ==========================================
+        // VALIDAR CORREO
+        // ==========================================
 
         if (
                 usuario.getCorreoElectronico() == null ||
@@ -140,7 +187,9 @@ public class RegistroPacienteController {
         }
 
 
-        // CORREO DUPLICADO
+        // ==========================================
+        // VALIDAR CORREO DUPLICADO
+        // ==========================================
 
         if (
                 usuarioRepository
@@ -157,7 +206,9 @@ public class RegistroPacienteController {
         }
 
 
-        // NOMBRE DE USUARIO
+        // ==========================================
+        // VALIDAR NOMBRE DE USUARIO
+        // ==========================================
 
         if (
                 usuario.getNombreUsuario() == null ||
@@ -172,6 +223,10 @@ public class RegistroPacienteController {
             );
         }
 
+
+        // ==========================================
+        // VALIDAR USUARIO DUPLICADO
+        // ==========================================
 
         if (
                 usuarioRepository
@@ -188,7 +243,9 @@ public class RegistroPacienteController {
         }
 
 
-        // CONTRASEÑA
+        // ==========================================
+        // VALIDAR CONTRASEÑA
+        // ==========================================
 
         if (
                 usuario.getPassword() == null ||
@@ -215,14 +272,20 @@ public class RegistroPacienteController {
         usuario.setBloqueadoHasta(null);
 
 
+        // ==========================================
+        // GUARDAR PACIENTE
+        // ==========================================
+
         try {
 
-            // Guardar paciente
             Usuario usuarioGuardado =
                     usuarioRepository.save(usuario);
 
 
-            // Enviar correo de bienvenida
+            // ======================================
+            // ENVIAR CORREO DE BIENVENIDA
+            // ======================================
+
             correoService.enviarBienvenida(
                     usuarioGuardado.getCorreoElectronico(),
                     usuarioGuardado.getNombreCompleto()

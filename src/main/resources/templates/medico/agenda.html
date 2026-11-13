@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Agenda Médica | Sistema Hospitalario</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fa;
+            color: #263445;
+        }
+
+        header {
+            background: #1f4e79;
+            color: white;
+            padding: 20px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .volver {
+            display: inline-block;
+            background: white;
+            color: #1f4e79;
+            padding: 11px 17px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .contenedor {
+            width: 94%;
+            max-width: 1400px;
+            margin: 30px auto;
+        }
+
+        .introduccion {
+            margin-bottom: 25px;
+        }
+
+        .introduccion h2 {
+            color: #1f4e79;
+        }
+
+        .mensaje {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .exito {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .distribucion {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .tarjeta {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+        }
+
+        .tarjeta h2 {
+            margin-top: 0;
+            color: #1f4e79;
+        }
+
+        .controles-calendario {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .controles-calendario button {
+            border: none;
+            background: #1f4e79;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .controles-calendario button:hover {
+            background: #173b5d;
+        }
+
+        #tituloMes {
+            color: #1f4e79;
+            margin: 0;
+            text-transform: capitalize;
+        }
+
+        .calendario {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 5px;
+        }
+
+        .dia-semana {
+            background: #1f4e79;
+            color: white;
+            text-align: center;
+            padding: 12px 3px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .dia {
+            min-height: 105px;
+            padding: 8px;
+            border: 1px solid #e0e6ed;
+            border-radius: 5px;
+            background: #fff;
+            overflow-wrap: anywhere;
+        }
+
+        .dia.vacio {
+            background: #f4f7fa;
+        }
+
+        .dia.hoy {
+            border: 2px solid #0d6efd;
+            background: #f0f7ff;
+        }
+
+        .numero-dia {
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 7px;
+        }
+
+        .evento-calendario {
+            background: #ede9fe;
+            border-left: 4px solid #8b5cf6;
+            color: #5b21b6;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .cita-calendario {
+            background: #e7f1ff;
+            border-left: 4px solid #0d6efd;
+            color: #084298;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .elemento.cita {
+            border-left-color: #0d6efd;
+        }
+
+        .leyenda {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+            font-size: 13px;
+        }
+
+        .indicador {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        .morado {
+            background: #8b5cf6;
+        }
+
+        .azul {
+            background: #0d6efd;
+        }
+
+        .formulario {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .formulario label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .formulario input,
+        .formulario textarea,
+        .formulario select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #ccd5df;
+            border-radius: 7px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        .formulario textarea {
+            min-height: 75px;
+            resize: vertical;
+        }
+
+        .formulario button {
+            border: none;
+            padding: 12px;
+            border-radius: 7px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-evento {
+            background: #8b5cf6;
+        }
+
+        .btn-tarea {
+            background: #198754;
+        }
+
+        .elemento {
+            border: 1px solid #e1e6ed;
+            border-left: 5px solid #8b5cf6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .elemento h3 {
+            margin: 0 0 8px;
+            color: #1f4e79;
+            font-size: 16px;
+        }
+
+        .elemento p {
+            margin: 6px 0;
+            font-size: 13px;
+        }
+
+        .elemento.tarea {
+            border-left-color: #198754;
+        }
+
+        .elemento.completada {
+            background: #f0fff4;
+            opacity: 0.85;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .acciones form {
+            margin: 0;
+        }
+
+        .acciones button {
+            border: none;
+            border-radius: 6px;
+            padding: 9px 12px;
+            cursor: pointer;
+            color: white;
+            font-size: 12px;
+        }
+
+        .btn-eliminar {
+            background: #dc3545;
+        }
+
+        .btn-completar {
+            background: #198754;
+        }
+
+        .btn-reabrir {
+            background: #6c757d;
+        }
+
+        .sin-registros {
+            color: #667788;
+            font-size: 14px;
+        }
+
+        .separador {
+            border: none;
+            border-top: 1px solid #e4e8ee;
+            margin: 22px 0;
+        }
+
+        @media (max-width: 950px) {
+            .distribucion {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .tarjeta {
+                padding: 15px;
+            }
+
+            .dia {
+                min-height: 75px;
+                padding: 4px;
+            }
+
+            .numero-dia {
+                font-size: 12px;
+            }
+
+            .evento-calendario {
+                font-size: 9px;
+            }
+        }
+
+        /* CU-16: FORMULARIOS DE EDICIÓN */
+        .btn-editar {
+            background: #d97706;
+        }
+        .editar-registro {
+            margin-top: 12px;
+            padding: 14px;
+            background: #fffaf0;
+            border: 1px solid #f1d5a8;
+            border-radius: 8px;
+        }
+        .editar-registro summary {
+            cursor: pointer;
+            color: #92400e;
+            font-weight: bold;
+        }
+        .editar-registro .formulario {
+            margin-top: 15px;
+        }
+        .editar-registro .formulario button {
+            background: #d97706;
+        }
+
+        /* CU-16: selector de vistas y agenda semanal/diaria */
+        .selector-vista { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 18px; }
+        .selector-vista button { padding:10px 16px; border:1px solid #1f4e79; border-radius:6px; background:white; color:#1f4e79; font-weight:bold; cursor:pointer; }
+        .selector-vista button.activa { background:#1f4e79; color:white; }
+        .calendario.vista-semanal { grid-template-columns:repeat(7,minmax(0,1fr)); }
+        .calendario.vista-diaria { grid-template-columns:minmax(0,1fr); }
+        .calendario.vista-diaria .dia { min-height:220px; }
+        .calendario.vista-diaria .evento-calendario, .calendario.vista-diaria .cita-calendario { font-size:14px; padding:10px; }
+        @media(max-width:700px) { .calendario.vista-semanal { grid-template-columns:repeat(7,minmax(0,1fr)); overflow-x:auto; } .calendario.vista-semanal .dia { padding:3px; min-height:100px; } }
+
+        /* CU-16: RECORDATORIOS DE LA AGENDA */
+        .recordatorio-resumen { color: #536477; font-size: 14px; margin-bottom: 16px; }
+        .recordatorio-grupo { margin-top: 18px; }
+        .recordatorio-grupo h3 { margin: 0 0 10px; color: #1f4e79; font-size: 16px; }
+        .recordatorio-item { padding: 12px 14px; margin: 8px 0; border-radius: 7px; border-left: 5px solid; }
+        .recordatorio-item p { margin: 5px 0; font-size: 13px; }
+        .recordatorio-evento { background: #f2edff; border-color: #8b5cf6; }
+        .recordatorio-proximo { background: #fff8df; border-color: #e4a600; }
+        .recordatorio-vencido { background: #fff0f0; border-color: #dc3545; }
+
+
+        /* CU-16: colores de citas según su estado */
+        .cita-confirmada { background: #e7f1ff; border-left-color: #0d6efd !important; color: #084298; }
+        .cita-signos-vitales { background: #fff3e0; border-left-color: #f59e0b !important; color: #92400e; }
+        .cita-evaluado { background: #f2eaff; border-left-color: #8b5cf6 !important; color: #5b21b6; }
+        .cita-atencion-finalizada { background: #e8f7ee; border-left-color: #198754 !important; color: #146c43; }
+        .cita-otro { background: #f1f3f5; border-left-color: #6c757d !important; color: #495057; }
+        .elemento.cita { border-left-width: 5px; }
+        .indicador.naranja { background: #f59e0b; }
+        .indicador.verde { background: #198754; }
+        .indicador.gris { background: #6c757d; }
+
+
+        /* CU-16: filtros de la lista de citas (sin recargar la página) */
+        .filtros-citas { display:flex; flex-wrap:wrap; gap:9px; margin:14px 0 18px; }
+        .filtros-citas button { background:white; border:1px solid #1f4e79; color:#1f4e79;
+            border-radius:6px; padding:9px 13px; font-weight:bold; cursor:pointer; }
+        .filtros-citas button.activo { background:#1f4e79; color:white; }
+        .filtros-citas button:focus-visible { outline:3px solid #7abaff; outline-offset:2px; }
+        .cita-oculta { display:none !important; }
+        .aviso-filtro-citas { color:#52657b; padding:12px 0; }
+
+        /* CU-16: detalles accesibles de citas y eventos del calendario */
+        .evento-calendario[role="button"], .cita-calendario[role="button"] { cursor:pointer; }
+        .evento-calendario[role="button"]:focus-visible, .cita-calendario[role="button"]:focus-visible { outline:3px solid #1f4e79; outline-offset:2px; }
+        .modal-agenda[hidden] { display:none !important; }
+        .modal-agenda { position:fixed; inset:0; z-index:1000; background:rgba(12,27,45,.65); display:flex; align-items:center; justify-content:center; padding:18px; }
+        .modal-agenda-panel { background:white; width:min(100%,520px); max-height:85vh; overflow-y:auto; border-radius:12px; padding:25px; box-shadow:0 15px 45px rgba(0,0,0,.25); }
+        .modal-agenda-encabezado { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+        .modal-agenda-encabezado h2 { margin:0 0 18px; color:#1f4e79; }
+        .modal-agenda-cerrar { background:#1f4e79; border:0; border-radius:6px; color:white; cursor:pointer; padding:9px 13px; font-size:17px; }
+        .modal-agenda-detalle p { margin:11px 0; overflow-wrap:anywhere; line-height:1.5; }
+        body.modal-agenda-abierto { overflow:hidden; }
+
+        /* CU-16: TaskPanel colapsable y tareas por día */
+        .panel-tareas-cabecera { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+        .panel-tareas-cabecera h2 { margin:0; }
+        .boton-panel-tareas { background:#1f4e79; color:white; border:0; border-radius:6px; padding:10px 14px; font-weight:bold; cursor:pointer; }
+        .panel-tareas-contenido[hidden] { display:none !important; }
+        .panel-tareas-info { color:#536477; font-size:14px; margin:14px 0; }
+        .filtros-tareas { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 18px; }
+        .filtros-tareas button { border:1px solid #1f4e79; background:white; color:#1f4e79; border-radius:6px; padding:9px 12px; cursor:pointer; font-weight:bold; }
+        .filtros-tareas button.activo { background:#1f4e79; color:white; }
+        .tarea-filtrada { display:none !important; }
+        .dia.seleccionado { outline:3px solid #198754; outline-offset:-3px; }
+        .numero-dia[role="button"] { cursor:pointer; border-radius:4px; padding:3px; }
+        .numero-dia[role="button"]:focus-visible { outline:3px solid #198754; }
+        .panel-tareas-sin-resultados { color:#667788; font-size:14px; }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>📅 Agenda Médica</h1>
+
+    <a class="volver" th:href="@{/medico}">
+        ← Volver al Panel Médico
+    </a>
+</header>
+
+<main class="contenedor">
+
+    <div class="introduccion">
+        <h2>Gestión de Agenda Médica</h2>
+        <p>
+            Organice sus eventos personales, tareas y recordatorios.
+        </p>
+    </div>
+
+    <!-- MENSAJES -->
+
+    <div class="mensaje exito"
+         th:if="${mensaje != null}"
+         th:text="${mensaje}">
+    </div>
+
+    <div class="mensaje error"
+         th:if="${error != null}"
+         th:text="${error}">
+    </div>
+
+    <div class="distribucion">
+
+        <!-- COLUMNA PRINCIPAL -->
+
+        <div>
+
+
+            <!-- CU-16: RECORDATORIOS (ACTUALIZADOS AL ABRIR LA AGENDA) -->
+            <section class="tarjeta" id="recordatorios">
+                <h2>🔔 Próximos recordatorios</h2>
+                <p class="recordatorio-resumen">
+                    Eventos y tareas de las próximas 24 horas, además de tareas pendientes vencidas.
+                </p>
+
+                <p class="sin-registros"
+                   th:if="${#lists.isEmpty(eventosProximos) and #lists.isEmpty(tareasProximas) and #lists.isEmpty(tareasVencidas)}">
+                    No tiene recordatorios pendientes por el momento.
+                </p>
+
+                <div class="recordatorio-grupo" th:if="${not #lists.isEmpty(eventosProximos)}">
+                    <h3>🟣 Eventos próximos</h3>
+                    <div class="recordatorio-item recordatorio-evento"
+                         th:each="evento : ${eventosProximos}">
+                        <strong th:text="${evento.titulo}">Evento</strong>
+                        <p>Inicio:
+                            <span th:text="${#temporals.format(evento.fechaInicio, 'dd/MM/yyyy HH:mm')}"></span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="recordatorio-grupo" th:if="${not #lists.isEmpty(tareasProximas)}">
+                    <h3>🟡 Tareas próximas a vencer</h3>
+                    <div class="recordatorio-item recordatorio-proximo"
+                         th:each="tarea : ${tareasProximas}">
+                        <strong th:text="${tarea.titulo}">Tarea</strong>
+                        <p>Fecha límite:
+                            <span th:text="${#temporals.format(tarea.fechaLimite, 'dd/MM/yyyy HH:mm')}"></span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="recordatorio-grupo" th:if="${not #lists.isEmpty(tareasVencidas)}">
+                    <h3>🔴 Tareas vencidas</h3>
+                    <div class="recordatorio-item recordatorio-vencido"
+                         th:each="tarea : ${tareasVencidas}">
+                        <strong th:text="${tarea.titulo}">Tarea</strong>
+                        <p>Fecha límite vencida:
+                            <span th:text="${#temporals.format(tarea.fechaLimite, 'dd/MM/yyyy HH:mm')}"></span>
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CALENDARIO -->
+
+            <section class="tarjeta">
+
+                <h2>📆 Mi calendario</h2>
+
+                <div class="controles-calendario">
+
+                    <button type="button" onclick="cambiarMes(-1)">
+                        ◀ Anterior
+                    </button>
+
+                    <h3 id="tituloMes"></h3>
+
+                    <button type="button" onclick="cambiarMes(1)">
+                        Siguiente ▶
+                    </button>
+
+                    <button type="button" onclick="irHoy()">
+                        Hoy
+                    </button>
+
+                </div>
+
+                <div class="selector-vista" aria-label="Seleccionar vista del calendario">
+                    <button type="button" class="activa" data-vista="mensual" onclick="cambiarVista('mensual')">Mensual</button>
+                    <button type="button" data-vista="semanal" onclick="cambiarVista('semanal')">Semanal</button>
+                    <button type="button" data-vista="diaria" onclick="cambiarVista('diaria')">Diaria</button>
+                </div>
+
+                <div class="calendario" id="calendario">
+
+                    <!-- GENERADO CON JAVASCRIPT -->
+
+                </div>
+
+                <div class="leyenda">
+
+                    <span>
+                        <i class="indicador morado"></i>
+                        Eventos personales
+                    </span>
+
+                    <span><i class="indicador azul"></i> Confirmada</span>
+                    <span><i class="indicador naranja"></i> Signos vitales</span>
+                    <span><i class="indicador morado"></i> Evaluado</span>
+                    <span><i class="indicador verde"></i> Atención finalizada</span>
+                    <span><i class="indicador gris"></i> Otro estado</span>
+
+                </div>
+
+            </section>
+
+            <!-- CU-16: CITAS MÉDICAS DEL DOCTOR -->
+            <section class="tarjeta">
+                <h2>🩺 Mis citas médicas</h2>
+                <div class="filtros-citas" role="group" aria-label="Filtrar citas médicas">
+                    <button type="button" class="activo" data-filtro-cita="todas" aria-pressed="true">Todas</button>
+                    <button type="button" data-filtro-cita="hoy" aria-pressed="false">Hoy</button>
+                    <button type="button" data-filtro-cita="proximas" aria-pressed="false">Próximas</button>
+                    <button type="button" data-filtro-cita="finalizadas" aria-pressed="false">Finalizadas</button>
+                    <button type="button" data-filtro-cita="canceladas" aria-pressed="false">Canceladas</button>
+                </div>
+                <p id="avisoFiltroCitas" class="aviso-filtro-citas" role="status" aria-live="polite" hidden></p>
+                <p class="sin-registros" th:if="${#lists.isEmpty(citasAgenda)}">
+                    No hay citas médicas registradas.
+                </p>
+                <div class="elemento cita" th:each="cita : ${citasAgenda}"
+                     th:attr="data-fecha-cita=${cita.horario.fecha},data-hora-cita=${cita.horario.hora},data-estado-cita=${cita.estado}"
+                     th:classappend="${cita.estado == 'CONFIRMADA' ? ' cita-confirmada' :
+                                      (cita.estado == 'SIGNOS_VITALES' ? ' cita-signos-vitales' :
+                                      (cita.estado == 'EVALUADO' ? ' cita-evaluado' :
+                                      (cita.estado == 'ATENCION_FINALIZADA' ? ' cita-atencion-finalizada' : ' cita-otro')))}">
+                    <h3>Cita médica</h3>
+                    <p><strong>Paciente:</strong>
+                        <span th:text="${cita.paciente.nombreCompleto}">Paciente</span>
+                    </p>
+                    <p><strong>Fecha:</strong>
+                        <span th:text="${#temporals.format(cita.horario.fecha, 'dd/MM/yyyy')}"></span>
+                    </p>
+                    <p><strong>Hora:</strong>
+                        <span th:text="${#temporals.format(cita.horario.hora, 'HH:mm')}"></span>
+                    </p>
+                    <p><strong>Estado:</strong> <span th:text="${cita.estado}"></span></p>
+                </div>
+            </section>
+
+            <!-- LISTADO DE EVENTOS -->
+
+            <section class="tarjeta">
+
+                <h2>🗓️ Mis eventos</h2>
+
+                <p class="sin-registros"
+                   th:if="${#lists.isEmpty(eventos)}">
+                    Todavía no tiene eventos registrados.
+                </p>
+
+                <div class="elemento"
+                     th:each="evento : ${eventos}">
+
+                    <h3 th:text="${evento.titulo}">
+                        Nombre del evento
+                    </h3>
+
+                    <p th:if="${evento.descripcion != null}"
+                       th:text="${evento.descripcion}">
+                    </p>
+
+                    <p>
+                        <strong>Inicio:</strong>
+
+                        <span th:text="${#temporals.format(evento.fechaInicio, 'dd/MM/yyyy HH:mm')}">
+                        </span>
+                    </p>
+
+                    <p>
+                        <strong>Fin:</strong>
+
+                        <span th:text="${#temporals.format(evento.fechaFin, 'dd/MM/yyyy HH:mm')}">
+                        </span>
+                    </p>
+
+                    <p>
+                        <strong>Tipo:</strong>
+
+                        <span th:switch="${evento.tipoEvento}">
+                            <span th:case="0">Reunión</span>
+                            <span th:case="1">Descanso</span>
+                            <span th:case="2">Capacitación</span>
+                            <span th:case="3">Personal</span>
+                            <span th:case="*">Otro</span>
+                        </span>
+                    </p>
+
+                    <div class="acciones">
+
+                        <form th:action="@{/medico/agenda/eventos/{id}/eliminar(id=${evento.id})}"
+                              method="post"
+                              onsubmit="return confirm('¿Eliminar este evento?');">
+
+                            <button class="btn-eliminar" type="submit">
+                                Eliminar
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                    <!-- CU-16: EDITAR EVENTO -->
+                    <details class="editar-registro">
+                        <summary>✏️ Editar evento</summary>
+                        <form class="formulario formulario-evento-dia"
+                              th:action="@{/medico/agenda/eventos/{id}/actualizar(id=${evento.id})}"
+                              method="post">
+                            <label>Título
+                                <input type="text" name="titulo" maxlength="200"
+                                       th:value="${evento.titulo}" required>
+                            </label>
+                            <label>Descripción
+                                <textarea name="descripcion" maxlength="500"
+                                          th:text="${evento.descripcion}"></textarea>
+                            </label>
+                            <label>Fecha y hora de inicio
+                                <input type="datetime-local" name="fechaInicio"
+                                       th:value="${#temporals.format(evento.fechaInicio, 'yyyy-MM-dd''T''HH:mm')}" required>
+                            </label>
+                            <label>Fecha y hora de finalización
+                                <input type="datetime-local" name="fechaFin"
+                                       th:value="${#temporals.format(evento.fechaFin, 'yyyy-MM-dd''T''HH:mm')}" required>
+                            </label>
+                            <label>Tipo de evento
+                                <select name="tipoEvento" required>
+                                    <option value="0" th:selected="${evento.tipoEvento == 0}">Reunión</option>
+                                    <option value="1" th:selected="${evento.tipoEvento == 1}">Descanso</option>
+                                    <option value="2" th:selected="${evento.tipoEvento == 2}">Capacitación</option>
+                                    <option value="3" th:selected="${evento.tipoEvento == 3}">Personal</option>
+                                    <option value="4" th:selected="${evento.tipoEvento == 4}">Otro</option>
+                                </select>
+                            </label>
+                            <label>
+                                <input type="checkbox" name="todoElDia" value="true"
+                                       th:checked="${evento.todoElDia}" style="width:auto;">
+                                Todo el día
+                            </label>
+                            <button type="submit">Guardar cambios del evento</button>
+                        </form>
+                    </details>
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <!-- COLUMNA LATERAL -->
+
+        <aside>
+
+            <!-- CREAR EVENTO -->
+
+            <section class="tarjeta">
+
+                <h2>➕ Nuevo evento</h2>
+
+                <form class="formulario formulario-evento-dia"
+                      th:action="@{/medico/agenda/eventos/crear}"
+                      method="post">
+
+                    <label for="tituloEvento">Título</label>
+
+                    <input id="tituloEvento"
+                           name="titulo"
+                           type="text"
+                           maxlength="200"
+                           required>
+
+                    <label for="descripcionEvento">Descripción</label>
+
+                    <textarea id="descripcionEvento"
+                              name="descripcion"
+                              maxlength="500"></textarea>
+
+                    <label for="inicioEvento">Fecha y hora de inicio</label>
+
+                    <input id="inicioEvento"
+                           name="fechaInicio"
+                           type="datetime-local"
+                           required>
+
+                    <label for="finEvento">Fecha y hora de finalización</label>
+
+                    <input id="finEvento"
+                           name="fechaFin"
+                           type="datetime-local"
+                           required>
+
+                    <label for="tipoEvento">Tipo de evento</label>
+
+                    <select id="tipoEvento"
+                            name="tipoEvento"
+                            required>
+
+                        <option value="0">Reunión</option>
+                        <option value="1">Descanso</option>
+                        <option value="2">Capacitación</option>
+                        <option value="3">Personal</option>
+                        <option value="4">Otro</option>
+
+                    </select>
+
+                    <label>
+                        <input type="checkbox"
+                               name="todoElDia"
+                               value="true"
+                               style="width:auto;">
+                        Todo el día
+                    </label>
+
+                    <button class="btn-evento" type="submit">
+                        Guardar evento
+                    </button>
+
+                </form>
+
+            </section>
+
+            <!-- CREAR TAREA -->
+
+            <section class="tarjeta">
+
+                <h2>📝 Nueva tarea</h2>
+
+                <form class="formulario"
+                      th:action="@{/medico/agenda/tareas/crear}"
+                      method="post">
+
+                    <label for="tituloTarea">Título</label>
+
+                    <input id="tituloTarea"
+                           name="titulo"
+                           type="text"
+                           maxlength="200"
+                           required>
+
+                    <label for="descripcionTarea">Descripción</label>
+
+                    <textarea id="descripcionTarea"
+                              name="descripcion"
+                              maxlength="1000"></textarea>
+
+                    <label for="prioridadTarea">Prioridad</label>
+
+                    <select id="prioridadTarea"
+                            name="prioridad">
+
+                        <option value="0">Baja</option>
+                        <option value="1" selected>Normal</option>
+                        <option value="2">Alta</option>
+
+                    </select>
+
+                    <label for="fechaLimiteTarea">Fecha límite</label>
+
+                    <input id="fechaLimiteTarea"
+                           name="fechaLimite"
+                           type="datetime-local"
+                           required>
+
+                    <button class="btn-tarea" type="submit">
+                        Guardar tarea
+                    </button>
+
+                </form>
+
+            </section>
+
+            <!-- LISTADO DE TAREAS -->
+
+            <section class="tarjeta">
+
+                <div class="panel-tareas-cabecera">
+                    <h2>📋 Mis tareas <span id="conteoTareas">(0)</span></h2>
+                    <button type="button" id="botonPanelTareas" class="boton-panel-tareas"
+                            aria-controls="panelTareasContenido" aria-expanded="true">Ocultar panel ▲</button>
+                </div>
+                <div id="panelTareasContenido" class="panel-tareas-contenido">
+                    <p class="panel-tareas-info">Día seleccionado: <strong id="fechaTareasSeleccionada"></strong>.
+                        Seleccione un número de día en el calendario para consultar sus tareas.</p>
+                    <div class="filtros-tareas" role="group" aria-label="Filtrar tareas">
+                        <button type="button" class="activo" data-filtro-tarea="todas" aria-pressed="true">Todas</button>
+                        <button type="button" data-filtro-tarea="pendientes" aria-pressed="false">Pendientes</button>
+                        <button type="button" data-filtro-tarea="completadas" aria-pressed="false">Completadas</button>
+                    </div>
+                    <p id="sinTareasDia" class="panel-tareas-sin-resultados" hidden>No hay tareas para este día y filtro.</p>
+
+                    <p class="sin-registros"
+                       th:if="${#lists.isEmpty(tareas)}">
+                        Todavía no tiene tareas registradas.
+                    </p>
+
+                    <div class="elemento tarea"
+                         th:each="tarea : ${tareas}"
+                         th:attr="data-fecha-tarea=${#temporals.format(tarea.fechaLimite, 'yyyy-MM-dd')},data-completada-tarea=${tarea.isCompleted}"
+                         th:classappend="${tarea.isCompleted == true} ? ' completada' : ''">
+
+                        <h3 th:text="${tarea.titulo}">
+                            Nombre de la tarea
+                        </h3>
+
+                        <p th:if="${tarea.descripcion != null}"
+                           th:text="${tarea.descripcion}">
+                        </p>
+
+                        <p>
+                            <strong>Fecha límite:</strong>
+
+                            <span th:text="${#temporals.format(tarea.fechaLimite, 'dd/MM/yyyy HH:mm')}">
+                        </span>
+                        </p>
+
+                        <p>
+                            <strong>Prioridad:</strong>
+
+                            <span th:switch="${tarea.prioridad}">
+                            <span th:case="0">Baja</span>
+                            <span th:case="1">Normal</span>
+                            <span th:case="2">Alta</span>
+                            <span th:case="*">Sin definir</span>
+                        </span>
+                        </p>
+
+                        <p>
+                            <strong>Estado:</strong>
+
+                            <span th:text="${tarea.isCompleted == true ? 'Completada' : 'Pendiente'}">
+                        </span>
+                        </p>
+
+                        <div class="acciones">
+
+                            <form th:if="${tarea.isCompleted != true}"
+                                  th:action="@{/medico/agenda/tareas/{id}/completar(id=${tarea.id})}"
+                                  method="post">
+
+                                <button class="btn-completar" type="submit">
+                                    ✓ Completar
+                                </button>
+
+                            </form>
+
+                            <form th:if="${tarea.isCompleted == true}"
+                                  th:action="@{/medico/agenda/tareas/{id}/reabrir(id=${tarea.id})}"
+                                  method="post">
+
+                                <button class="btn-reabrir" type="submit">
+                                    Reabrir
+                                </button>
+
+                            </form>
+
+                            <form th:action="@{/medico/agenda/tareas/{id}/eliminar(id=${tarea.id})}"
+                                  method="post"
+                                  onsubmit="return confirm('¿Eliminar esta tarea?');">
+
+                                <button class="btn-eliminar" type="submit">
+                                    Eliminar
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                        <!-- CU-16: EDITAR TAREA -->
+                        <details class="editar-registro">
+                            <summary>✏️ Editar tarea</summary>
+                            <form class="formulario"
+                                  th:action="@{/medico/agenda/tareas/{id}/actualizar(id=${tarea.id})}"
+                                  method="post">
+                                <label>Título
+                                    <input type="text" name="titulo" maxlength="200"
+                                           th:value="${tarea.titulo}" required>
+                                </label>
+                                <label>Descripción
+                                    <textarea name="descripcion" maxlength="1000"
+                                              th:text="${tarea.descripcion}"></textarea>
+                                </label>
+                                <label>Prioridad
+                                    <select name="prioridad" required>
+                                        <option value="0" th:selected="${tarea.prioridad == 0}">Baja</option>
+                                        <option value="1" th:selected="${tarea.prioridad == 1}">Normal</option>
+                                        <option value="2" th:selected="${tarea.prioridad == 2}">Alta</option>
+                                    </select>
+                                </label>
+                                <label>Fecha límite
+                                    <input type="datetime-local" name="fechaLimite"
+                                           th:value="${#temporals.format(tarea.fechaLimite, 'yyyy-MM-dd''T''HH:mm')}" required>
+                                </label>
+                                <button type="submit">Guardar cambios de la tarea</button>
+                            </form>
+                        </details>
+
+                    </div>
+                </div><!-- fin panelTareasContenido -->
+
+            </section>
+
+        </aside>
+
+    </div>
+
+</main>
+
+
+<!-- CU-16: VENTANA DE DETALLES DEL CALENDARIO -->
+<div id="modalDetallesAgenda" class="modal-agenda" hidden>
+    <section class="modal-agenda-panel" role="dialog" aria-modal="true"
+             aria-labelledby="tituloDetallesAgenda" aria-describedby="contenidoDetallesAgenda">
+        <div class="modal-agenda-encabezado">
+            <h2 id="tituloDetallesAgenda">Detalles</h2>
+            <button type="button" id="cerrarDetallesAgenda" class="modal-agenda-cerrar" aria-label="Cerrar detalles">✕</button>
+        </div>
+        <div id="contenidoDetallesAgenda" class="modal-agenda-detalle"></div>
+    </section>
+</div>
+
+<!-- DATOS DE EVENTOS PARA EL CALENDARIO -->
+
+<div id="datosEventos" style="display:none;">
+
+    <div th:each="evento : ${eventos}"
+         class="dato-evento"
+         th:attr="data-titulo=${evento.titulo},
+                  data-descripcion=${evento.descripcion},
+                  data-tipo=${evento.tipoEvento},
+                  data-todo-dia=${evento.todoElDia},
+                  data-inicio=${evento.fechaInicio},
+                  data-fin=${evento.fechaFin}">
+    </div>
+
+</div>
+
+<!-- CU-16: DATOS DE CITAS PARA EL CALENDARIO -->
+<div id="datosCitas" style="display:none;">
+    <div th:each="cita : ${citasAgenda}"
+         class="dato-cita"
+         th:attr="data-fecha=${cita.horario.fecha},
+                  data-hora=${cita.horario.hora},
+                  data-estado=${cita.estado},
+                  data-paciente=${cita.paciente.nombreCompleto}">
+    </div>
+</div>
+
+<script>
+
+    // ==========================================
+    // CU-16: VISTAS MENSUAL, SEMANAL Y DIARIA
+    // ==========================================
+    let fechaActual = new Date();
+    let vistaActual = "mensual";
+    let fechaSeleccionadaTareas = formatoFechaISO(new Date());
+    let filtroActualTareas = "todas";
+
+    function cambiarVista(vista) {
+        if (!["mensual", "semanal", "diaria"].includes(vista)) return;
+        vistaActual = vista;
+        document.querySelectorAll(".selector-vista button").forEach(boton => {
+            const activa = boton.dataset.vista === vista;
+            boton.classList.toggle("activa", activa);
+            boton.setAttribute("aria-pressed", String(activa));
+        });
+        dibujarCalendario();
+    }
+
+    function cambiarMes(cantidad) {
+        if (vistaActual === "mensual") {
+            fechaActual.setDate(1);
+            fechaActual.setMonth(fechaActual.getMonth() + cantidad);
+        } else if (vistaActual === "semanal") {
+            fechaActual.setDate(fechaActual.getDate() + 7 * cantidad);
+        } else {
+            fechaActual.setDate(fechaActual.getDate() + cantidad);
+        }
+        dibujarCalendario();
+    }
+
+    function irHoy() {
+        fechaActual = new Date();
+        dibujarCalendario();
+    }
+
+    function obtenerEventos() {
+        return Array.from(document.querySelectorAll(".dato-evento")).map(elemento => ({
+            titulo: elemento.dataset.titulo,
+            descripcion: elemento.dataset.descripcion,
+            tipo: elemento.dataset.tipo,
+            todoDia: elemento.dataset.todoDia === "true",
+            inicio: elemento.dataset.inicio,
+            fin: elemento.dataset.fin
+        }));
+    }
+
+    function obtenerCitas() {
+
+        const estadosExcluidos = [
+            "PENDIENTE",
+            "NO_ASISTIO",
+            "CANCELADA",
+            "CANCELADO"
+        ];
+
+        return Array.from(document.querySelectorAll(".dato-cita"))
+            .map(elemento => ({
+                fecha: elemento.dataset.fecha,
+                hora: elemento.dataset.hora,
+                estado: elemento.dataset.estado,
+                paciente: elemento.dataset.paciente
+            }))
+            .filter(cita => {
+
+                const estado = (cita.estado || "")
+                    .trim()
+                    .toUpperCase();
+
+                return !estadosExcluidos.includes(estado);
+
+            });
+
+    }
+
+    // Una única clasificación para todas las vistas del calendario.
+    function claseEstadoCita(estado) {
+        switch ((estado || "").toUpperCase()) {
+            case "CONFIRMADA": return "cita-confirmada";
+            case "SIGNOS_VITALES": return "cita-signos-vitales";
+            case "EVALUADO": return "cita-evaluado";
+            case "ATENCION_FINALIZADA": return "cita-atencion-finalizada";
+            default: return "cita-otro";
+        }
+    }
+
+    function formatoFechaISO(fecha) {
+        return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}-${String(fecha.getDate()).padStart(2, "0")}`;
+    }
+
+    function fechaSinHora(fecha) {
+        return new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+    }
+
+    function inicioSemana(fecha) {
+        const inicio = fechaSinHora(fecha);
+        inicio.setDate(inicio.getDate() - ((inicio.getDay() + 6) % 7));
+        return inicio;
+    }
+
+    function agregarEncabezado(calendario, texto) {
+        const encabezado = document.createElement("div");
+        encabezado.className = "dia-semana";
+        encabezado.textContent = texto;
+        calendario.appendChild(encabezado);
+    }
+
+    function agregarDia(calendario, fecha, eventos, citas) {
+        const celda = document.createElement("div");
+        celda.className = "dia";
+        const hoy = new Date();
+        if (formatoFechaISO(fecha) === formatoFechaISO(hoy)) celda.classList.add("hoy");
+
+        const numero = document.createElement("div");
+        numero.className = "numero-dia";
+        numero.textContent = vistaActual === "mensual" ? String(fecha.getDate()) :
+            fecha.toLocaleDateString("es-GT", {day:"2-digit",month:"2-digit",year:"numeric"});
+        numero.setAttribute("role", "button");
+        numero.setAttribute("tabindex", "0");
+        numero.setAttribute("aria-label", `Ver tareas del ${fecha.toLocaleDateString("es-GT")}`);
+        const seleccionarDia = () => {
+            fechaSeleccionadaTareas = formatoFechaISO(fecha);
+            actualizarPanelTareas();
+            dibujarCalendario();
+        };
+        numero.addEventListener("click", seleccionarDia);
+        numero.addEventListener("keydown", e => {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); seleccionarDia(); }
+        });
+        if (formatoFechaISO(fecha) === fechaSeleccionadaTareas) celda.classList.add("seleccionado");
+        celda.appendChild(numero);
+
+        eventos.forEach(evento => {
+            const inicio = new Date(evento.inicio);
+            const fin = new Date(evento.fin);
+            if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime())) return;
+            const finVisual = new Date(fin);
+            if (evento.todoDia && fin.getHours() === 0 && fin.getMinutes() === 0 && fin > inicio) {
+                finVisual.setDate(finVisual.getDate() - 1);
+            }
+            if (fechaSinHora(fecha) >= fechaSinHora(inicio) && fechaSinHora(fecha) <= fechaSinHora(finVisual)) {
+                const etiqueta = document.createElement("div");
+                etiqueta.className = "evento-calendario";
+                etiqueta.textContent = evento.titulo || "Evento";
+                habilitarDetalles(etiqueta, () => abrirDetallesEvento(evento));
+                celda.appendChild(etiqueta);
+            }
+        });
+
+        citas.filter(cita => cita.fecha === formatoFechaISO(fecha)).forEach(cita => {
+            const etiqueta = document.createElement("div");
+            etiqueta.className = `cita-calendario ${claseEstadoCita(cita.estado)}`;
+            etiqueta.textContent = `${(cita.hora || "").slice(0, 5)} · ${cita.paciente || "Paciente"} (${cita.estado || "Sin estado"})`;
+            habilitarDetalles(etiqueta, () => abrirDetallesCita(cita));
+            celda.appendChild(etiqueta);
+        });
+        calendario.appendChild(celda);
+    }
+
+    function dibujarCalendario() {
+        const calendario = document.getElementById("calendario");
+        const tituloMes = document.getElementById("tituloMes");
+        if (!calendario || !tituloMes) return;
+        calendario.innerHTML = "";
+        calendario.className = `calendario vista-${vistaActual}`;
+        const eventos = obtenerEventos();
+        const citas = obtenerCitas();
+        const diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+        if (vistaActual === "mensual") {
+            const anio = fechaActual.getFullYear();
+            const mes = fechaActual.getMonth();
+            tituloMes.textContent = new Date(anio, mes, 1).toLocaleDateString("es-GT", {month:"long",year:"numeric"});
+            diasSemana.forEach(nombre => agregarEncabezado(calendario, nombre));
+            const primerDia = new Date(anio, mes, 1);
+            const desplazamiento = (primerDia.getDay() + 6) % 7;
+            for (let i = 0; i < desplazamiento; i++) {
+                const vacio = document.createElement("div");
+                vacio.className = "dia vacio";
+                calendario.appendChild(vacio);
+            }
+            const cantidadDias = new Date(anio, mes + 1, 0).getDate();
+            for (let dia = 1; dia <= cantidadDias; dia++) {
+                agregarDia(calendario, new Date(anio, mes, dia), eventos, citas);
+            }
+        } else if (vistaActual === "semanal") {
+            const lunes = inicioSemana(fechaActual);
+            const domingo = new Date(lunes);
+            domingo.setDate(lunes.getDate() + 6);
+            tituloMes.textContent = `Semana: ${lunes.toLocaleDateString("es-GT")} – ${domingo.toLocaleDateString("es-GT")}`;
+            diasSemana.forEach(nombre => agregarEncabezado(calendario, nombre));
+            for (let i = 0; i < 7; i++) {
+                const fecha = new Date(lunes);
+                fecha.setDate(lunes.getDate() + i);
+                agregarDia(calendario, fecha, eventos, citas);
+            }
+        } else {
+            tituloMes.textContent = fechaActual.toLocaleDateString("es-GT", {weekday:"long",day:"numeric",month:"long",year:"numeric"});
+            agregarEncabezado(calendario, fechaActual.toLocaleDateString("es-GT", {weekday:"long"}));
+            agregarDia(calendario, fechaSinHora(fechaActual), eventos, citas);
+        }
+    }
+
+
+
+    // ==========================================
+    // CU-16: DETALLES DE EVENTOS Y CITAS
+    // ==========================================
+    let elementoAnteriorModal = null;
+
+    function habilitarDetalles(elemento, accion) {
+        elemento.setAttribute("role", "button");
+        elemento.setAttribute("tabindex", "0");
+        elemento.setAttribute("aria-label", `Ver detalles: ${elemento.textContent}`);
+        elemento.addEventListener("click", accion);
+        elemento.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                accion();
+            }
+        });
+    }
+
+    function formatoFechaHoraDetalle(valor) {
+        if (!valor) return "No especificada";
+        const fecha = new Date(valor);
+        if (Number.isNaN(fecha.getTime())) return valor;
+        return fecha.toLocaleString("es-GT", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit", hour12:false});
+    }
+
+    function crearFilaDetalle(contenedor, etiqueta, valor) {
+        const fila = document.createElement("p");
+        const titulo = document.createElement("strong");
+        titulo.textContent = `${etiqueta}: `;
+        fila.appendChild(titulo);
+        fila.appendChild(document.createTextNode(valor || "No especificado"));
+        contenedor.appendChild(fila);
+    }
+
+    function abrirModalAgenda(titulo, campos) {
+        const modal = document.getElementById("modalDetallesAgenda");
+        const contenido = document.getElementById("contenidoDetallesAgenda");
+        if (!modal || !contenido) return;
+        elementoAnteriorModal = document.activeElement;
+        document.getElementById("tituloDetallesAgenda").textContent = titulo;
+        contenido.replaceChildren();
+        campos.forEach(([nombre, valor]) => crearFilaDetalle(contenido, nombre, String(valor ?? "")));
+        modal.hidden = false;
+        document.body.classList.add("modal-agenda-abierto");
+        document.getElementById("cerrarDetallesAgenda").focus();
+    }
+
+    function abrirDetallesEvento(evento) {
+        const tipos = {"0":"Reunión", "1":"Descanso", "2":"Capacitación", "3":"Personal", "4":"Otro"};
+        abrirModalAgenda("🟣 Detalles del evento", [
+            ["Título", evento.titulo],
+            ["Descripción", evento.descripcion],
+            ["Inicio", formatoFechaHoraDetalle(evento.inicio)],
+            ["Fin", formatoFechaHoraDetalle(evento.fin)],
+            ["Tipo", tipos[evento.tipo] || "Otro"],
+            ["Todo el día", evento.todoDia ? "Sí" : "No"]
+        ]);
+    }
+
+    function abrirDetallesCita(cita) {
+        abrirModalAgenda("🩺 Detalles de la cita médica", [
+            ["Paciente", cita.paciente],
+            ["Fecha", cita.fecha ? cita.fecha.split("-").reverse().join("/") : ""],
+            ["Hora", (cita.hora || "").slice(0,5)],
+            ["Estado", cita.estado]
+        ]);
+    }
+
+    function cerrarModalAgenda() {
+        const modal = document.getElementById("modalDetallesAgenda");
+        if (!modal || modal.hidden) return;
+        modal.hidden = true;
+        document.body.classList.remove("modal-agenda-abierto");
+        if (elementoAnteriorModal && elementoAnteriorModal.isConnected) elementoAnteriorModal.focus();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById("modalDetallesAgenda");
+        document.getElementById("cerrarDetallesAgenda").addEventListener("click", cerrarModalAgenda);
+        modal.addEventListener("click", e => { if (e.target === modal) cerrarModalAgenda(); });
+        document.addEventListener("keydown", e => {
+            if (modal.hidden) return;
+            if (e.key === "Escape") cerrarModalAgenda();
+            if (e.key === "Tab") {
+                // El botón de cerrar es el único control interactivo del diálogo.
+                e.preventDefault();
+                document.getElementById("cerrarDetallesAgenda").focus();
+            }
+        });
+    });
+
+    // CU-16: filtros visuales sobre las citas que el servidor ya autorizó.
+    function filtrarCitas(filtro) {
+        const ahora = new Date();
+        const hoy = formatoFechaISO(ahora);
+        let visibles = 0;
+        const citas = document.querySelectorAll(".elemento.cita[data-fecha-cita]");
+
+        citas.forEach(cita => {
+            const fecha = cita.dataset.fechaCita || "";
+            const hora = (cita.dataset.horaCita || "00:00").slice(0, 5);
+            const estado = (cita.dataset.estadoCita || "").toUpperCase();
+            const fechaHora = new Date(`${fecha}T${hora}:00`);
+            const esFutura = !Number.isNaN(fechaHora.getTime()) && fechaHora > ahora;
+            const esCancelada = ["CANCELADA", "CANCELADO"].includes(estado);
+            let mostrar;
+            switch (filtro) {
+                case "hoy": mostrar = fecha === hoy; break;
+                case "proximas": mostrar = esFutura && !esCancelada; break;
+                case "finalizadas": mostrar = estado === "ATENCION_FINALIZADA"; break;
+                case "canceladas": mostrar = esCancelada; break;
+                default: mostrar = true;
+            }
+            cita.classList.toggle("cita-oculta", !mostrar);
+            if (mostrar) visibles++;
+        });
+
+        document.querySelectorAll("[data-filtro-cita]").forEach(boton => {
+            const activo = boton.dataset.filtroCita === filtro;
+            boton.classList.toggle("activo", activo);
+            boton.setAttribute("aria-pressed", String(activo));
+        });
+
+        const aviso = document.getElementById("avisoFiltroCitas");
+        if (aviso) {
+            aviso.hidden = visibles > 0 || (filtro === "todas" && citas.length === 0);
+            aviso.textContent = filtro === "canceladas"
+                ? "No hay citas canceladas en el listado. El servidor excluye actualmente las citas canceladas de esta agenda."
+                : "No hay citas que coincidan con el filtro seleccionado.";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll("[data-filtro-cita]").forEach(boton => {
+            boton.addEventListener("click", () => filtrarCitas(boton.dataset.filtroCita));
+        });
+        filtrarCitas("todas");
+    });
+
+
+    // ==========================================
+    // CU-16: PANEL LATERAL DE TAREAS
+    // ==========================================
+    function actualizarPanelTareas() {
+        const fechaTexto = document.getElementById("fechaTareasSeleccionada");
+        const tareas = document.querySelectorAll(".elemento.tarea[data-fecha-tarea]");
+        const fecha = new Date(`${fechaSeleccionadaTareas}T12:00:00`);
+        if (fechaTexto) fechaTexto.textContent = fecha.toLocaleDateString("es-GT", {
+            weekday:"long", day:"2-digit", month:"long", year:"numeric"
+        });
+        let totalDia = 0;
+        let visibles = 0;
+        tareas.forEach(tarea => {
+            const coincideFecha = tarea.dataset.fechaTarea === fechaSeleccionadaTareas;
+            const completada = tarea.dataset.completadaTarea === "true";
+            const coincideEstado = filtroActualTareas === "todas" ||
+                (filtroActualTareas === "pendientes" && !completada) ||
+                (filtroActualTareas === "completadas" && completada);
+            if (coincideFecha) totalDia++;
+            const mostrar = coincideFecha && coincideEstado;
+            tarea.classList.toggle("tarea-filtrada", !mostrar);
+            if (mostrar) visibles++;
+        });
+        const conteo = document.getElementById("conteoTareas");
+        if (conteo) conteo.textContent = `(${totalDia})`;
+        const aviso = document.getElementById("sinTareasDia");
+        if (aviso) aviso.hidden = visibles > 0 || tareas.length === 0;
+        document.querySelectorAll("[data-filtro-tarea]").forEach(boton => {
+            const activo = boton.dataset.filtroTarea === filtroActualTareas;
+            boton.classList.toggle("activo", activo);
+            boton.setAttribute("aria-pressed", String(activo));
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const boton = document.getElementById("botonPanelTareas");
+        const contenido = document.getElementById("panelTareasContenido");
+        if (boton && contenido) {
+            boton.addEventListener("click", () => {
+                contenido.hidden = !contenido.hidden;
+                boton.setAttribute("aria-expanded", String(!contenido.hidden));
+                boton.textContent = contenido.hidden ? "Mostrar panel ▼" : "Ocultar panel ▲";
+            });
+        }
+        document.querySelectorAll("[data-filtro-tarea]").forEach(botonFiltro => {
+            botonFiltro.addEventListener("click", () => {
+                filtroActualTareas = botonFiltro.dataset.filtroTarea;
+                actualizarPanelTareas();
+            });
+        });
+        actualizarPanelTareas();
+    });
+
+    // CU-16: "Todo el día" usa fechas visibles y envía fecha/hora al controlador.
+    // El intervalo es [inicio 00:00, día posterior al fin 00:00).
+    function fechaSiguienteISO(fechaISO) {
+        const [anio, mes, dia] = fechaISO.split("-").map(Number);
+        const fecha = new Date(anio, mes - 1, dia + 1);
+        return formatoFechaISO(fecha);
+    }
+
+    function configurarFormularioTodoElDia(formulario) {
+        const casilla = formulario.querySelector('input[name="todoElDia"]');
+        const inicio = formulario.querySelector('input[name="fechaInicio"]');
+        const fin = formulario.querySelector('input[name="fechaFin"]');
+        if (!casilla || !inicio || !fin) return;
+
+        const etiquetaInicio = inicio.closest("label") ||
+            formulario.querySelector('label[for="' + inicio.id + '"]');
+        const etiquetaFin = fin.closest("label") ||
+            formulario.querySelector('label[for="' + fin.id + '"]');
+        const originalInicio = etiquetaInicio ? etiquetaInicio.textContent.trim() : "";
+        const originalFin = etiquetaFin ? etiquetaFin.textContent.trim() : "";
+
+        function cambiarModo() {
+            if (casilla.checked) {
+                // Guardar las horas originales por si se desmarca la casilla.
+                if (inicio.type !== "date") {
+                    inicio.dataset.fechaHoraAnterior = inicio.value;
+                    fin.dataset.fechaHoraAnterior = fin.value;
+                    const fechaInicial = inicio.value.slice(0, 10);
+                    const fechaFinalOriginal = fin.value.slice(0, 10);
+                    let fechaFinal = fechaFinalOriginal;
+                    if (fin.value.endsWith("T00:00") && fechaFinalOriginal > fechaInicial) {
+                        const anterior = new Date(fechaFinalOriginal + "T12:00:00");
+                        anterior.setDate(anterior.getDate() - 1);
+                        fechaFinal = formatoFechaISO(anterior);
+                    }
+                    inicio.type = "date";
+                    fin.type = "date";
+                    inicio.value = fechaInicial;
+                    fin.value = fechaFinal;
+                }
+                if (etiquetaInicio) etiquetaInicio.firstChild.textContent = "Fecha de inicio";
+                if (etiquetaFin) etiquetaFin.firstChild.textContent = "Fecha de finalización (incluida)";
+            } else {
+                if (inicio.type !== "datetime-local") {
+                    const fechaInicial = inicio.value;
+                    const fechaFinal = fin.value;
+                    inicio.type = "datetime-local";
+                    fin.type = "datetime-local";
+                    inicio.value = inicio.dataset.fechaHoraAnterior || (fechaInicial ? fechaInicial + "T08:00" : "");
+                    fin.value = fin.dataset.fechaHoraAnterior || (fechaFinal ? fechaFinal + "T09:00" : "");
+                }
+                if (etiquetaInicio) etiquetaInicio.firstChild.textContent = originalInicio;
+                if (etiquetaFin) etiquetaFin.firstChild.textContent = originalFin;
+            }
+        }
+
+        casilla.addEventListener("change", cambiarModo);
+        cambiarModo();
+        formulario.addEventListener("submit", (evento) => {
+            if (casilla.checked) {
+                const fechaInicial = inicio.value;
+                const fechaFinal = fin.value;
+                if (!fechaInicial || !fechaFinal || fechaFinal < fechaInicial) {
+                    evento.preventDefault();
+                    alert("La fecha de finalización debe ser igual o posterior a la de inicio.");
+                    return;
+                }
+                // El backend actual espera LocalDateTime, no LocalDate.
+                inicio.type = "datetime-local";
+                fin.type = "datetime-local";
+                inicio.value = fechaInicial + "T00:00";
+                fin.value = fechaSiguienteISO(fechaFinal) + "T00:00";
+            } else if (inicio.value && fin.value && fin.value <= inicio.value) {
+                evento.preventDefault();
+                alert("La finalización debe ser posterior al inicio.");
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".formulario-evento-dia").forEach(configurarFormularioTodoElDia);
+    });
+
+    document.addEventListener("DOMContentLoaded", () => cambiarVista("mensual"));
+
+</script>
+
+</body>
+</html>
+

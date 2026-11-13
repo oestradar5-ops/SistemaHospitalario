@@ -15,27 +15,38 @@ import java.util.Optional;
 public interface AutorizacionSustitucionRepository
         extends JpaRepository<AutorizacionSustitucion, Long> {
 
-    // Solicitudes de una sucursal
+    // ==========================================
+    // SOLICITUDES DE UNA SUCURSAL
+    // ==========================================
+
     List<AutorizacionSustitucion>
     findBySucursalIdOrderByFechaSolicitudDesc(Long sucursalId);
 
-    // Solicitudes pendientes
+
+    // ==========================================
+    // SOLICITUDES PENDIENTES
+    // ==========================================
+
     List<AutorizacionSustitucion>
     findByEstadoOrderByFechaSolicitudAsc(String estado);
 
-    // Autorizaciones relacionadas con un medicamento recetado
+
+    // ==========================================
+    // AUTORIZACIONES POR MEDICAMENTO RECETADO
+    // ==========================================
+
     List<AutorizacionSustitucion>
     findByRecetaMedicamentoIdOrderByFechaSolicitudDesc(
             Long recetaMedicamentoId
     );
 
-    // Bloqueo para evitar dos respuestas simultáneas
+
+    // ==========================================
+    // BLOQUEO PARA EVITAR RESPUESTAS SIMULTÁNEAS
+    // ==========================================
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("""
-            SELECT a
-            FROM AutorizacionSustitucion a
-            WHERE a.id = :id
-            """)
+    @Query("SELECT a FROM AutorizacionSustitucion a WHERE a.id = :id")
     Optional<AutorizacionSustitucion> bloquearPorId(
             @Param("id") Long id
     );

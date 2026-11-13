@@ -3,9 +3,9 @@ package com.hospital.his.repository;
 import com.hospital.his.entity.CatalogoExamen;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,16 +89,13 @@ public interface CatalogoExamenRepository
             Long laboratorioId
     );
 
-    // ==========================================
-// CU-14
-// LISTAR EXÁMENES CON SU LABORATORIO
-// ==========================================
 
-    @Query("""
-        SELECT e
-        FROM CatalogoExamen e
-        LEFT JOIN FETCH e.laboratorio
-        ORDER BY e.nombre ASC
-        """)
+    // ==========================================
+    // CU-14: LISTAR EXÁMENES CON SU LABORATORIO
+    // ==========================================
+
+    @Query("SELECT e FROM CatalogoExamen e " +
+            "LEFT JOIN FETCH e.laboratorio " +
+            "ORDER BY e.nombre ASC")
     List<CatalogoExamen> findAllConLaboratorio();
 }
